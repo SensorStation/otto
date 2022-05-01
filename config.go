@@ -1,7 +1,10 @@
 package iote
 
 type Configuration struct {
-	Broker	string			`json:"mqtt-broker"`
+	Broker		string		`json:"mqtt-broker"`
+
+	DebugMQTT	bool		`json:"mqtt-debug"`
+	Verbose		bool		`json:"verbose"`
 }
 
 var (
