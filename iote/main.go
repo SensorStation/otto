@@ -26,6 +26,9 @@ func main() {
 	msg := iote.GetMessanger()
 	msg.Subscribe("iote/data", iote.DataCB) // a little weird
 
-	// srv := iote.GetHTTP()
-	// srv.Register("/api/config", iote.Config)
+	srv := iote.Server
+	srv.Register("/api/config", config)
+	err := srv.Listen()
+
+	fmt.Printf("Good bye: %+v\n", err)
 }
