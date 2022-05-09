@@ -22,4 +22,10 @@ func main() {
 	flag.Parse()
 
 	fmt.Printf("Config: %+v\n", config)
+
+	msg := iote.GetMessanger()
+	msg.Subscribe("iote/data", iote.DataCB) // a little weird
+
+	// srv := iote.GetHTTP()
+	// srv.Register("/api/config", iote.Config)
 }

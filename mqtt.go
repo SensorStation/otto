@@ -41,7 +41,7 @@ func (m *Messanger) Connect() {
 	}
 }
 
-func (m *Messanger) Subscribe(id string, path string, f mqtt.MessageHandler) {
+func (m *Messanger) Subscribe(path string, f mqtt.MessageHandler) {
 	// sub := &Subscriber{id, path, f, nil}
 	// s.Subscribers[id] = sub
 
@@ -55,3 +55,6 @@ func (m *Messanger) Subscribe(id string, path string, f mqtt.MessageHandler) {
 	}
 }
 
+func (m *Messanger) Publish(topic string, msg string) {
+	m.Client.Publish(topic, 0, false, msg)
+}
