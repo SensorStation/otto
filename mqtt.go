@@ -1,4 +1,4 @@
-package iote
+package main
 
 import (
 	"fmt"
@@ -7,54 +7,37 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// Messanger allows a message consumer to provide a callback
-// to specific message paths
-type Messanger struct {
-	mqtt.Client
-}
-
 var (
-	msg *Messanger 
+	mqttc mqtt.Client
 )
 
-func GetMessanger() *Messanger {
-	if (msg == nil) {
-		msg = &Messanger{}
-		msg.Connect()
-	}
-	return msg
-}
-
-func (m *Messanger) Connect() {
-	// config.DebugMQTT = true
+func mqtt_connect() {
 	if config.DebugMQTT {
 		mqtt.DEBUG = log.New(os.Stdout, "", 0)
 		mqtt.ERROR = log.New(os.Stdout, "", 0)
 	}
 
-	id := "IoTe"
+	id := "sensorStation"
 	connOpts := mqtt.NewClientOptions().AddBroker(config.Broker).SetClientID(id).SetCleanSession(true)
-
-	m.Client = mqtt.NewClient(connOpts)
-	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
+	mqttc = mqtt.NewClient(connOpts)
+	if token := mqttc.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 	}
 }
 
-func (m *Messanger) Subscribe(path string, f mqtt.MessageHandler) {
-	// sub := &Subscriber{id, path, f, nil}
-	// s.Subscribers[id] = sub
+type ToCloudMsg struct {
+	Addr	string `json:"addr"`
+	Type	string `json:"type"`
+	Data	map[string]interface{}	`json:"data"`
+}
 
-	qos := 0
-	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
-		panic(token.Error())
-	} else {
-		if config.Verbose {
-			log.Printf("subscribe token: %v", token)
-		}
+// ToCloudCB is the callback when we recieve MQTT messages on the '/mesh/xxxxxx/toCloud' channel. 
+func ToCloudCB(mc mqtt.Client, msg mqtt.Message) {
+	if false {
+		log.Printf("Incoming message topic: %s\n", msg.Topic());
 	}
+	mesh.MsgRecv(msg.Topic(), msg.Payload())
 }
 
-func (m *Messanger) Publish(topic string, msg string) {
-	m.Client.Publish(topic, 0, false, msg)
-}
+
+

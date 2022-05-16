@@ -1,4 +1,4 @@
-package iote
+package main
 
 import (
 	"fmt"
@@ -13,16 +13,11 @@ import (
 // Station is the primary structure that holds an array of
 // Sensors which in turn hold a timeseries of datapoints.
 type Station struct {
-	ID			string					`json:"id"`
-	LastTime	time.Time			`json:"last-time"`
+	ID		string					`json:"id"`
 	Sensors map[string]*Timeseries	`json:"sensors"`
 
-
+	LastTime	time.Time
 }
-
-var (
-	stations map[string]*Station
-)
 
 // NewStation creates a new Station with an ID as provided
 // by the first parameter

@@ -1,32 +1,56 @@
-package iote
+package main
 
 import (
+	"flag"
 	"log"
-
-	"encoding/json"
 	"io/ioutil"
+	"encoding/json"
 	"net/http"
-
 )
 
+type Config interface {
+	http.Handler
+	SaveFile(fname string) error
+	ReadFile(fname string) error
+}
+
 type Configuration struct {
-	Addr		string		`json:"addr"`
-	Broker		string		`json:"mqtt-broker"`
-	DebugMQTT	bool		`json:"mqtt-debug"`
-	MaxData		int			`json:"max-data"`
-	Verbose		bool		`json:"verbose"`
+	Addr   string
+	App    string
+	Broker string
+
+	Debug		bool
+	DebugMQTT	bool
+	FakeWS		bool
+	Filename	string
+	Mock		bool
+
+	MaxData	int					// maximum data values to save
+
+	GPIO	bool
+	Verbose bool
 }
 
 var (
-	config Configuration
+	config	 Configuration
 )
 
 func init() {
-	config.Addr		= ":8011"
-	config.Broker	= "tcp://localhost:1883"
+	flag.StringVar(&config.Addr, "addr", "0.0.0.0:8011", "Address to listen for web connections")
+	flag.StringVar(&config.App, "app", "../app/dist", "Directory for the web app distribution")
+	flag.StringVar(&config.Broker, "broker", "tcp://localhost:1883", "Address of MQTT broker")
+	flag.BoolVar(&config.Debug, "debug", false, "Start debugging")
+	flag.BoolVar(&config.DebugMQTT, "debug-mqtt", false, "Debugging MQTT messages")
+	flag.BoolVar(&config.FakeWS, "fake-ws", false, "Fake websocket data")
+	flag.IntVar(&config.MaxData, "max-data", 1000, "Maximum data length for sensors")
+	flag.BoolVar(&config.Mock, "mock", false, "Mock sensor data")
+	flag.StringVar(&config.Filename, "config", "~/.config/sensors.json", "Where to read and store config")
+
+	flag.BoolVar(&config.Verbose, "verbose", false, "Crank up the output")
+	flag.BoolVar(&config.GPIO, "gpio", false, "Utilize GPIO for Raspberry PI")
 }
 
-func GetConfig() (Configuration) {
+func GetConfig() Configuration {
 	return config
 }
 

@@ -1,5 +1,0 @@
-package iote
-
-func cacheCB() {
-	
-}

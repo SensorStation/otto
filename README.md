@@ -1,21 +1,57 @@
-# IoTe - IoT Edge Gateway
+# Sensor Station
 
-This simple IoT edge device basically gathers telemetry data from an
-associated sensor network reshapes, localy caches and globally
-persists the data from it's respective network.
+Sensor Station gathers data via MQTT from any number of _publishers_,
+which are typically battery powered, wireless sensors spread around a
+certain location.
 
-The main primary features of IoTe are:
+## Build
 
-- MQTT for Messaging (Pub/Sub)
-- REST API for programatic access
-- HTTP Server for embedded web app
-- Websockets for realtime data display
-- Modern Responsive webapp for display control 
+1. Install Go 
+2. go get ./...
+3. cd ss; go build 
 
-## Building IoTe
+That should leave the execuable 'sensors' in the 'sensors' directory as so:
 
-To build a fresh version of IoTe is pretty simple: a) Install the go 
-compiler, b) Checkout the IoTe source code, c) Install all package
-dependencies, d) compile and finally e) run the package.
+> ./station/sensors/sensors
 
+## Deploy
 
+1. Install and run an MQTT broker on the sensors host
+(e.g. mosquitto).
+
+2. Start the _sensors_ program ensuring the sensor station has
+connected to a wifi network.
+
+3. Put batteries in sensors and let the network build itself.
+
+## Testing
+
+### Fake Websocket Data
+
+```bash
+% ./ss -fake-ws
+```
+
+```bash
+% ./ss -help
+```
+
+This will open the following URL for the fake websocket data:
+
+> http://localhost:8011/ws
+
+Replace localhost with a hostname or IP if needed. Have the websocket
+connect to the URL and start spitting out fake data formatted like
+this:
+
+```json
+{"year":2020,"month":12,"day":10,"hour":20,"minute":48,"second":8,"action":"setTime"}
+{"K":"tempf","V":88}
+{"K":"soil","V":0.49}
+{"K":"light","V":0.62}
+{"K":"humid","V":0.12}
+```
+
+## Adding Automated Builds
+
+Automated builds will be using Github events.

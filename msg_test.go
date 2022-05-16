@@ -1,4 +1,4 @@
-package iote
+package main
 
 import (
 	"testing"	

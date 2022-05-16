@@ -1,4 +1,4 @@
-package iote
+package main
 
 import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"

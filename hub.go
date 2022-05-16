@@ -1,5 +1,7 @@
-package iote
-/*
+//
+// hub is a program
+//
+package main
 
 import (
 	"log"
@@ -52,6 +54,11 @@ func NewHub(cfg *Configuration) (s *Hub) {
 	return s
 }
 
+// Register to handle HTTP requests for particular paths in the
+// URL or MQTT channel.
+func (s *Hub) Register(p string, h http.Handler) {
+	http.Handle(p, h)
+}
 
 // Start the HTTP server and serve up the home web app and
 // our REST API
@@ -120,4 +127,3 @@ func (h *Hub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(stations.Stations)
 	}
 }
-*/

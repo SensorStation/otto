@@ -1,4 +1,4 @@
-package iote
+package main
 
 import (
 	"log"
@@ -16,7 +16,7 @@ func init() {
 }
 
 // TimeseriesCB call and parse callback data
-func DataCB(mc mqtt.Client, mqttmsg mqtt.Message) {
+func dataCB(mc mqtt.Client, mqttmsg mqtt.Message) {
 	topic := mqttmsg.Topic()
 
 	// extract the station from the topic
@@ -26,7 +26,7 @@ func DataCB(mc mqtt.Client, mqttmsg mqtt.Message) {
 	sensor  := paths[3]
 	payload := mqttmsg.Payload()
 
-	consumers := GetConsumers(category) 
+	consumers := hub.GetConsumers(category) 
 	if consumers == nil {
 		log.Println("DataCB no consumers for ", topic)
 		return					// nobody is listening

@@ -1,4 +1,4 @@
-package iote
+package main
 
 type Consumer interface {
 	// Recv(msg Msg)
@@ -6,15 +6,3 @@ type Consumer interface {
 	GetRecvQ() chan Msg
 }
 
-type Consumers struct {
-	Consumers	map[string][]Consumer
-}
-
-var (
-	consumers Consumers 
-)
-
-func GetConsumers(category string) (cons []Consumer) {
-	cons, _ = consumers.Consumers[category]
-	return cons
-}

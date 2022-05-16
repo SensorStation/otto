@@ -1,4 +1,4 @@
-package iote
+package main
 
 import (
 	"log"
@@ -40,9 +40,9 @@ func (p *Publisher) Publish(done chan string) {
 			case <-ticker.C:
 				d := "Hello"
 				if d != "" {
-					if t := msg.Client.Publish(p.Path, byte(0), false, d); t == nil {
-						if config.Verbose {
-							log.Printf("%v - I have a NULL token: %s, %+v", msg.Client, p.Path, d)
+					if t := mqttc.Publish(p.Path, byte(0), false, d); t == nil {
+						if config.Debug {
+							log.Printf("%v - I have a NULL token: %s, %+v", mqttc, p.Path, d)
 						}
 					}
 				}

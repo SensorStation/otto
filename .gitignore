@@ -13,5 +13,4 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-iote/iote
-iote/__debug_bin
+iote
