@@ -5,8 +5,8 @@ package main
 
 import (
 	"log"
-	"encoding/json"
-	"net/http"
+	"sync"
+
 	"periph.io/x/periph"
 	"periph.io/x/periph/host"
 
@@ -15,9 +15,6 @@ import (
 
 type Hub struct {
 	ID   string // MAC address
-	Addr string
-
-	*http.Server
 	*periph.State
 	mqttc *mqtt.Client
 
@@ -34,7 +31,6 @@ type Hub struct {
 func NewHub(cfg *Configuration) (s *Hub) {
 	s = &Hub{
 		ID:          "0xdeadcafe", // MUST get MAC Address - and WIFI SSID
-		Addr:        cfg.Addr,
 		Publishers:  make(map[string]*Publisher, 10),
 		Subscribers: make(map[string]*Subscriber, 10),
 		Done:        make(chan string),
@@ -54,15 +50,9 @@ func NewHub(cfg *Configuration) (s *Hub) {
 	return s
 }
 
-// Register to handle HTTP requests for particular paths in the
-// URL or MQTT channel.
-func (s *Hub) Register(p string, h http.Handler) {
-	http.Handle(p, h)
-}
-
 // Start the HTTP server and serve up the home web app and
 // our REST API
-func (s *Hub) Start() error {
+func (s *Hub) Start(wg sync.WaitGroup) {
 
 	log.Println("Connect to our MQTT broker: ", config.Broker)
 	if mqttc == nil {
@@ -79,9 +69,6 @@ func (s *Hub) Start() error {
 		log.Println("\t" + p.Path)
 		p.Publish(s.Done)
 	}
-
-	log.Println("Starting hub Web and REST server on ", s.Addr)
-	return http.ListenAndServe(s.Addr, nil)
 }
 
 func (s *Hub) Subscribe(id string, path string, f mqtt.MessageHandler) {
@@ -118,12 +105,3 @@ func (s *Hub) GetConsumers(id string) []Consumer {
 }
 
 
-// ServeHTTP provides a REST interface to the config structure
-func (h *Hub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	switch r.Method {
-	case "GET":
-		json.NewEncoder(w).Encode(stations.Stations)
-	}
-}

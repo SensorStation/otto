@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 
 	"net/http"
@@ -15,7 +16,6 @@ import (
 type Station struct {
 	ID		string					`json:"id"`
 	Sensors map[string]*Timeseries	`json:"sensors"`
-
 	LastTime	time.Time
 }
 
@@ -145,7 +145,7 @@ func (sm StationManager) GetRecvQ() chan Msg {
 	return sm.RecvQ
 }
 
-func (sm StationManager) Listen() {
+func (sm StationManager) Listen(wg sync.WaitGroup) {
 	log.Printf("Station Manager Listening on Q %+v", sm.RecvQ)
 	for true {
 		select {
@@ -153,6 +153,7 @@ func (sm StationManager) Listen() {
 			sm.Recv(msg)
 		}
 	}
+	wg.Done()
 }
 
 func (sm StationManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
