@@ -18,7 +18,9 @@ func mqtt_connect() {
 	}
 
 	id := "sensorStation"
-	connOpts := mqtt.NewClientOptions().AddBroker(config.Broker).SetClientID(id).SetCleanSession(true)
+	broker := "tcp://" + config.Broker + ":1883"
+	
+	connOpts := mqtt.NewClientOptions().AddBroker(broker).SetClientID(id).SetCleanSession(true)
 	mqttc = mqtt.NewClient(connOpts)
 	if token := mqttc.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())

@@ -21,6 +21,7 @@ func dataCB(mc mqtt.Client, mqttmsg mqtt.Message) {
 
 	// extract the station from the topic
 	paths := strings.Split(topic, "/")
+	// root	:= paths[0] 
 	category:= paths[1] 
 	station := paths[2]
 	sensor  := paths[3]

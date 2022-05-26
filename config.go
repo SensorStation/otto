@@ -38,7 +38,7 @@ var (
 func init() {
 	flag.StringVar(&config.Addr, "addr", "0.0.0.0:8011", "Address to listen for web connections")
 	flag.StringVar(&config.App, "app", "../app/dist", "Directory for the web app distribution")
-	flag.StringVar(&config.Broker, "broker", "tcp://localhost:1883", "Address of MQTT broker")
+	flag.StringVar(&config.Broker, "broker", "localhost", "Address of MQTT broker")
 	flag.BoolVar(&config.Debug, "debug", false, "Start debugging")
 	flag.BoolVar(&config.DebugMQTT, "debug-mqtt", false, "Debugging MQTT messages")
 	flag.BoolVar(&config.FakeWS, "fake-ws", false, "Fake websocket data")
