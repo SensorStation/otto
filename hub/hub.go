@@ -1,7 +1,7 @@
 //
 // hub is a program
 //
-package main
+package hub
 
 import (
 	"log"

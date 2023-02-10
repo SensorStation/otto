@@ -1,4 +1,4 @@
-package main
+package msg
 
 import (
 	"fmt"
@@ -36,7 +36,7 @@ func (m *Msg) Float64() float64 {
 }
 
 func (m *Msg) String() (dstr string) {
-	str := fmt.Sprintf("%q - %s - %x - %s",
+	str := fmt.Sprintf("%q - %s - %v - %v - %+v",
 		dstr, m.Station, m.Sensor, m.Time, string(m.Data))
 	return str
 }

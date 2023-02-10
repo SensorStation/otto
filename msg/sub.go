@@ -1,4 +1,4 @@
-package main
+package msg
 
 import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"

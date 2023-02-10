@@ -1,4 +1,4 @@
-package main
+package hub
 
 import (
 	"testing"
@@ -34,9 +34,9 @@ func TestStation(t *testing.T) {
 		t.Error("Expected sensor (test2) got (nil)")
 	}
 
-	cnt := sens.DataCount("test2")
+	cnt := len(sens.Values)
 	if cnt != 100 {
-		t.Error("DataCount test2 expected (100) got (%d)", cnt)
+		t.Errorf("DataCount test2 expected (100) got (%d)", cnt)
 	}
 
 	for i := 1; i < 100; i++ {

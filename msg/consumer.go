@@ -1,4 +1,4 @@
-package main
+package msg
 
 type Consumer interface {
 	// Recv(msg Msg)

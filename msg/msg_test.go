@@ -1,4 +1,4 @@
-package main
+package msg
 
 import (
 	"testing"	
@@ -9,7 +9,6 @@ func TestMsg(t *testing.T) {
 	msg := Msg{
 		Station: "localhost",
 		Sensor:  "tester",
-		Value: 72.5,
 	}
 
 	if msg.Station != "localhost" {
@@ -17,7 +16,6 @@ func TestMsg(t *testing.T) {
 	}
 
 	sm.Recv(msg)
-
 	st := sm.Get("localhost")
 	if st == nil {
 
