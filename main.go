@@ -9,16 +9,12 @@ import (
 // Globals
 var (
 	hub		 *Hub
-	mesh	 MeshNetwork
 	stations StationManager
 	wserv	 WSServer
 	srv		 *Server
 )
 
 func init() {
-	mesh = MeshNetwork{
-		Nodes: make(map[string]*MeshNode),
-	}
 	stations = NewStationManager()
 }
 
@@ -38,7 +34,6 @@ func main() {
 	srv.Register("/ws", wserv)
 	srv.Register("/ping", Ping{})
 	srv.Register("/api/config", config)
-	srv.Register("/api/mesh", mesh)
 	srv.Register("/api/data", srv)
 	srv.Register("/api/stations", stations)
 
@@ -51,8 +46,6 @@ func main() {
 
 	// Subscribe to MQTT channels
 	hub = NewHub(&cfg)
-	// hub.Subscribe("mesh", "mesh/+/toCloud", ToCloudCB)
-	// hub.Subscribe("net",  "iote/net/announce", ToCloudCB)
 	hub.Subscribe("data", "ss/data/+/+", dataCB)
 
 	// Add the Stations Consumer for in memory copies
