@@ -1,4 +1,4 @@
-package hub
+package main
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 
 	"net/http"
 	"encoding/json"
+
 )
 
 // Station is the primary structure that holds an array of

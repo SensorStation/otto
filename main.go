@@ -51,9 +51,9 @@ func main() {
 
 	// Subscribe to MQTT channels
 	hub = NewHub(&cfg)
-	hub.Subscribe("mesh", "mesh/+/toCloud", ToCloudCB)
-	hub.Subscribe("net",  "iote/net/announce", ToCloudCB)
-	hub.Subscribe("data", "iote/data/+/+", dataCB)
+	// hub.Subscribe("mesh", "mesh/+/toCloud", ToCloudCB)
+	// hub.Subscribe("net",  "iote/net/announce", ToCloudCB)
+	hub.Subscribe("data", "ss/data/+/+", dataCB)
 
 	// Add the Stations Consumer for in memory copies
 	hub.AddConsumer("data", stations)

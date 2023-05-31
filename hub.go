@@ -1,21 +1,16 @@
 //
 // hub is a program
 //
-package hub
+package main
 
 import (
 	"log"
 	"sync"
-
-	"periph.io/x/periph"
-	"periph.io/x/periph/host"
-
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type Hub struct {
 	ID   string // MAC address
-	*periph.State
 	mqttc *mqtt.Client
 
 	// Stations	map[string]*Station
@@ -42,10 +37,8 @@ func NewHub(cfg *Configuration) (s *Hub) {
 	}
 
 	var err error
-	s.State, err = host.Init()
 	if err != nil {
 		log.Printf("Initializing GPIO failed - no GPIO")
-		s.State = nil
 	}
 	return s
 }

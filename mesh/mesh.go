@@ -1,4 +1,4 @@
-package hub
+package main
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	//MQTT "github.com/eclipse/paho.mqtt.golang"
+	// mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 // MeshNetwork represents a network of devices that have meshed up.

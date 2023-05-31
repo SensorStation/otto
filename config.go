@@ -1,4 +1,4 @@
-package iote
+package main
 
 import (
 	"flag"
@@ -8,11 +8,11 @@ import (
 	"net/http"
 )
 
-type Config interface {
-	http.Handler
-	SaveFile(fname string) error
-	ReadFile(fname string) error
-}
+// type Config interface {
+// 	http.Handler
+// 	SaveFile(fname string) error
+// 	ReadFile(fname string) error
+// }
 
 type Configuration struct {
 	Addr   string
