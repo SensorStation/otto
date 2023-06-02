@@ -1,52 +1,22 @@
 package main
 
 import (
-	"log"
-	"strings"
+	"fmt"
 	"time"
-
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-var (
-	consumerQ chan Msg
-)
+// Data is a general structure that holds a single data item
+// such as a value that is read from a sensor
+type Data struct {
+	Source	string		`json:Source`
+	Type	string		`json:Source`
+	Value	interface{} `json:Value`
 
-func init() {
-	consumerQ = make(chan Msg)
+	time.Time		    `json:Time`
 }
 
-// TimeseriesCB call and parse callback data
-func dataCB(mc mqtt.Client, mqttmsg mqtt.Message) {
-	topic := mqttmsg.Topic()
-
-	// extract the station from the topic
-	paths := strings.Split(topic, "/")
-	// root	:= paths[0] 
-	category:= paths[1] 
-	station := paths[2]
-	sensor  := paths[3]
-	payload := mqttmsg.Payload()
-
-	consumers := hub.GetConsumers(category) 
-	if consumers == nil {
-		log.Println("DataCB no consumers for ", topic)
-		return					// nobody is listening
-	}
-
-	log.Printf("MQTT Message topic %s - value %s\n", topic, string(payload))
-	switch (category) {
-	case "data":
-		msg := Msg{}
-		msg.Station = station
-		msg.Sensor = sensor
-		msg.Data = payload
-		msg.Time = time.Now().Unix()
-		for _, consumer := range consumers {
-			consumer.GetRecvQ() <- msg
-		}
-
-	default:
-		log.Println("Warning: do not know how to handle", topic)
-	}
+func (d Data) String() string {
+	str := fmt.Sprintf("Time: %s: Source: %s, Type: %s = %s\n",
+		d.Time.Format(time.RFC3339), d.Source, d.Type, d.Value.([]uint8))
+	return str
 }

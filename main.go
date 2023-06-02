@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"sync"
-	"net/http"
+	// "net/http"
 )
 
 // Globals
@@ -38,11 +38,10 @@ func main() {
 	srv.Register("/api/stations", stations)
 
 	// The web app
-	fs := http.FileServer(http.Dir("/srv/iot/iotvue/dist"))
-	srv.Register("/", fs)
-
-	wg.Add(1)
-	go srv.Start(cfg.Addr, wg)
+	// fs := http.FileServer(http.Dir("/srv/iot/iotvue/dist"))
+	// srv.Register("/", fs)
+	// wg.Add(1)
+	// go srv.Start(cfg.Addr, wg)
 
 	// Subscribe to MQTT channels
 	hub = NewHub(&cfg)
@@ -57,10 +56,10 @@ func main() {
 	// ----------------------------------------------------------
 	// Register our publishers with their respective readers
 	// ----------------------------------------------------------
-	if config.Mock {
-		//	pub := NewPublisher("data/cafedead/tempf", hub.NewRando())		
-		//	AddPublisher("data/cafedead/humidity", hub.NewRando())		
-	}
+	// if config.Mock {
+	// 	//	pub := NewPublisher("data/cafedead/tempf", hub.NewRando())		
+	// 	//	AddPublisher("data/cafedead/humidity", hub.NewRando())		
+	// }
 	wg.Add(1)
 	hub.Start(wg)
 

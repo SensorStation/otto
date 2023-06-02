@@ -8,12 +8,6 @@ import (
 	"net/http"
 )
 
-// type Config interface {
-// 	http.Handler
-// 	SaveFile(fname string) error
-// 	ReadFile(fname string) error
-// }
-
 type Configuration struct {
 	Addr   string
 	App    string

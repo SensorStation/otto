@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -27,6 +28,24 @@ func mqtt_connect() {
 	if token := mqttc.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 	}
+}
+
+// TimeseriesCB call and parse callback data
+func dataCB(mc mqtt.Client, mqttmsg mqtt.Message) {
+	topic := mqttmsg.Topic()
+
+	// extract the station from the topic
+	paths := strings.Split(topic, "/")
+	
+	// ss/data/<source>/<sensor> <value>
+	data := Data{
+		Source:		paths[2],
+		Type:		paths[3],
+		Time:		time.Now(),
+		Value:		mqttmsg.Payload(),
+	}
+	log.Printf("Data %s", data.String())
+
 }
 
 type Subscriber struct {
