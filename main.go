@@ -8,10 +8,10 @@ import (
 
 // Globals
 var (
-	hub		 *Hub
+	mqtt     *MQTT
 	stations StationManager
-	wserv	 WSServer
-	srv		 *Server
+	wserv    WSServer
+	srv      *Server
 )
 
 func init() {
@@ -44,11 +44,13 @@ func main() {
 	// go srv.Start(cfg.Addr, wg)
 
 	// Subscribe to MQTT channels
-	hub = NewHub(&cfg)
-	hub.Subscribe("data", "ss/data/+/+", dataCB)
+	// hub = NewHub(&cfg)
+	mqtt = NewMQTT()
+	mqtt.Connect()
+	mqtt.Subscribe("data", "ss/data/+/+", dataCB)
 
 	// Add the Stations Consumer for in memory copies
-	hub.AddConsumer("data", stations)
+	// hub.AddConsumer("data", stations)
 
 	wg.Add(1)
 	go stations.Listen(wg)
@@ -57,12 +59,9 @@ func main() {
 	// Register our publishers with their respective readers
 	// ----------------------------------------------------------
 	// if config.Mock {
-	// 	//	pub := NewPublisher("data/cafedead/tempf", hub.NewRando())		
-	// 	//	AddPublisher("data/cafedead/humidity", hub.NewRando())		
+	// 	//	pub := NewPublisher("data/cafedead/tempf", hub.NewRando())
+	// 	//	AddPublisher("data/cafedead/humidity", hub.NewRando())
 	// }
-	wg.Add(1)
-	hub.Start(wg)
 
 	wg.Wait()
 }
-

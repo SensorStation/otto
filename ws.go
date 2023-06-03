@@ -13,7 +13,7 @@ import (
 )
 
 type WSServer struct {
-	C *websocket.Conn
+	C     *websocket.Conn
 	RecvQ chan Msg
 }
 
@@ -50,7 +50,7 @@ func (ws WSServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer ws.C.Close(websocket.StatusInternalError, "houston, we have a problem")
-	hub.AddConsumer("data", ws)
+	// hub.AddConsumer("data", ws)
 
 	running := true
 	go func() {
@@ -60,15 +60,15 @@ func (ws WSServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				m64 := msg.ToMsgFloat64()
 				err = wsjson.Write(r.Context(), ws.C, m64)
 				/*
-				err = wsjson.Write(r.Context(), ws.C, map[string]string{
-					"station": msg.Station,
-					"sensor": msg.Sensor,
-					"time": msg.Time,
-					"value": val,
-				})
-				if err != nil {
-					log.Println("Error sending websock: ", err)
-				}
+					err = wsjson.Write(r.Context(), ws.C, map[string]string{
+						"station": msg.Station,
+						"sensor": msg.Sensor,
+						"time": msg.Time,
+						"value": val,
+					})
+					if err != nil {
+						log.Println("Error sending websock: ", err)
+					}
 				*/
 			}
 		}

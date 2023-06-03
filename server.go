@@ -17,7 +17,6 @@ func NewServer(addr string) *Server {
 	return &Server{Addr: addr}
 }
 
-
 // Register to handle HTTP requests for particular paths in the
 // URL or MQTT channel.
 func (s *Server) Register(p string, h http.Handler) {

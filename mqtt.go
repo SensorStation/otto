@@ -7,51 +7,96 @@ import (
 	"strings"
 	"time"
 
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-var (
-	mqttc mqtt.Client
-)
+type MQTT struct {
+	ID     string
+	Broker string
 
-func mqtt_connect() {
+	Publishers  map[string]*Publisher
+	Subscribers map[string]*Subscriber
+
+	gomqtt.Client
+}
+
+func NewMQTT() *MQTT {
+	return &MQTT{
+		ID:          "IoTe",
+		Broker:      config.Broker,
+		Publishers:  make(map[string]*Publisher),
+		Subscribers: make(map[string]*Subscriber),
+	}
+}
+
+func (m *MQTT) Connect() {
 	if config.DebugMQTT {
-		mqtt.DEBUG = log.New(os.Stdout, "", 0)
-		mqtt.ERROR = log.New(os.Stdout, "", 0)
+		gomqtt.DEBUG = log.New(os.Stdout, "", 0)
+		gomqtt.ERROR = log.New(os.Stdout, "", 0)
 	}
 
-	id := "sensorStation"
-	broker := "tcp://" + config.Broker + ":1883"
-	
-	connOpts := mqtt.NewClientOptions().AddBroker(broker).SetClientID(id).SetCleanSession(true)
-	mqttc = mqtt.NewClient(connOpts)
-	if token := mqttc.Connect(); token.Wait() && token.Error() != nil {
+	m.ID = "sensorStation"
+	m.Broker = "tcp://" + config.Broker + ":1883"
+
+	connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.ID).SetCleanSession(true)
+	m.Client = gomqtt.NewClient(connOpts)
+	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 	}
 }
 
+func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
+	sub := &Subscriber{id, path, f, nil}
+	m.Subscribers[id] = sub
+
+	qos := 0
+	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
+		panic(token.Error())
+	} else {
+		if config.Verbose {
+			log.Printf("subscribe token: %v", token)
+		}
+	}
+	log.Println(id, " subscribed to ", path)
+}
+
+// func mqtt_connect() {
+// 	if config.DebugMQTT {
+// 		gomqtt.DEBUG = log.New(os.Stdout, "", 0)
+// 		gomqtt.ERROR = log.New(os.Stdout, "", 0)
+// 	}
+
+// 	id := "sensorStation"
+// 	broker := "tcp://" + config.Broker + ":1883"
+
+// 	connOpts := gomqtt.NewClientOptions().AddBroker(broker).SetClientID(id).SetCleanSession(true)
+// 	m.Client = gomqtt.NewClient(connOpts)
+// 	if token := mqttc.Connect(); token.Wait() && token.Error() != nil {
+// 		fmt.Println(token.Error())
+// 	}
+// }
+
 // TimeseriesCB call and parse callback data
-func dataCB(mc mqtt.Client, mqttmsg mqtt.Message) {
+func dataCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 	topic := mqttmsg.Topic()
 
 	// extract the station from the topic
 	paths := strings.Split(topic, "/")
-	
+
 	// ss/data/<source>/<sensor> <value>
 	data := Data{
-		Source:		paths[2],
-		Type:		paths[3],
-		Time:		time.Now(),
-		Value:		mqttmsg.Payload(),
+		Source: paths[2],
+		Type:   paths[3],
+		Time:   time.Now(),
+		Value:  mqttmsg.Payload(),
 	}
 	log.Printf("Data %s", data.String())
-
 }
 
 type Subscriber struct {
-	ID string
+	ID   string
 	Path string
-	mqtt.MessageHandler
+	gomqtt.MessageHandler
 	Consumers []Consumer
 }
 
@@ -59,12 +104,11 @@ func (sub *Subscriber) String() string {
 	return sub.ID + " " + sub.Path
 }
 
-
 // Publisher periodically reads from an io.Reader then publishes that value
 // to a corresponding channel
 type Publisher struct {
-	Path   string
-	Period time.Duration
+	Path       string
+	Period     time.Duration
 	publishing bool
 }
 
@@ -79,32 +123,30 @@ func NewPublisher(p string) (pub *Publisher) {
 // Publish will start producing data from the given data producer via
 // the q channel returned to the caller. The caller lets Publish know
 // to stop sending data when it receives a communication from the done channel
-func (p *Publisher) Publish(done chan string) {
-	ticker := time.NewTicker(p.Period)
+func (m MQTT) Publish(done chan string) {
+	// ticker := time.NewTicker(p.Period)
 
-	go func() {
-		defer ticker.Stop()
-		p.publishing = true
-		for p.publishing {
-			select {
-			case <-done:
-				p.publishing = false
-				log.Println("Random Data recieved a DONE, returning")
-				break
+	// go func() {
+	// 	defer ticker.Stop()
+	// 	p.publishing = true
+	// 	for p.publishing {
+	// 		select {
+	// 		case <-done:
+	// 			p.publishing = false
+	// 			log.Println("Random Data recieved a DONE, returning")
+	// 			break
 
-			case <-ticker.C:
-				d := "Hello"
-				if d != "" {
-					if t := mqttc.Publish(p.Path, byte(0), false, d); t == nil {
-						if config.Debug {
-							log.Printf("%v - I have a NULL token: %s, %+v", mqttc, p.Path, d)
-						}
-					}
-				}
-				log.Printf("publish %s -> %+v\n", p.Path, d)
-			}
-		}
-	}()
+	// 		case <-ticker.C:
+	// 			d := "Hello"
+	// 			if d != "" {
+	// 				if t := m.Client.Publish(p.Path, byte(0), false, d); t == nil {
+	// 					if config.Debug {
+	// 						log.Printf("%v - I have a NULL token: %+v", m.Client, p.Path, d)
+	// 					}
+	// 				}
+	// 			}
+	// 			log.Printf("publish %s -> %+v\n", p.Path, d)
+	// 		}
+	// 	}
+	// }()
 }
-
-
