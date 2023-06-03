@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -19,4 +20,21 @@ func (d Data) String() string {
 	str := fmt.Sprintf("Time: %s: Source: %s, Type: %s = %s\n",
 		d.Time.Format(time.RFC3339), d.Source, d.Type, d.Value.([]uint8))
 	return str
+}
+
+func startDataQ() (dataQ chan *Data) {
+	dataQ = make(chan *Data)
+
+	go func() {
+
+		for true {
+			select {
+			case data := <-dataQ:
+				log.Printf("[I] %s", data.String())
+			}
+		}
+
+	}()
+
+	return dataQ
 }

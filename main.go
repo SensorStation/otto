@@ -13,10 +13,12 @@ var (
 	stations *StationManager
 	srv      *Server
 	wserv    WSServer
+
+	dataQ chan *Data
 )
 
 func init() {
-
+	dataQ = startDataQ()
 }
 
 func main() {
