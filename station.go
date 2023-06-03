@@ -35,13 +35,11 @@ func (s *Station) Update(data *Data) {
 
 type StationManager struct {
 	Stations map[string]*Station
-	RecvQ    chan Msg
 }
 
 func NewStationManager() (sm *StationManager) {
 	sm = &StationManager{}
 	sm.Stations = make(map[string]*Station)
-	sm.RecvQ = make(chan Msg)
 	return sm
 }
 

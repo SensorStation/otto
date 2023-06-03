@@ -9,12 +9,11 @@ import (
 	"time"
 
 	"nhooyr.io/websocket"
-	"nhooyr.io/websocket/wsjson"
 )
 
 type WSServer struct {
 	C     *websocket.Conn
-	RecvQ chan Msg
+	DataQ chan Data
 }
 
 type KeyVal struct {
@@ -30,8 +29,8 @@ func (ws WSServer) GetID() string {
 	return "Websocket Server"
 }
 
-func (ws WSServer) GetRecvQ() chan Msg {
-	return ws.RecvQ
+func (ws WSServer) GetRecvQ() chan Data {
+	return ws.DataQ
 }
 
 // ServeHTTP
@@ -44,7 +43,7 @@ func (ws WSServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// OriginPatterns: ["*"],
 	})
 
-	ws.RecvQ = make(chan Msg)
+	ws.DataQ = make(chan Data)
 	if err != nil {
 		log.Println("ERROR ", err)
 		return
@@ -54,21 +53,22 @@ func (ws WSServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	running := true
 	go func() {
+		log.Println("WServe started")
 		for running {
 			select {
-			case msg := <-ws.RecvQ:
-				m64 := msg.ToMsgFloat64()
-				err = wsjson.Write(r.Context(), ws.C, m64)
+			case data := <-ws.DataQ:
+				_ = data
 				/*
-					err = wsjson.Write(r.Context(), ws.C, map[string]string{
-						"station": msg.Station,
-						"sensor": msg.Sensor,
-						"time": msg.Time,
-						"value": val,
-					})
-					if err != nil {
-						log.Println("Error sending websock: ", err)
-					}
+					err = wsjson.Write(r.Context(), ws.C, m64)
+						err = wsjson.Write(r.Context(), ws.C, map[string]string{
+							"station": msg.Station,
+							"sensor": msg.Sensor,
+							"time": msg.Time,
+							"value": val,
+						})
+						if err != nil {
+							log.Println("Error sending websock: ", err)
+						}
 				*/
 			}
 		}

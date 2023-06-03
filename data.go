@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -17,8 +18,22 @@ type Data struct {
 }
 
 func (d Data) String() string {
-	str := fmt.Sprintf("Time: %s: Source: %s, Type: %s = %s\n",
-		d.Time.Format(time.RFC3339), d.Source, d.Type, d.Value.([]uint8))
+
+	var str string
+	switch v := d.Value.(type) {
+	case int:
+		str = strconv.Itoa(v)
+	case string:
+		str = string(v)
+	case []uint8:
+		str = d.Value.(string)
+
+	default:
+		fmt.Printf("I don't know about type %T!\n", v)
+	}
+
+	str = fmt.Sprintf("Time: %s, Source: %s, Type: %s = %s",
+		d.Time.Format(time.RFC3339), d.Source, d.Type, str)
 	return str
 }
 

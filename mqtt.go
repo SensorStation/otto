@@ -46,7 +46,7 @@ func (m *MQTT) Connect() {
 }
 
 func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
-	sub := &Subscriber{id, path, f, nil}
+	sub := &Subscriber{id, path, f}
 	m.Subscribers[id] = sub
 
 	qos := 0
@@ -86,7 +86,6 @@ type Subscriber struct {
 	ID   string
 	Path string
 	gomqtt.MessageHandler
-	Consumers []Consumer
 }
 
 func (sub *Subscriber) String() string {
