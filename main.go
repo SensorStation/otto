@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"sync"
 	// "net/http"
 )
@@ -9,13 +10,13 @@ import (
 // Globals
 var (
 	mqtt     *MQTT
-	stations StationManager
-	wserv    WSServer
+	stations *StationManager
 	srv      *Server
+	wserv    WSServer
 )
 
 func init() {
-	stations = NewStationManager()
+
 }
 
 func main() {
@@ -27,22 +28,6 @@ func main() {
 	// Create the state configuration for this station.
 	cfg := GetConfig()
 
-	// Now create the station based on the given configuration
-	srv = NewServer(cfg.Addr)
-
-	// Register our REST callbacks, specifically answer to pings
-	srv.Register("/ws", wserv)
-	srv.Register("/ping", Ping{})
-	srv.Register("/api/config", config)
-	srv.Register("/api/data", srv)
-	srv.Register("/api/stations", stations)
-
-	// The web app
-	// fs := http.FileServer(http.Dir("/srv/iot/iotvue/dist"))
-	// srv.Register("/", fs)
-	// wg.Add(1)
-	// go srv.Start(cfg.Addr, wg)
-
 	// Subscribe to MQTT channels
 	// hub = NewHub(&cfg)
 	mqtt = NewMQTT()
@@ -51,17 +36,21 @@ func main() {
 
 	// Add the Stations Consumer for in memory copies
 	// hub.AddConsumer("data", stations)
+	stations = NewStationManager()
+
+	// The web app
+	fs := http.FileServer(http.Dir("/srv/iot/iotvue/dist"))
+	// Now create the station based on the given configuration
+	srv = NewServer(cfg.Addr)
+	srv.Register("/", fs)
+	srv.Register("/ws", wserv)
+	srv.Register("/ping", Ping{})
+	srv.Register("/api/config", config)
+	srv.Register("/api/data", srv)
+	srv.Register("/api/stations", stations)
 
 	wg.Add(1)
-	go stations.Listen(wg)
-
-	// ----------------------------------------------------------
-	// Register our publishers with their respective readers
-	// ----------------------------------------------------------
-	// if config.Mock {
-	// 	//	pub := NewPublisher("data/cafedead/tempf", hub.NewRando())
-	// 	//	AddPublisher("data/cafedead/humidity", hub.NewRando())
-	// }
+	go srv.Start(cfg.Addr, wg)
 
 	wg.Wait()
 }

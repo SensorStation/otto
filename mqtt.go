@@ -60,22 +60,6 @@ func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
 	log.Println(id, " subscribed to ", path)
 }
 
-// func mqtt_connect() {
-// 	if config.DebugMQTT {
-// 		gomqtt.DEBUG = log.New(os.Stdout, "", 0)
-// 		gomqtt.ERROR = log.New(os.Stdout, "", 0)
-// 	}
-
-// 	id := "sensorStation"
-// 	broker := "tcp://" + config.Broker + ":1883"
-
-// 	connOpts := gomqtt.NewClientOptions().AddBroker(broker).SetClientID(id).SetCleanSession(true)
-// 	m.Client = gomqtt.NewClient(connOpts)
-// 	if token := mqttc.Connect(); token.Wait() && token.Error() != nil {
-// 		fmt.Println(token.Error())
-// 	}
-// }
-
 // TimeseriesCB call and parse callback data
 func dataCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 	topic := mqttmsg.Topic()
@@ -84,13 +68,18 @@ func dataCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 	paths := strings.Split(topic, "/")
 
 	// ss/data/<source>/<sensor> <value>
-	data := Data{
+	data := &Data{
 		Source: paths[2],
 		Type:   paths[3],
 		Time:   time.Now(),
 		Value:  mqttmsg.Payload(),
 	}
-	log.Printf("Data %s", data.String())
+	log.Printf("[I] %s", data.String())
+
+	// send to data recv channel
+
+	// update the station that sent the data
+	stations.Update(data.Source, data)
 }
 
 type Subscriber struct {

@@ -8,11 +8,11 @@ import (
 // Data is a general structure that holds a single data item
 // such as a value that is read from a sensor
 type Data struct {
-	Source	string		`json:Source`
-	Type	string		`json:Source`
-	Value	interface{} `json:Value`
+	Source string      `json:Source`
+	Type   string      `json:Source`
+	Value  interface{} `json:Value`
 
-	time.Time		    `json:Time`
+	time.Time `json:Time`
 }
 
 func (d Data) String() string {
