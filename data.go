@@ -26,7 +26,10 @@ func (d Data) String() string {
 	case string:
 		str = string(v)
 	case []uint8:
-		str = d.Value.(string)
+		for _, c := range v {
+			str += string(c)
+		}
+		// str = string(d.Value)
 
 	default:
 		fmt.Printf("I don't know about type %T!\n", v)
@@ -37,19 +40,19 @@ func (d Data) String() string {
 	return str
 }
 
-func startDataQ() (dataQ chan *Data) {
-	dataQ = make(chan *Data)
+func startDataQ() (msgQ chan *Data) {
+	msgQ = make(chan *Data)
 
 	go func() {
 
 		for true {
 			select {
-			case data := <-dataQ:
-				log.Printf("[I] %s", data.String())
+			case msg := <-msgQ:
+				log.Printf("[I] %s", msg.String())
 			}
 		}
 
 	}()
 
-	return dataQ
+	return msgQ
 }

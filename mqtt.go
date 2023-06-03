@@ -76,7 +76,7 @@ func dataCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 	}
 
 	// send to data recv channel
-	dataQ <- data
+	msgQ <- data
 
 	// update the station that sent the data
 	stations.Update(data.Source, data)

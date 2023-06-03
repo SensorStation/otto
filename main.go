@@ -14,11 +14,11 @@ var (
 	srv      *Server
 	wserv    WSServer
 
-	dataQ chan *Data
+	msgQ chan *Data
 )
 
 func init() {
-	dataQ = startDataQ()
+	msgQ = startDataQ()
 }
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 	// hub = NewHub(&cfg)
 	mqtt = NewMQTT()
 	mqtt.Connect()
-	mqtt.Subscribe("data", "ss/data/+/+", dataCB)
+	mqtt.Subscribe("data", "ss/+/+/+", dataCB)
 
 	// Add the Stations Consumer for in memory copies
 	// hub.AddConsumer("data", stations)
