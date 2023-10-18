@@ -14,7 +14,7 @@ import (
 type Station struct {
 	ID        string    `json:"id"`
 	LastHeard time.Time `json:"last-heard"`
-	LastData  *Data     `json:"last-data"`
+	LastMsg   *Msg      `json:"last-Msg"`
 }
 
 // NewStation creates a new Station with an ID as provided
@@ -28,9 +28,9 @@ func NewStation(id string) (st *Station) {
 
 // Update() will append a new data value to the series
 // of data points.
-func (s *Station) Update(data *Data) {
-	s.LastHeard = data.Time
-	s.LastData = data
+func (s *Station) Update(msg *Msg) {
+	s.LastHeard = msg.Time
+	s.LastMsg = msg
 }
 
 type StationManager struct {
@@ -57,7 +57,7 @@ func (sm *StationManager) Add(st string) (station *Station, err error) {
 	return station, nil
 }
 
-func (sm *StationManager) Update(stid string, data *Data) {
+func (sm *StationManager) Update(stid string, data *Msg) {
 	var err error
 	st := sm.Get(stid)
 	if st == nil {

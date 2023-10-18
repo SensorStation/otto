@@ -4,7 +4,75 @@ Sensor Station gathers data via MQTT from any number of _publishers_,
 which are typically battery powered, wireless sensors spread around a
 certain location.
 
-## Build
+# Overview
+
+## MQTT is the key
+
+### MQTT Broker 
+
+- Run MQTT broker, e.g. mosquitto
+
+- Base topic "ss/<id>/data/<data-type>"
+
+Example: ```ss/00:95:fb:3f:34:95/data/tempc 25.00```
+
+### Web Sockets
+
+We sockets or HTTP/2 will be used to send data to and from the IOTe
+device (otto) in our case.
+
+### Subscribe to Topics
+
+- announce/station  - announces stations that control or collect
+- announce/hub      - announces hubs, typ
+
+- data/tempc/       - data can have option /index at the end
+- data/humidity
+
+- control/relay/idx - control can have option /index at the end
+
+## REST API
+
+- GET   /api/config 
+- PUT   /api/config     data => { config: id, ... }
+
+- GET /api/data
+- GET /api/stations
+
+## Station Manager 
+
+- Collection of stations
+- Stations can age out 
+
+### Stations
+
+- ID (name, IP and mac address)
+- Capabilities
+  - sensors
+  - relay
+
+## Data
+
+Data can be optimized and we expect we will want to optimize different
+data for all kinds of reasons and we won't preclude that from
+happening, we'll give applications the flexibility to handle data
+elements as they see fit (can optimize).
+
+We will take an memory expensive approach, every data point can be
+handled on it's own. The data structure will be:
+
+    struct Data
+        Source ID
+        Type
+        Timestamp
+        Value
+
+# User Interface
+
+This project haws 
+
+
+# Build
 
 1. Install Go 
 2. go get ./...

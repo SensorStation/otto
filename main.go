@@ -12,13 +12,13 @@ var (
 	mqtt     *MQTT
 	stations *StationManager
 	srv      *Server
-	wserv    WSServer
+	wserv    websock
 
-	msgQ chan *Data
+	msgQ chan *Msg
 )
 
 func init() {
-	msgQ = startDataQ()
+	msgQ = startMsgQ()
 }
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 	// hub = NewHub(&cfg)
 	mqtt = NewMQTT()
 	mqtt.Connect()
-	mqtt.Subscribe("data", "ss/+/+/+", dataCB)
+	mqtt.Subscribe("data", "ss/+/+/+", msgCB)
 
 	// Add the Stations Consumer for in memory copies
 	// hub.AddConsumer("data", stations)

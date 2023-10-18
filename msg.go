@@ -1,41 +1,74 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"strconv"
 	"time"
 )
 
+// Data is a general structure that holds a single data item
+// such as a value that is read from a sensor
 type Msg struct {
-	Src  string    `json:"src"`
-	Dst  string    `json:"dst"`
-	Type string    `json:"type"`
-	Time time.Time `json:"time"`
-	Id   int64     `json:id`
+	Source   string      `json:source`
+	Category string      `json:category`
+	Device   string      `json:device`
+	Value    interface{} `json:value`
+
+	time.Time `json:Time`
 }
 
-// type MsgFloat64 struct {
-// 	Msg
-// 	Value	float64		`json:"value"`
-// }
+func (d Msg) String() string {
 
-// func (m Msg) ToMsgFloat64() (m64 MsgFloat64) {
-// 	m64 = MsgFloat64{
-// 		Msg: m,
-// 	}
-// 	m64.Value = m.Float64()
-// 	return m64
-// }
+	var str string
+	switch v := d.Value.(type) {
+	case int:
+		str = strconv.Itoa(v)
+	case string:
+		str = string(v)
+	case []uint8:
+		for _, c := range v {
+			str += string(c)
+		}
 
-// func (m *Msg) Float64() float64 {
-// 	val, err := strconv.ParseFloat(string(m.Data), 64)
-// 	if err != nil {
-// 	 	log.Println(err)
-// 		return 0.0
-// 	}
-// 	return val
-// }
+	default:
+		fmt.Printf("I don't know about type %T!\n", v)
+	}
 
-// func (m *Msg) String() (dstr string) {
-// 	str := fmt.Sprintf("%q - %s - %v - %v - %+v",
-// 		dstr, m.Station, m.Sensor, m.Time, string(m.Data))
-// 	return str
-// }
+	str = fmt.Sprintf("Source: %s, Device: %s = %s", d.Source, d.Device, str)
+	return str
+}
+
+func startMsgQ() (msgQ chan *Msg) {
+	msgQ = make(chan *Msg)
+
+	go func() {
+
+		for true {
+			select {
+			case msg := <-msgQ:
+				log.Printf("[I] %s", msg.String())
+
+				src := msg.Source
+				switch msg.Category {
+				case "data":
+
+					// if there are websockets waiting to recieve this
+					// data send it to them
+
+					store.Store(msg)
+
+				case "control":
+					log.Println("Do something with the control from ", src)
+
+				default:
+					log.Println("Uknonwn message type: ", msg.Device)
+				}
+
+			}
+		}
+
+	}()
+
+	return msgQ
+}

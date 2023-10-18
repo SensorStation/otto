@@ -60,26 +60,27 @@ func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
 	log.Println(id, " subscribed to ", path)
 }
 
-// TimeseriesCB call and parse callback data
-func dataCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
+// TimeseriesCB call and parse callback msg
+func msgCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 	topic := mqttmsg.Topic()
 
 	// extract the station from the topic
 	paths := strings.Split(topic, "/")
 
-	// ss/data/<source>/<sensor> <value>
-	data := &Data{
-		Source: paths[2],
-		Type:   paths[3],
-		Time:   time.Now(),
-		Value:  mqttmsg.Payload(),
+	// ss/msg/<source>/<sensor> <value>
+	msg := &Msg{
+		Source:   paths[1],
+		Category: paths[2],
+		Device:   paths[3],
+		Time:     time.Now(),
+		Value:    mqttmsg.Payload(),
 	}
 
-	// send to data recv channel
-	msgQ <- data
+	// send to msg recv channel
+	msgQ <- msg
 
-	// update the station that sent the data
-	stations.Update(data.Source, data)
+	// update the station that sent the msg
+	stations.Update(msg.Source, msg)
 }
 
 type Subscriber struct {
@@ -108,7 +109,7 @@ func NewPublisher(p string) (pub *Publisher) {
 	return pub
 }
 
-// Publish will start producing data from the given data producer via
+// Publish will start producing msg from the given data producer via
 // the q channel returned to the caller. The caller lets Publish know
 // to stop sending data when it receives a communication from the done channel
 func (m MQTT) Publish(done chan string) {
