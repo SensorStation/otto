@@ -77,7 +77,7 @@ func msgCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 	}
 
 	// send to msg recv channel
-	msgQ <- msg
+	disp.InQ <- msg
 
 	// update the station that sent the msg
 	stations.Update(msg.Source, msg)

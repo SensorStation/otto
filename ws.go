@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net/http"
 
@@ -9,6 +8,7 @@ import (
 )
 
 type websock struct {
+	msgQ chan *Msg
 }
 
 var upgrader = websocket.Upgrader{
@@ -22,23 +22,19 @@ func (ws websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-
-	// register this connection for data recieved by websocket
+	defer conn.Close()
 
 	for {
-		messageType, r, err := conn.NextReader()
+		mt, message, err := conn.ReadMessage()
 		if err != nil {
-			return
+			log.Println("read:", err)
+			break
 		}
-		w, err := conn.NextWriter(messageType)
+		log.Printf("recv: %s", message)
+		err = conn.WriteMessage(mt, message)
 		if err != nil {
-			return
-		}
-		if _, err := io.Copy(w, r); err != nil {
-			return
-		}
-		if err := w.Close(); err != nil {
-			return
+			log.Println("write:", err)
+			break
 		}
 	}
 }

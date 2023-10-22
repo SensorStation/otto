@@ -9,16 +9,15 @@ import (
 
 // Globals
 var (
+	disp     *dispatcher
 	mqtt     *MQTT
 	stations *StationManager
 	srv      *Server
 	wserv    websock
-
-	msgQ chan *Msg
 )
 
 func init() {
-	msgQ = startMsgQ()
+	disp = newDispatcher()
 }
 
 func main() {

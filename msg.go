@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 )
@@ -37,38 +36,4 @@ func (d Msg) String() string {
 
 	str = fmt.Sprintf("Source: %s, Device: %s = %s", d.Source, d.Device, str)
 	return str
-}
-
-func startMsgQ() (msgQ chan *Msg) {
-	msgQ = make(chan *Msg)
-
-	go func() {
-
-		for true {
-			select {
-			case msg := <-msgQ:
-				log.Printf("[I] %s", msg.String())
-
-				src := msg.Source
-				switch msg.Category {
-				case "data":
-
-					// if there are websockets waiting to recieve this
-					// data send it to them
-
-					store.Store(msg)
-
-				case "control":
-					log.Println("Do something with the control from ", src)
-
-				default:
-					log.Println("Uknonwn message type: ", msg.Device)
-				}
-
-			}
-		}
-
-	}()
-
-	return msgQ
 }
