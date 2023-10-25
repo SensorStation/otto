@@ -29,7 +29,7 @@ func NewStation(id string) (st *Station) {
 // Update() will append a new data value to the series
 // of data points.
 func (s *Station) Update(msg *Msg) {
-	s.LastHeard = msg.Time
+	//	s.LastHeard = msg.Time
 	s.LastMsg = msg
 }
 

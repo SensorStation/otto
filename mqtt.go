@@ -43,6 +43,7 @@ func (m *MQTT) Connect() {
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 	}
+	log.Println("Connected to broker: ", m.Broker)
 }
 
 func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
@@ -57,7 +58,7 @@ func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
 			log.Printf("subscribe token: %v", token)
 		}
 	}
-	log.Println(id, " subscribed to ", path)
+	log.Println(id, "subscribed to", path)
 }
 
 // TimeseriesCB call and parse callback msg
@@ -73,10 +74,12 @@ func msgCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 		Category: paths[2],
 		Device:   paths[3],
 		Time:     time.Now(),
-		Value:    mqttmsg.Payload(),
 	}
 
-	// send to msg recv channel
+	var val float64
+	fmt.Sscanf(string(mqttmsg.Payload()), "%f", &val)
+	msg.Value = val
+
 	disp.InQ <- msg
 
 	// update the station that sent the msg

@@ -28,6 +28,7 @@ func (d *dispatcher) addStoreQ() *chan *Msg {
 func newDispatcher() (d *dispatcher) {
 	d = &dispatcher{}
 	d.InQ = make(chan *Msg)
+	d.webQ = make(map[chan *Msg]chan *Msg)
 
 	go func() {
 

@@ -33,7 +33,8 @@ func main() {
 	// hub = NewHub(&cfg)
 	mqtt = NewMQTT()
 	mqtt.Connect()
-	mqtt.Subscribe("data", "ss/+/+/+", msgCB)
+	// mqtt.Subscribe("data", "ss/+/+/+", msgCB)
+	mqtt.Subscribe("data", "#", msgCB)
 
 	// Add the Stations Consumer for in memory copies
 	// hub.AddConsumer("data", stations)
