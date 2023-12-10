@@ -8,14 +8,15 @@ import (
 
 func TestDataString(t *testing.T) {
 	now := time.Now()
-	d := Data{
-		Source: "be:ef:ca:fe:01",
-		Type:   "tempf",
-		Value:  "98.1",
-		Time:   now,
+	d := Msg{
+		Source:   "be:ef:ca:fe:01",
+		Category: "data",
+		Device:   "tempf",
+		Value:    98.1,
+		Time:     now,
 	}
-	formatted := fmt.Sprintf("Time: %s, Source: %s, Type: %s = %s",
-		now.Format(time.RFC3339), d.Source, d.Type, d.Value)
+	formatted := fmt.Sprintf("Time: %s, Source: %s, Category: %s, Device: %s = %f",
+		now.Format(time.RFC3339), d.Source, d.Category, d.Device, d.Value)
 
 	str := d.String()
 	if str != formatted {

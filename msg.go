@@ -19,6 +19,8 @@ type Msg struct {
 func (d Msg) String() string {
 
 	var str string
-	str = fmt.Sprintf("Source: %s, Category: %s, Device: %s = %f", d.Source, d.Category, d.Device, d.Value)
+	str = fmt.Sprintf("Time: %s, Source: %s, Category: %s, Device: %s = %f",
+		d.Time.Format(time.RFC3339),
+		d.Source, d.Category, d.Device, d.Value)
 	return str
 }

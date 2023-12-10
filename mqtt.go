@@ -46,6 +46,10 @@ func (m *MQTT) Connect() {
 	log.Println("Connected to broker: ", m.Broker)
 }
 
+//
+// ss/<ethaddr>/<data>/tempc value
+// ss/<ethaddr>/<data>/humidity value
+//
 func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
 	sub := &Subscriber{id, path, f}
 	m.Subscribers[id] = sub
@@ -67,6 +71,11 @@ func msgCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 
 	// extract the station from the topic
 	paths := strings.Split(topic, "/")
+
+	if len(paths) < 3 {
+		log.Println("[W] Unknown path: ", topic)
+		return
+	}
 
 	// ss/msg/<source>/<sensor> <value>
 	msg := &Msg{

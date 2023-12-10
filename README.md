@@ -69,8 +69,6 @@ handled on it's own. The data structure will be:
 
 # User Interface
 
-This project haws 
-
 
 # Build
 

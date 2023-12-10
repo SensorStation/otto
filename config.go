@@ -1,33 +1,31 @@
 package main
 
 import (
-	"flag"
-	"log"
-	"io/ioutil"
 	"encoding/json"
+	"flag"
+	"io/ioutil"
+	"log"
 	"net/http"
 )
 
+// Configuration holds all variables that can be changed
+// to alter the way the program works.
 type Configuration struct {
 	Addr   string
 	App    string
 	Broker string
 
-	Debug		bool
-	DebugMQTT	bool
-	FakeWS		bool
-	Filename	string
-	Mock		bool
+	Debug     bool
+	DebugMQTT bool
+	FakeWS    bool
+	Filename  string
+	Mock      bool
 
-	MaxData	int					// maximum data values to save
+	MaxData int // maximum data values to save
 
-	GPIO	bool
+	GPIO    bool
 	Verbose bool
 }
-
-var (
-	config	 Configuration
-)
 
 func init() {
 	flag.StringVar(&config.Addr, "addr", "0.0.0.0:8011", "Address to listen for web connections")
@@ -44,9 +42,9 @@ func init() {
 	flag.BoolVar(&config.GPIO, "gpio", false, "Utilize GPIO for Raspberry PI")
 }
 
-func GetConfig() Configuration {
-	return config
-}
+// func GetConfig() Configuration {
+// 	return config
+// }
 
 // ServeHTTP provides a REST interface to the config structure
 func (c Configuration) ServeHTTP(w http.ResponseWriter, r *http.Request) {

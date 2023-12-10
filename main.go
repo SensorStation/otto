@@ -9,6 +9,7 @@ import (
 
 // Globals
 var (
+	config   Configuration
 	disp     *dispatcher
 	mqtt     *MQTT
 	stations *StationManager
@@ -26,9 +27,6 @@ func main() {
 	// Parse command line argumens and update the config as appropriate
 	flag.Parse()
 
-	// Create the state configuration for this station.
-	cfg := GetConfig()
-
 	// Subscribe to MQTT channels
 	// hub = NewHub(&cfg)
 	mqtt = NewMQTT()
@@ -43,7 +41,7 @@ func main() {
 	// The web app
 	fs := http.FileServer(http.Dir("/srv/iot/iotvue/dist"))
 	// Now create the station based on the given configuration
-	srv = NewServer(cfg.Addr)
+	srv = NewServer(config.Addr)
 	srv.Register("/", fs)
 	srv.Register("/ws", wserv)
 	srv.Register("/ping", Ping{})
@@ -52,7 +50,7 @@ func main() {
 	srv.Register("/api/stations", stations)
 
 	wg.Add(1)
-	go srv.Start(cfg.Addr, wg)
+	go srv.Start(config.Addr, wg)
 
 	wg.Wait()
 }
