@@ -2,6 +2,7 @@ package main
 
 import "log"
 
+// Dispatcher accepts
 type dispatcher struct {
 	InQ    chan *Msg
 	StoreQ *chan *Msg

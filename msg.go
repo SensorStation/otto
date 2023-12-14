@@ -1,26 +1,35 @@
-package main
+package iote
 
 import (
 	"fmt"
 	"time"
 )
 
-// Data is a general structure that holds a single data item
-// such as a value that is read from a sensor
+// Msg holds a value and some type of meta data to be pass around in
+// the system.
 type Msg struct {
-	Source   string  `json:"source"`
-	Category string  `json:"category"`
-	Device   string  `json:"device"`
-	Value    float64 `json:"value"`
-
-	Time time.Time `json:"time"`
+	Id       string    `json:"id"`
+	Category string    `json:"category"`
+	Station  string    `json:"station"` // mac addr
+	Device   string    `json:"device"`
+	Time     time.Time `json:"time"`
 }
 
-func (d Msg) String() string {
-
+func (m Msg) String() string {
 	var str string
-	str = fmt.Sprintf("Time: %s, Source: %s, Category: %s, Device: %s = %f",
-		d.Time.Format(time.RFC3339),
-		d.Source, d.Category, d.Device, d.Value)
+	str = fmt.Sprintf("Time: %s, Category: %s, Station: %s, Device: %s",
+		m.Time.Format(time.RFC3339),
+		m.Category, m.Station, m.Device)
+	return str
+}
+
+type MsgFloat64 struct {
+	Msg
+	Value float64 `json:"value"`
+}
+
+func (m MsgFloat64) String() string {
+	str := m.Msg.String()
+	str += fmt.Sprintf(" = %f", m.Value)
 	return str
 }
