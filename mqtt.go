@@ -1,44 +1,39 @@
-package main
+package iote
 
 import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
-	"time"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type MQTT struct {
-	ID     string
+	id     string
 	Broker string
+	Debug  bool
 
-	Publishers  map[string]*Publisher
-	Subscribers map[string]*Subscriber
-
+	subscribers map[string]*Subscriber
 	gomqtt.Client
 }
 
-func NewMQTT() *MQTT {
-	return &MQTT{
-		ID:          "IoTe",
-		Broker:      config.Broker,
-		Publishers:  make(map[string]*Publisher),
-		Subscribers: make(map[string]*Subscriber),
-	}
+func (m *MQTT) Start() {
+	m.subscribers = make(map[string]*Subscriber)
+
+	m.Connect()
+	m.Subscribe("data", "#", SubscribeCallback)
 }
 
 func (m *MQTT) Connect() {
-	if config.DebugMQTT {
+	if m.Debug {
 		gomqtt.DEBUG = log.New(os.Stdout, "", 0)
 		gomqtt.ERROR = log.New(os.Stdout, "", 0)
 	}
 
-	m.ID = "sensorStation"
-	m.Broker = "tcp://" + config.Broker + ":1883"
+	m.id = "sensorStation"
+	m.Broker = "tcp://" + m.Broker + ":1883"
 
-	connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.ID).SetCleanSession(true)
+	connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.id).SetCleanSession(true)
 	m.Client = gomqtt.NewClient(connOpts)
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
@@ -52,13 +47,13 @@ func (m *MQTT) Connect() {
 //
 func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
 	sub := &Subscriber{id, path, f}
-	m.Subscribers[id] = sub
+	m.subscribers[id] = sub
 
 	qos := 0
 	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	} else {
-		if config.Verbose {
+		if m.Debug {
 			log.Printf("subscribe token: %v", token)
 		}
 	}
@@ -66,33 +61,16 @@ func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
 }
 
 // TimeseriesCB call and parse callback msg
-func msgCB(mc gomqtt.Client, mqttmsg gomqtt.Message) {
-	topic := mqttmsg.Topic()
+func SubscribeCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 
-	// extract the station from the topic
-	paths := strings.Split(topic, "/")
+	// log.Printf("Incoming: %s, %q", mqttmsg.Topic(), mqttmsg.Payload())
 
-	if len(paths) < 3 {
-		log.Println("[W] Unknown path: ", topic)
-		return
-	}
-
-	// ss/msg/<source>/<sensor> <value>
-	msg := &Msg{
-		Source:   paths[1],
-		Category: paths[2],
-		Device:   paths[3],
-		Time:     time.Now(),
-	}
-
-	var val float64
-	fmt.Sscanf(string(mqttmsg.Payload()), "%f", &val)
-	msg.Value = val
-
-	disp.InQ <- msg
+	msg := MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
+	log.Printf("Incoming: %+v", msg)
+	// disp.InQ <- msg
 
 	// update the station that sent the msg
-	stations.Update(msg.Source, msg)
+	// stations.Update(msg.Station, msg)
 }
 
 type Subscriber struct {
@@ -107,6 +85,7 @@ func (sub *Subscriber) String() string {
 
 // Publisher periodically reads from an io.Reader then publishes that value
 // to a corresponding channel
+/*
 type Publisher struct {
 	Path       string
 	Period     time.Duration
@@ -120,7 +99,7 @@ func NewPublisher(p string) (pub *Publisher) {
 	}
 	return pub
 }
-
+*/
 // Publish will start producing msg from the given data producer via
 // the q channel returned to the caller. The caller lets Publish know
 // to stop sending data when it receives a communication from the done channel

@@ -1,4 +1,4 @@
-package main
+package iote
 
 import (
 	"fmt"
@@ -7,6 +7,10 @@ import (
 
 	"encoding/json"
 	"net/http"
+)
+
+var (
+	Stations StationManager
 )
 
 // Station is the primary structure that holds an array of

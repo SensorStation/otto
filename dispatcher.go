@@ -1,33 +1,39 @@
-package main
+package iote
 
-import "log"
+import (
+	"log"
+)
+
+var (
+	disp Dispatcher
+)
 
 // Dispatcher accepts
-type dispatcher struct {
+type Dispatcher struct {
 	InQ    chan *Msg
 	StoreQ *chan *Msg
 	webQ   map[chan *Msg]chan *Msg
 }
 
-func (d *dispatcher) addWebQ() chan *Msg {
+func (d *Dispatcher) AddWebQ() chan *Msg {
 	c := make(chan *Msg)
 	d.webQ[c] = c
 	return c
 }
 
-func (d *dispatcher) freeWebQ(c chan *Msg) {
+func (d *Dispatcher) FreeWebQ(c chan *Msg) {
 	delete(d.webQ, c)
 	close(c)
 }
 
-func (d *dispatcher) addStoreQ() *chan *Msg {
+func (d *Dispatcher) addStoreQ() *chan *Msg {
 	c := make(chan *Msg)
 	d.StoreQ = &c
 	return d.StoreQ
 }
 
-func newDispatcher() (d *dispatcher) {
-	d = &dispatcher{}
+func NewDispatcher() (d *Dispatcher) {
+	d = &Dispatcher{}
 	d.InQ = make(chan *Msg)
 	d.webQ = make(map[chan *Msg]chan *Msg)
 
@@ -38,7 +44,6 @@ func newDispatcher() (d *dispatcher) {
 			case msg := <-d.InQ:
 				log.Printf("[I] %s", msg.String())
 
-				src := msg.Source
 				switch msg.Category {
 				case "data":
 
@@ -53,7 +58,6 @@ func newDispatcher() (d *dispatcher) {
 					}
 
 				case "control":
-					log.Println("Do something with the control from ", src)
 
 				default:
 					log.Println("Uknonwn message type: ", msg.Device)

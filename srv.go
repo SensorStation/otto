@@ -1,4 +1,4 @@
-package main
+package iote
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"net/http"
 )
-	
+
 type Server struct {
 	Addr string
 	*http.Server
@@ -29,7 +29,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		json.NewEncoder(w).Encode(stations.Stations)
+		json.NewEncoder(w).Encode(Stations)
 	}
 }
 
@@ -38,4 +38,3 @@ func (s *Server) Start(addr string, wg sync.WaitGroup) {
 	http.ListenAndServe(s.Addr, nil)
 	wg.Done()
 }
-

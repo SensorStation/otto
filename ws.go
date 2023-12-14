@@ -1,4 +1,4 @@
-package main
+package iote
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type websock struct {
+type Websock struct {
 	msgQ chan *Msg
 }
 
@@ -21,7 +21,7 @@ func checkOrigin(r *http.Request) bool {
 	return true
 }
 
-func (ws websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("First err", err)
@@ -45,8 +45,8 @@ func (ws websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	wq := disp.addWebQ()
-	defer disp.freeWebQ(wq)
+	wq := disp.AddWebQ()
+	defer disp.FreeWebQ(wq)
 
 	for {
 		msg := <-wq

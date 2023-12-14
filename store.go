@@ -1,6 +1,8 @@
-package main
+package iote
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var (
 	store *Store

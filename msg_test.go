@@ -16,14 +16,15 @@ func TestDataString(t *testing.T) {
 	// 	Value:    98.7,
 	// }
 
-	d := MsgFloat64{}
-	d.Station = "be:ef:ca:fe:01"
-	d.Category = "data"
-	d.Device = "tempf"
-	d.Time = now
-	d.Value = 98.7
+	d := Msg{
+		Station:  "be:ef:ca:fe:01",
+		Category: "data",
+		Device:   "tempf",
+		Time:     now,
+		Value:    []byte("98.7"),
+	}
 
-	formatted := fmt.Sprintf("Time: %s, Category: %s, Station: %s, Device: %s = %f",
+	formatted := fmt.Sprintf("Time: %s, Category: %s, Station: %s, Device: %s = %q",
 		now.Format(time.RFC3339), d.Category, d.Station, d.Device, d.Value)
 
 	str := d.String()
