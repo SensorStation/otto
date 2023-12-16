@@ -2,26 +2,17 @@ package main
 
 import (
 	"flag"
-	"net/http"
 	"sync"
 
 	"github.com/rustyeddy/iote"
-	// "net/http"
 )
 
 // Globals
 var (
 	config Configuration
 	mqtt   iote.MQTT
-
-	disp  *iote.Dispatcher
-	srv   *iote.Server
-	wserv iote.Websock
+	srv    iote.Server
 )
-
-func init() {
-	disp = iote.NewDispatcher()
-}
 
 func main() {
 	var wg sync.WaitGroup
@@ -34,19 +25,16 @@ func main() {
 	}
 	mqtt.Start()
 
-	// The web app
-	fs := http.FileServer(http.Dir("/srv/iot/iotvue/dist"))
-	// Now create the station based on the given configuration
-	srv = iote.NewServer(config.Addr)
-	srv.Register("/", fs)
-	srv.Register("/ws", wserv)
-	srv.Register("/ping", Ping{})
+	srv = iote.Server{
+		Addr:   config.Addr,
+		Appdir: "/srv/iot/iotvue/dist",
+	}
 	srv.Register("/api/config", config)
-	srv.Register("/api/data", srv)
-	srv.Register("/api/stations", iote.Stations)
-
 	wg.Add(1)
-	go srv.Start(config.Addr, wg)
+	srv.Start(config.Addr, wg)
 
-	wg.Wait()
+	/*
+		go srv.Start(config.Addr, wg)
+			wg.Wait()
+	*/
 }

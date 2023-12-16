@@ -70,7 +70,7 @@ func SubscribeCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 	// disp.InQ <- msg
 
 	// update the station that sent the msg
-	// stations.Update(msg.Station, msg)
+	Stations.Update(msg.Station, msg)
 }
 
 type Subscriber struct {
@@ -83,23 +83,6 @@ func (sub *Subscriber) String() string {
 	return sub.ID + " " + sub.Path
 }
 
-// Publisher periodically reads from an io.Reader then publishes that value
-// to a corresponding channel
-/*
-type Publisher struct {
-	Path       string
-	Period     time.Duration
-	publishing bool
-}
-
-func NewPublisher(p string) (pub *Publisher) {
-	pub = &Publisher{
-		Path:   p,
-		Period: 5 * time.Second,
-	}
-	return pub
-}
-*/
 // Publish will start producing msg from the given data producer via
 // the q channel returned to the caller. The caller lets Publish know
 // to stop sending data when it receives a communication from the done channel

@@ -9,16 +9,20 @@ import (
 	"net/http"
 )
 
-var (
-	Stations StationManager
-)
-
 // Station is the primary structure that holds an array of
 // Sensors which in turn hold a timeseries of datapoints.
 type Station struct {
 	ID        string    `json:"id"`
 	LastHeard time.Time `json:"last-heard"`
 	LastMsg   *Msg      `json:"last-Msg"`
+}
+
+var (
+	Stations StationManager
+)
+
+func init() {
+	Stations = NewStationManager()
 }
 
 // NewStation creates a new Station with an ID as provided
@@ -41,8 +45,8 @@ type StationManager struct {
 	Stations map[string]*Station
 }
 
-func NewStationManager() (sm *StationManager) {
-	sm = &StationManager{}
+func NewStationManager() (sm StationManager) {
+	sm = StationManager{}
 	sm.Stations = make(map[string]*Station)
 	return sm
 }
