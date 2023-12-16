@@ -5,24 +5,24 @@ import (
 )
 
 var (
-	store *Store
+	Store *Storage
 )
 
-func init() {
-	store = NewStore()
-}
-
-type Store struct {
+type Storage struct {
 	Source map[string]map[string]float64
 }
 
-func NewStore() *Store {
+func init() {
+	Store = NewStore()
+}
+
+func NewStore() *Storage {
 	m := make(map[string]map[string]float64)
-	return &Store{
+	return &Storage{
 		Source: m,
 	}
 }
 
-func (s *Store) Store(msg *Msg) {
+func (s *Storage) Store(msg *Msg) {
 	fmt.Printf("MSG: %+v\n", msg)
 }

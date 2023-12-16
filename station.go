@@ -14,7 +14,7 @@ import (
 type Station struct {
 	ID        string    `json:"id"`
 	LastHeard time.Time `json:"last-heard"`
-	LastMsg   *Msg      `json:"last-Msg"`
+	// LastMsg   *Msg      `json:"last-Msg"`
 }
 
 var (
@@ -37,8 +37,7 @@ func NewStation(id string) (st *Station) {
 // Update() will append a new data value to the series
 // of data points.
 func (s *Station) Update(msg *Msg) {
-	//	s.LastHeard = msg.Time
-	s.LastMsg = msg
+	s.LastHeard = msg.Time
 }
 
 type StationManager struct {

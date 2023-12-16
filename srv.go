@@ -2,7 +2,6 @@ package iote
 
 import (
 	"log"
-	"sync"
 
 	"encoding/json"
 	"net/http"
@@ -35,7 +34,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) Start(addr string, wg sync.WaitGroup) {
+func (s *Server) Start(addr string) {
 	log.Println("Starting hub Web and REST server on ", s.Addr)
 
 	// The web app
@@ -47,5 +46,4 @@ func (s *Server) Start(addr string, wg sync.WaitGroup) {
 	s.Register("/api/stations", Stations)
 
 	http.ListenAndServe(s.Addr, nil)
-	wg.Done()
 }

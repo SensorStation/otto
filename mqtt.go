@@ -19,9 +19,8 @@ type MQTT struct {
 
 func (m *MQTT) Start() {
 	m.subscribers = make(map[string]*Subscriber)
-
 	m.Connect()
-	m.Subscribe("data", "#", SubscribeCallback)
+	// m.Subscribe("data", "#", SubscribeCallback)
 }
 
 func (m *MQTT) Connect() {
@@ -83,33 +82,11 @@ func (sub *Subscriber) String() string {
 	return sub.ID + " " + sub.Path
 }
 
-// Publish will start producing msg from the given data producer via
-// the q channel returned to the caller. The caller lets Publish know
-// to stop sending data when it receives a communication from the done channel
-func (m MQTT) Publish(done chan string) {
-	// ticker := time.NewTicker(p.Period)
-
-	// go func() {
-	// 	defer ticker.Stop()
-	// 	p.publishing = true
-	// 	for p.publishing {
-	// 		select {
-	// 		case <-done:
-	// 			p.publishing = false
-	// 			log.Println("Random Data recieved a DONE, returning")
-	// 			break
-
-	// 		case <-ticker.C:
-	// 			d := "Hello"
-	// 			if d != "" {
-	// 				if t := m.Client.Publish(p.Path, byte(0), false, d); t == nil {
-	// 					if config.Debug {
-	// 						log.Printf("%v - I have a NULL token: %+v", m.Client, p.Path, d)
-	// 					}
-	// 				}
-	// 			}
-	// 			log.Printf("publish %s -> %+v\n", p.Path, d)
-	// 		}
-	// 	}
-	// }()
+// Publish will publish a value to the given channel
+func (m MQTT) Publish(topic string, value string) {
+	if t := m.Client.Publish(topic, byte(0), false, value); t == nil {
+		if m.Debug {
+			log.Printf("%v - I have a NULL token: %+v %s", m.Client, topic, value)
+		}
+	}
 }
