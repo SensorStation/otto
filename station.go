@@ -14,7 +14,6 @@ import (
 type Station struct {
 	ID        string    `json:"id"`
 	LastHeard time.Time `json:"last-heard"`
-	// LastMsg   *Msg      `json:"last-Msg"`
 }
 
 var (
