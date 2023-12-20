@@ -15,3 +15,5 @@
 # vendor/
 iote
 examples/examples
+examples/heater/heater
+examples/mock/mock

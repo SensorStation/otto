@@ -27,6 +27,7 @@ func main() {
 		Broker: config.Broker,
 	}
 	mqtt.Start()
+	mqtt.Subscribe("meta", "ss/m/#", StationCallback)
 	mqtt.Subscribe("data", "ss/d/#", SubscribeCallback)
 
 	srv = iote.Server{
@@ -35,6 +36,14 @@ func main() {
 	}
 	srv.Register("/api/config", config)
 	srv.Start(config.Addr)
+}
+
+func StationCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
+	// log.Printf("Incoming: %s, %q", mqttmsg.Topic(), mqttmsg.Payload())
+	msg, err := iote.MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
+	log.Printf("Incoming Station Meta: %+v", msg)
+
+	iote.Stations.Update(msg)
 }
 
 // TimeseriesCB call and parse callback msg

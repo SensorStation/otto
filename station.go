@@ -1,27 +1,19 @@
 package iote
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"time"
-
-	"encoding/json"
-	"net/http"
 )
 
 // Station is the primary structure that holds an array of
 // Sensors which in turn hold a timeseries of datapoints.
 type Station struct {
-	ID        string    `json:"id"`
-	LastHeard time.Time `json:"last-heard"`
-}
+	ID            string    `json:"id"`
+	LastHeard     time.Time `json:"last-heard"`
+	time.Duration `json:"duration"`
 
-var (
-	Stations StationManager
-)
-
-func init() {
-	Stations = NewStationManager()
+	ticker *time.Ticker `json:"-"`
 }
 
 // NewStation creates a new Station with an ID as provided
@@ -39,60 +31,34 @@ func (s *Station) Update(msg *Msg) {
 	s.LastHeard = msg.Time
 }
 
-type StationManager struct {
-	Stations map[string]*Station
-}
-
-func NewStationManager() (sm StationManager) {
-	sm = StationManager{}
-	sm.Stations = make(map[string]*Station)
-	return sm
-}
-
-func (sm *StationManager) Get(stid string) *Station {
-	st, _ := sm.Stations[stid]
-	return st
-}
-
-func (sm *StationManager) Add(st string) (station *Station, err error) {
-	if sm.Get(st) != nil {
-		return nil, fmt.Errorf("Error adding an existing station")
+func (s *Station) Announce() {
+	json, err := json.Marshal(s)
+	if err != nil {
+		log.Printf("ERROR - Station: %s - jsonified %+v", s.ID, err)
+		return
 	}
-	station = NewStation(st)
-	sm.Stations[st] = station
-	return station, nil
+	mqtt.Publish("ss/m/"+s.ID+"/station", string(json))
 }
 
-func (sm *StationManager) Update(stid string, data *Msg) {
-	var err error
-	st := sm.Get(stid)
-	if st == nil {
-		log.Println("StationManager: Adding new station: ", stid)
-		st, err = sm.Add(stid)
-		if err != nil {
-			log.Println("StationManager: ERROR Adding new station", stid, err)
-			return
+func (s *Station) Advertise(d time.Duration) {
+	s.Duration = d
+	if s.ticker == nil {
+		s.ticker = time.NewTicker(d * time.Second)
+	}
+
+	s.Announce()
+
+	quit := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-s.ticker.C:
+				s.Announce()
+
+			case <-quit:
+				s.ticker.Stop()
+				return
+			}
 		}
-	}
-	st.Update(data)
-}
-
-func (sm *StationManager) Count() int {
-	return len(sm.Stations)
-}
-
-func (sm StationManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	stnames := []string{}
-
-	for _, stn := range sm.Stations {
-		stnames = append(stnames, stn.ID)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	switch r.Method {
-	case "GET":
-		json.NewEncoder(w).Encode(stnames)
-
-	case "POST", "PUT":
-		http.Error(w, "Not Yet Supported", 401)
-	}
+	}()
 }

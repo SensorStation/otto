@@ -9,7 +9,7 @@ import (
 )
 
 type MQTT struct {
-	id     string
+	ID     string
 	Broker string
 	Debug  bool
 
@@ -17,7 +17,15 @@ type MQTT struct {
 	gomqtt.Client
 }
 
+var (
+	mqtt *MQTT
+)
+
 func (m *MQTT) Start() {
+	if mqtt == nil {
+		mqtt = m
+	}
+
 	m.subscribers = make(map[string]*Subscriber)
 	m.Connect()
 	// m.Subscribe("data", "#", SubscribeCallback)
@@ -29,10 +37,10 @@ func (m *MQTT) Connect() {
 		gomqtt.ERROR = log.New(os.Stdout, "", 0)
 	}
 
-	m.id = "sensorStation"
+	m.ID = "sensorStation"
 	m.Broker = "tcp://" + m.Broker + ":1883"
 
-	connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.id).SetCleanSession(true)
+	connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.ID).SetCleanSession(true)
 	m.Client = gomqtt.NewClient(connOpts)
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
