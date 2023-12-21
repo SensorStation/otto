@@ -39,18 +39,18 @@ func (sm *StationManager) Add(st string) (station *Station, err error) {
 	return station, nil
 }
 
-func (sm *StationManager) Update(stid string, data *Msg) {
+func (sm *StationManager) Update(msg *Msg) {
 	var err error
-	st := sm.Get(stid)
+	st := sm.Get(msg.Station)
 	if st == nil {
-		log.Println("StationManager: Adding new station: ", stid)
-		st, err = sm.Add(stid)
+		log.Println("StationManager: Adding new station: ", msg.Station)
+		st, err = sm.Add(msg.Station)
 		if err != nil {
-			log.Println("StationManager: ERROR Adding new station", stid, err)
+			log.Println("StationManager: ERROR Adding new station", msg.Station, err)
 			return
 		}
 	}
-	st.Update(data)
+	st.Update(msg)
 }
 
 func (sm *StationManager) Count() int {
@@ -58,15 +58,15 @@ func (sm *StationManager) Count() int {
 }
 
 func (sm StationManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	stnames := []string{}
+	var sts []*Station
 
 	for _, stn := range sm.Stations {
-		stnames = append(stnames, stn.ID)
+		sts = append(sts, stn)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	switch r.Method {
 	case "GET":
-		json.NewEncoder(w).Encode(stnames)
+		json.NewEncoder(w).Encode(sts)
 
 	case "POST", "PUT":
 		http.Error(w, "Not Yet Supported", 401)

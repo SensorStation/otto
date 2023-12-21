@@ -20,7 +20,8 @@ type Station struct {
 // by the first parameter
 func NewStation(id string) (st *Station) {
 	st = &Station{
-		ID: id,
+		ID:       id,
+		Duration: 5,
 	}
 	return st
 }
@@ -28,6 +29,7 @@ func NewStation(id string) (st *Station) {
 // Update() will append a new data value to the series
 // of data points.
 func (s *Station) Update(msg *Msg) {
+	log.Println("Updating station: ", s.ID)
 	s.LastHeard = msg.Time
 }
 

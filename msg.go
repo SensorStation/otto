@@ -2,7 +2,6 @@ package iote
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 )
@@ -11,6 +10,7 @@ import (
 // the system.
 type Msg struct {
 	Id       string      `json:"id"`
+	Topic    string      `json:"topic"`
 	Category string      `json:"category"`
 	Station  string      `json:"station"` // mac addr
 	Device   string      `json:"device"`
@@ -18,26 +18,28 @@ type Msg struct {
 	Value    interface{} `json:"value"`
 }
 
-func MsgFromMQTT(topic string, payload []byte) *Msg {
+func MsgFromMQTT(topic string, payload []byte) (*Msg, error) {
 
 	// extract the station from the topic
 	paths := strings.Split(topic, "/")
 
 	if len(paths) < 3 {
-		log.Println("[W] Unknown path: ", topic)
-		return nil
+		err := fmt.Errorf("[E] Unknown path %s", topic)
+		return nil, err
 	}
 
-	// ss/msg/<source>/<sensor> <value>
+	// ss/C/<source>/<sensor> <value>
 	msg := &Msg{
-		Station:  paths[1],
-		Category: paths[2],
+		Topic:    topic,
+		Category: paths[1],
+		Station:  paths[2],
 		Device:   paths[3],
 		Time:     time.Now(),
-		Value:    payload,
 	}
+	msg.Value = payload
+	Stations.Update(msg)
 
-	return msg
+	return msg, nil
 }
 
 func (m Msg) String() string {

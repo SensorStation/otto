@@ -7,6 +7,7 @@ import (
 func main() {
 	mqtt := iote.MQTT{
 		Broker: "localhost",
+		ID:     "mock",
 	}
 	mqtt.Start()
 
@@ -21,12 +22,10 @@ func main() {
 	for _, id := range ids {
 		st := iote.NewStation(id)
 		st.Advertise(5)
-
 		stations[id] = st
 	}
 
-	for true {
-
-	}
+	doneQ := make(chan bool)
+	<-doneQ
 
 }

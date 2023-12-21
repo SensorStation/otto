@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
+	"time"
 
 	"github.com/rustyeddy/iote"
 
@@ -25,33 +27,47 @@ func main() {
 
 	mqtt = iote.MQTT{
 		Broker: config.Broker,
+		ID:     "heater",
 	}
 	mqtt.Start()
+	time.Sleep(1 * time.Second)
 	mqtt.Subscribe("meta", "ss/m/#", StationCallback)
-	mqtt.Subscribe("data", "ss/d/#", SubscribeCallback)
+	mqtt.Subscribe("data", "ss/d/#", DataCallback)
 
 	srv = iote.Server{
 		Addr:   config.Addr,
 		Appdir: "/srv/iot/iotvue/dist",
 	}
-	srv.Register("/api/config", config)
-	srv.Start(config.Addr)
+
+	err := srv.Start(config.Addr)
+	if err != nil {
+		log.Printf("ERROR HTTP Server: %+v", err)
+		os.Exit(1)
+	}
+	log.Printf("%s shutting down", os.Args[0])
 }
 
 func StationCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
-	// log.Printf("Incoming: %s, %q", mqttmsg.Topic(), mqttmsg.Payload())
+	log.Printf("Incoming Station: %s, %s", mqttmsg.Topic(), mqttmsg.Payload())
 	msg, err := iote.MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
-	log.Printf("Incoming Station Meta: %+v", msg)
+	if err != nil {
+		log.Printf("ERROR - parsing incoming message: %+v\n", err)
+		return
+	}
 
+	log.Printf("Incoming Station Meta: %+v", msg)
 	iote.Stations.Update(msg)
 }
 
 // TimeseriesCB call and parse callback msg
-func SubscribeCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
+func DataCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 
-	// log.Printf("Incoming: %s, %q", mqttmsg.Topic(), mqttmsg.Payload())
-	msg := iote.MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
-	log.Printf("Incoming: %+v", msg)
+	log.Printf("Incoming Data: %s, %s", mqttmsg.Topic(), mqttmsg.Payload())
+	msg, err := iote.MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
+	if err != nil {
+		log.Printf("ERROR - parsing incoming message: %+v\n", err)
+		return
+	}
 
 	if msg.Device == "tempc" || msg.Device == "tempf" {
 		controller.Update(msg)
@@ -59,7 +75,7 @@ func SubscribeCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 
 	// update the station that sent the msg
 	iote.Store.Store(msg)
-	iote.Stations.Update(msg.Station, msg)
+	iote.Stations.Update(msg)
 }
 
 type Controller struct {
@@ -68,11 +84,11 @@ type Controller struct {
 }
 
 func (c Controller) On(station string) {
-	mqtt.Publish("ss/c/"+station+"header", "on")
+	mqtt.Publish("ss/c/"+station+"/heater", "on")
 }
 
 func (c Controller) Off(station string) {
-	mqtt.Publish("ss/c/"+station+"header", "off")
+	mqtt.Publish("ss/c/"+station+"/heater", "off")
 }
 
 func (c Controller) Update(msg *iote.Msg) {

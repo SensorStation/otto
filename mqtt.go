@@ -1,7 +1,6 @@
 package iote
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -28,7 +27,6 @@ func (m *MQTT) Start() {
 
 	m.subscribers = make(map[string]*Subscriber)
 	m.Connect()
-	// m.Subscribe("data", "#", SubscribeCallback)
 }
 
 func (m *MQTT) Connect() {
@@ -37,13 +35,18 @@ func (m *MQTT) Connect() {
 		gomqtt.ERROR = log.New(os.Stdout, "", 0)
 	}
 
-	m.ID = "sensorStation"
 	m.Broker = "tcp://" + m.Broker + ":1883"
 
-	connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.ID).SetCleanSession(true)
-	m.Client = gomqtt.NewClient(connOpts)
+	// connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.ID).SetCleanSession(true)
+	opts := gomqtt.NewClientOptions()
+	opts.AddBroker(m.Broker)
+	opts.SetClientID(m.ID)
+	opts.SetCleanSession(true)
+	m.Client = gomqtt.NewClient(opts)
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
-		fmt.Println(token.Error())
+		panic(token.Error())
+		// fmt.Println(token.Error())
+		return
 	}
 	log.Println("Connected to broker: ", m.Broker)
 }
@@ -72,12 +75,17 @@ func SubscribeCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 
 	// log.Printf("Incoming: %s, %q", mqttmsg.Topic(), mqttmsg.Payload())
 
-	msg := MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
+	msg, err := MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
+	if err != nil {
+		log.Printf("ERROR getting msg from mqtt: %+v", err)
+		return
+	}
+
 	log.Printf("Incoming: %+v", msg)
 	// disp.InQ <- msg
 
 	// update the station that sent the msg
-	Stations.Update(msg.Station, msg)
+	Stations.Update(msg)
 }
 
 type Subscriber struct {
