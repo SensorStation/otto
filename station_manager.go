@@ -52,11 +52,6 @@ func NewStationManager() (sm StationManager) {
 					st.mu.Lock()
 
 					expires := st.LastHeard.Add(st.Expiration)
-					fmt.Printf("%s - last: %s - expires: %s\n",
-						st.ID,
-						st.LastHeard.Format("2006-01-02 15:04:05"),
-						expires.Format("2006-01-02 15:04:05"))
-
 					if expires.Sub(time.Now()) < 0 {
 						sm.mu.Lock()
 						log.Printf("Station: %s has timed out\n", id)

@@ -28,15 +28,23 @@ func MsgFromMQTT(topic string, payload []byte) (*Msg, error) {
 		return nil, err
 	}
 
-	// ss/C/<source>/<sensor> <value>
 	msg := &Msg{
 		Topic:    topic,
 		Category: paths[1],
-		Device:   paths[2],
-		Station:  paths[3],
 		Time:     time.Now(),
 	}
 	msg.Value = payload
+
+	switch msg.Category {
+	case "m":
+		msg.Device = paths[2]
+		msg.Station = paths[3]
+
+	case "d":
+		msg.Station = paths[2]
+		msg.Device = paths[3]
+	}
+
 	Stations.Update(msg)
 
 	return msg, nil
