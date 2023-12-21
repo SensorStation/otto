@@ -31,7 +31,7 @@ func main() {
 	}
 	mqtt.Start()
 	time.Sleep(1 * time.Second)
-	mqtt.Subscribe("meta", "ss/m/#", StationCallback)
+	mqtt.Subscribe("meta", "ss/m/station/#", StationCallback)
 	mqtt.Subscribe("data", "ss/d/#", DataCallback)
 
 	srv = iote.Server{
@@ -54,8 +54,6 @@ func StationCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 		log.Printf("ERROR - parsing incoming message: %+v\n", err)
 		return
 	}
-
-	log.Printf("Incoming Station Meta: %+v", msg)
 	iote.Stations.Update(msg)
 }
 

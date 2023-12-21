@@ -32,8 +32,8 @@ func MsgFromMQTT(topic string, payload []byte) (*Msg, error) {
 	msg := &Msg{
 		Topic:    topic,
 		Category: paths[1],
-		Station:  paths[2],
-		Device:   paths[3],
+		Device:   paths[2],
+		Station:  paths[3],
 		Time:     time.Now(),
 	}
 	msg.Value = payload
