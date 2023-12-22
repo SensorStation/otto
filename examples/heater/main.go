@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -16,6 +17,7 @@ var (
 	config     Configuration
 	controller Controller
 
+	disp *iote.Dispatcher
 	mqtt iote.MQTT
 	srv  iote.Server
 )
@@ -24,6 +26,9 @@ func main() {
 
 	// Parse command line argumens and update the config as appropriate
 	flag.Parse()
+
+	disp = iote.GetDispatcher()
+	fmt.Printf("Dispatcher: %+v\n", disp)
 
 	mqtt = iote.MQTT{
 		Broker: config.Broker,
@@ -72,35 +77,7 @@ func DataCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 	}
 
 	// update the station that sent the msg
-	iote.Store.Store(msg)
+	// iote.Store.Store(msg)
 	iote.Stations.Update(msg)
-}
-
-type Controller struct {
-	Max float64
-	Min float64
-}
-
-func (c Controller) On(station string) {
-	mqtt.Publish("ss/c/"+station+"/heater", "on")
-}
-
-func (c Controller) Off(station string) {
-	mqtt.Publish("ss/c/"+station+"/heater", "off")
-}
-
-func (c Controller) Update(msg *iote.Msg) {
-
-	var v float64
-
-	switch msg.Value.(type) {
-	case float64:
-		v = msg.Value.(float64)
-	}
-
-	if v <= c.Min {
-		c.On(msg.Device)
-	} else if v >= c.Max {
-		c.Off(msg.Device)
-	}
+	disp.InQ <- msg
 }

@@ -70,24 +70,6 @@ func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
 	log.Println(id, "subscribed to", path)
 }
 
-// TimeseriesCB call and parse callback msg
-func SubscribeCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
-
-	// log.Printf("Incoming: %s, %q", mqttmsg.Topic(), mqttmsg.Payload())
-
-	msg, err := MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
-	if err != nil {
-		log.Printf("ERROR getting msg from mqtt: %+v", err)
-		return
-	}
-
-	log.Printf("Incoming: %+v", msg)
-	// disp.InQ <- msg
-
-	// update the station that sent the msg
-	Stations.Update(msg)
-}
-
 type Subscriber struct {
 	ID   string
 	Path string

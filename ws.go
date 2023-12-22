@@ -45,8 +45,8 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	wq := disp.AddWebQ()
-	defer disp.FreeWebQ(wq)
+	wq := dispatcher.AddWebQ()
+	defer dispatcher.FreeWebQ(wq)
 
 	for {
 		msg := <-wq
