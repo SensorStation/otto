@@ -73,6 +73,11 @@ func DataCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 	}
 
 	data := msg.Data.(iote.MsgData)
+	switch data.Device {
+	case "tempc":
+		data.Device = "tempf"
+
+	}
 	if data.Device == "tempc" || data.Device == "tempf" || data.Device == "humidity" {
 		controller.Update(&data)
 	}

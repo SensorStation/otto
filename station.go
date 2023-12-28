@@ -96,20 +96,17 @@ func (s Station) String() string {
 }
 
 func (s Station) MarshalJSON() (j []byte, err error) {
-	type Sens struct {
-		ID    string  `json:"id"`
-		Value float64 `json:"value"`
-	}
 
 	type Stat struct {
-		ID        string    `json:"id"`
-		LastHeard time.Time `json:"last-heard"`
-		Sensors   []Sens    `json:"sensors"`
+		ID        string             `json:"id"`
+		LastHeard time.Time          `json:"last-heard"`
+		Sensors   map[string]float64 `json:"sensors"`
 	}
 
 	stat := Stat{
 		ID:        s.ID,
 		LastHeard: s.LastHeard,
+		Sensors:   make(map[string]float64),
 	}
 
 	for id, sens := range s.Sensors {
@@ -120,12 +117,7 @@ func (s Station) MarshalJSON() (j []byte, err error) {
 			log.Printf("ERROR StationJSON ParseFloat: %s %+v", data.Value.(string))
 			v = -99.99
 		}
-
-		sens := Sens{
-			ID:    id,
-			Value: v,
-		}
-		stat.Sensors = append(stat.Sensors, sens)
+		stat.Sensors[id] = v
 	}
 
 	j, err = json.Marshal(&stat)

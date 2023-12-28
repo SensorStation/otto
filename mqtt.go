@@ -52,7 +52,7 @@ func (m *MQTT) Connect() {
 }
 
 //
-// ss/<ethaddr>/<data>/tempc value
+// ss/<ethaddr>/<data>/tempf value
 // ss/<ethaddr>/<data>/humidity value
 //
 func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
