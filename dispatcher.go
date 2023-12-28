@@ -1,6 +1,8 @@
 package iote
 
-import "log"
+import (
+	"log"
+)
 
 var (
 	dispatcher *Dispatcher
@@ -14,7 +16,7 @@ func init() {
 type Dispatcher struct {
 	InQ    chan *Msg
 	StoreQ chan *Msg
-	WebQ   map[chan *Msg]chan *Msg
+	WebQ   map[chan *Station]chan *Station
 }
 
 func GetDispatcher() *Dispatcher {
@@ -24,8 +26,8 @@ func GetDispatcher() *Dispatcher {
 func NewDispatcher() (d *Dispatcher) {
 	d = &Dispatcher{}
 	d.InQ = make(chan *Msg)
-	d.WebQ = make(map[chan *Msg]chan *Msg)
 	d.StoreQ = make(chan *Msg)
+	d.WebQ = make(map[chan *Station]chan *Station)
 
 	go func() {
 
@@ -34,20 +36,22 @@ func NewDispatcher() (d *Dispatcher) {
 			case msg := <-d.InQ:
 				log.Printf("[I] %s", msg.String())
 
-				switch msg.Category {
-				case "d":
-
-					for c, _ := range d.WebQ {
-						c <- msg
-					}
-					d.StoreQ <- msg
-
+				switch msg.Type {
 				case "c":
+
+				case "d":
+					d.StoreQ <- msg
 
 				case "m":
 
+				case "station":
+					st := msg.Data.(*Station)
+					for c, _ := range d.WebQ {
+						c <- st
+					}
+
 				default:
-					log.Println("Uknonwn message type: ", msg.Device)
+					log.Println("Uknonwn message type: ", msg.Type)
 				}
 			}
 		}
@@ -57,13 +61,13 @@ func NewDispatcher() (d *Dispatcher) {
 	return d
 }
 
-func (d *Dispatcher) AddWebQ() chan *Msg {
-	c := make(chan *Msg)
+func (d *Dispatcher) AddWebQ() chan *Station {
+	c := make(chan *Station)
 	d.WebQ[c] = c
 	return c
 }
 
-func (d *Dispatcher) FreeWebQ(c chan *Msg) {
+func (d *Dispatcher) FreeWebQ(c chan *Station) {
 	delete(d.WebQ, c)
 	close(c)
 }

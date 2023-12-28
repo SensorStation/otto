@@ -8,7 +8,7 @@ import (
 )
 
 type Websock struct {
-	msgQ chan *Msg
+	msgQ chan *Station
 }
 
 var upgrader = websocket.Upgrader{

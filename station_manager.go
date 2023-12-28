@@ -90,18 +90,21 @@ func (sm *StationManager) Add(st string) (station *Station, err error) {
 	return station, nil
 }
 
-func (sm *StationManager) Update(msg *Msg) {
+func (sm *StationManager) Update(msg *Msg) (st *Station) {
 	var err error
-	st := sm.Get(msg.Station)
+
+	data := msg.Data.(MsgData)
+	st = sm.Get(data.Station)
 	if st == nil {
-		log.Println("StationManager: Adding new station: ", msg.Station)
-		st, err = sm.Add(msg.Station)
+		log.Println("StationManager: Adding new station: ", data.Station)
+		st, err = sm.Add(data.Station)
 		if err != nil {
-			log.Println("StationManager: ERROR Adding new station", msg.Station, err)
+			log.Println("StationManager: ERROR Adding new station", data.Station, err)
 			return
 		}
 	}
 	st.Update(msg)
+	return st
 }
 
 func (sm *StationManager) Count() int {

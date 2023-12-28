@@ -1,7 +1,6 @@
 package iote
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -29,10 +28,8 @@ func NewStore() *MsgStore {
 
 	go func() {
 		for {
-			fmt.Println("Store waiting for incoming data")
 			select {
 			case msg := <-dispatcher.StoreQ:
-				fmt.Println("Store got some incoming data")
 				store.Store(msg)
 			}
 		}

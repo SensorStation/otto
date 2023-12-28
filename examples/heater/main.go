@@ -65,19 +65,26 @@ func StationCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 // TimeseriesCB call and parse callback msg
 func DataCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 
-	log.Printf("Incoming Data: %s, %s", mqttmsg.Topic(), mqttmsg.Payload())
+	log.Printf("MQTT [I] Data: %s, %s", mqttmsg.Topic(), mqttmsg.Payload())
 	msg, err := iote.MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
 	if err != nil {
 		log.Printf("ERROR - parsing incoming message: %+v\n", err)
 		return
 	}
 
-	if msg.Device == "tempc" || msg.Device == "tempf" {
-		controller.Update(msg)
+	data := msg.Data.(iote.MsgData)
+	if data.Device == "tempc" || data.Device == "tempf" || data.Device == "humidity" {
+		controller.Update(&data)
 	}
 
 	// update the station that sent the msg
 	// iote.Store.Store(msg)
-	iote.Stations.Update(msg)
+	station := iote.Stations.Update(msg)
+	if station == nil {
+		log.Printf("Failed to update station for %+v\n", msg)
+		return
+	}
+	msg.Data = station
+	msg.Type = "station"
 	disp.InQ <- msg
 }

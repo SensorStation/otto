@@ -22,7 +22,7 @@ func (c Controller) Off(station string) {
 	mqtt.Publish("ss/c/"+station+"/heater", "off")
 }
 
-func (c Controller) Update(msg *iote.Msg) {
+func (c Controller) Update(msg *iote.MsgData) {
 
 	var v float64
 
@@ -30,7 +30,6 @@ func (c Controller) Update(msg *iote.Msg) {
 	case float64:
 		v = msg.Value.(float64)
 	}
-
 	if v <= c.Min && c.State == Off {
 		c.On(msg.Device)
 	} else if v >= c.Max && c.State == On {
