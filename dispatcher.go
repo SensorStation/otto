@@ -37,15 +37,8 @@ func NewDispatcher() (d *Dispatcher) {
 				log.Printf("[I] %s", msg.String())
 
 				switch msg.Type {
-				case "c":
-
-				case "d":
-					d.StoreQ <- msg
-
-				case "m":
-
 				case "station":
-					st := msg.Data.(*Station)
+					st := Stations.Update(msg)
 					for c, _ := range d.WebQ {
 						c <- st
 					}
@@ -55,7 +48,6 @@ func NewDispatcher() (d *Dispatcher) {
 				}
 			}
 		}
-
 	}()
 
 	return d

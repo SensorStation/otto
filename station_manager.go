@@ -93,13 +93,13 @@ func (sm *StationManager) Add(st string) (station *Station, err error) {
 func (sm *StationManager) Update(msg *Msg) (st *Station) {
 	var err error
 
-	data := msg.Data.(MsgData)
-	st = sm.Get(data.Station)
+	data := msg.Data
+	st = sm.Get(data.ID)
 	if st == nil {
-		log.Println("StationManager: Adding new station: ", data.Station)
-		st, err = sm.Add(data.Station)
+		log.Println("StationManager: Adding new station: ", data.ID)
+		st, err = sm.Add(data.ID)
 		if err != nil {
-			log.Println("StationManager: ERROR Adding new station", data.Station, err)
+			log.Println("StationManager: ERROR Adding new station", data.ID, err)
 			return
 		}
 	}

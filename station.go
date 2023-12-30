@@ -3,7 +3,6 @@ package iote
 import (
 	"encoding/json"
 	"log"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -15,7 +14,7 @@ type Station struct {
 	LastHeard  time.Time     `json:"last-heard"`
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
 
-	Sensors  map[string]*Sensor  `json:"sensors"`
+	Sensors  map[string]float64  `json:"sensors"`
 	Controls map[string]*Control `json:"controls"`
 
 	ticker *time.Ticker `json:"-"`
@@ -29,7 +28,7 @@ func NewStation(id string) (st *Station) {
 	st = &Station{
 		ID:         id,
 		Expiration: 30 * time.Second,
-		Sensors:    make(map[string]*Sensor),
+		Sensors:    make(map[string]float64),
 		Controls:   make(map[string]*Control),
 	}
 	return st
@@ -39,18 +38,9 @@ func NewStation(id string) (st *Station) {
 // of data points.
 func (s *Station) Update(msg *Msg) {
 	s.mu.Lock()
-	data := msg.Data.(MsgData)
 
 	if msg.Type == "d" {
-		var sensor *Sensor
-		var found bool
-		if sensor, found = s.Sensors[data.Device]; !found {
-			sensor = &Sensor{
-				ID: data.Device,
-			}
-			s.Sensors[data.Device] = sensor
-		}
-		sensor.Update(msg.Data, msg.Time)
+		s.Sensors = msg.Data.Sensors
 	}
 	s.LastHeard = msg.Time
 	s.mu.Unlock()
@@ -95,31 +85,31 @@ func (s Station) String() string {
 	return s.ID
 }
 
-func (s Station) MarshalJSON() (j []byte, err error) {
+// func (s Station) MarshalJSON() (j []byte, err error) {
 
-	type Stat struct {
-		ID        string             `json:"id"`
-		LastHeard time.Time          `json:"last-heard"`
-		Sensors   map[string]float64 `json:"sensors"`
-	}
+// 	type Stat struct {
+// 		ID        string             `json:"id"`
+// 		LastHeard time.Time          `json:"last-heard"`
+// 		Sensors   map[string]float64 `json:"sensors"`
+// 	}
 
-	stat := Stat{
-		ID:        s.ID,
-		LastHeard: s.LastHeard,
-		Sensors:   make(map[string]float64),
-	}
+// 	stat := Stat{
+// 		ID:        s.ID,
+// 		LastHeard: s.LastHeard,
+// 		Sensors:   make(map[string]float64),
+// 	}
 
-	for id, sens := range s.Sensors {
-		data := sens.LastValue.(MsgData)
+// 	for id, sens := range s.Sensors {
+// 		data := sens.LastValue.(MsgData)
 
-		v, err := strconv.ParseFloat(data.Value.(string), 64)
-		if err != nil {
-			log.Printf("ERROR StationJSON ParseFloat: %s %+v", data.Value.(string))
-			v = -99.99
-		}
-		stat.Sensors[id] = v
-	}
+// 		v, err := strconv.ParseFloat(data.Value.(string), 64)
+// 		if err != nil {
+// 			log.Printf("ERROR StationJSON ParseFloat: %s %+v", data.Value.(string))
+// 			v = -99.99
+// 		}
+// 		stat.Sensors[id] = v
+// 	}
 
-	j, err = json.Marshal(&stat)
-	return j, err
-}
+// 	j, err = json.Marshal(&stat)
+// 	return j, err
+// }

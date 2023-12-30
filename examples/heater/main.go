@@ -36,7 +36,6 @@ func main() {
 	}
 	mqtt.Start()
 	time.Sleep(1 * time.Second)
-	mqtt.Subscribe("meta", "ss/m/station/#", StationCallback)
 	mqtt.Subscribe("data", "ss/d/#", DataCallback)
 
 	srv = iote.Server{
@@ -72,15 +71,7 @@ func DataCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 		return
 	}
 
-	data := msg.Data.(iote.MsgData)
-	switch data.Device {
-	case "tempc":
-		data.Device = "tempf"
-
-	}
-	if data.Device == "tempc" || data.Device == "tempf" || data.Device == "humidity" {
-		controller.Update(&data)
-	}
+	controller.Update(&msg.Data)
 
 	// update the station that sent the msg
 	// iote.Store.Store(msg)
@@ -89,7 +80,6 @@ func DataCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 		log.Printf("Failed to update station for %+v\n", msg)
 		return
 	}
-	msg.Data = station
 	msg.Type = "station"
 	disp.InQ <- msg
 }
