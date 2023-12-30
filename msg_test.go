@@ -1,33 +1,48 @@
 package iote
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 )
 
-func TestDataString(t *testing.T) {
+func getMsg() (Msg, time.Time) {
 	now := time.Now()
-	// d := MsgFloat64{
-	// 	Station:  "be:ef:ca:fe:01",
-	// 	Category: "data",
-	// 	Device:   "tempf",
-	// 	Time:     now,
-	// 	Value:    98.7,
-	// }
-
-	d := Msg{
-		Station:  "be:ef:ca:fe:01",
-		Category: "data",
-		Device:   "tempf",
-		Time:     now,
-		Value:    []byte("98.7"),
+	s := MsgStation{
+		ID:      "be:ef:ca:fe:01",
+		Sensors: make(map[string]float64),
+		Relays:  make(map[string]bool),
 	}
+	s.Sensors["tempf"] = 97.8
+	s.Sensors["humidity"] = 99.3
 
-	formatted := fmt.Sprintf("Time: %s, Category: %s, Station: %s, Device: %s = %q",
-		now.Format(time.RFC3339), d.Category, d.Station, d.Device, d.Value)
+	m := Msg{
+		ID:   1,
+		Type: "d",
+		Time: now,
+		Data: s,
+	}
+	return m, now
+}
 
-	str := d.String()
+func TestJSON(t *testing.T) {
+	m, _ := getMsg()
+
+	_, err := json.Marshal(m)
+	if err != nil {
+		t.Errorf("Failed to marshal message %+v", m)
+	}
+}
+
+func TestDataString(t *testing.T) {
+	m, now := getMsg()
+
+	formatted := fmt.Sprintf("ID: %d, Time: %s, Type: %s, Station: %s, tempf: %f, humidity: %f, ",
+		m.ID, now.Format(time.RFC3339), m.Type, m.Data.ID, m.Data.Sensors["tempf"], m.Data.Sensors["humidity"],
+	)
+
+	str := m.String()
 	if str != formatted {
 		t.Errorf("Data Formatted expected (%s) got (%s)", formatted, str)
 	}

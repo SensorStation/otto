@@ -14,8 +14,8 @@ type Station struct {
 	LastHeard  time.Time     `json:"last-heard"`
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
 
-	Sensors  map[string]float64  `json:"sensors"`
-	Controls map[string]*Control `json:"controls"`
+	Sensors  map[string]float64 `json:"sensors"`
+	Controls map[string]bool    `json:"controls"`
 
 	ticker *time.Ticker `json:"-"`
 	quit   chan bool    `json:"-"`
@@ -29,7 +29,7 @@ func NewStation(id string) (st *Station) {
 		ID:         id,
 		Expiration: 30 * time.Second,
 		Sensors:    make(map[string]float64),
-		Controls:   make(map[string]*Control),
+		Controls:   make(map[string]bool),
 	}
 	return st
 }

@@ -1,7 +1,9 @@
 package iote
 
 import (
+	"encoding/json"
 	"testing"
+	"time"
 )
 
 func StationCreation(count int) []string {
@@ -51,4 +53,34 @@ func TestStationManager(t *testing.T) {
 		}
 	}
 
+}
+
+func TestStationJSON(t *testing.T) {
+	sens := make(map[string]float64)
+	sens["tempf"] = 89.43
+	sens["humidity"] = 99.00
+
+	relays := make(map[string]bool)
+	relays["relay0"] = false
+	relays["relay1"] = true
+
+	st := &Station{
+		ID:        "aa:bb:cc:dd:ee:11",
+		LastHeard: time.Now(),
+		Sensors:   sens,
+		Controls:  relays,
+	}
+
+	j, err := json.Marshal(st)
+	if err != nil {
+		t.Errorf("Marshal Station failed: %+v", err)
+		return
+	}
+
+	var station Station
+	err = json.Unmarshal(j, &station)
+	if err != nil {
+		t.Errorf("Unmarshal Station failed: %+v", err)
+		return
+	}
 }
