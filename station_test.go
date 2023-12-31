@@ -68,7 +68,7 @@ func TestStationJSON(t *testing.T) {
 		ID:        "aa:bb:cc:dd:ee:11",
 		LastHeard: time.Now(),
 		Sensors:   sens,
-		Controls:  relays,
+		Relays:    relays,
 	}
 
 	j, err := json.Marshal(st)

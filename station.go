@@ -14,8 +14,8 @@ type Station struct {
 	LastHeard  time.Time     `json:"last-heard"`
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
 
-	Sensors  map[string]float64 `json:"sensors"`
-	Controls map[string]bool    `json:"controls"`
+	Sensors map[string]float64 `json:"sensors"`
+	Relays  map[string]bool    `json:"relays"`
 
 	ticker *time.Ticker `json:"-"`
 	quit   chan bool    `json:"-"`
@@ -29,7 +29,7 @@ func NewStation(id string) (st *Station) {
 		ID:         id,
 		Expiration: 30 * time.Second,
 		Sensors:    make(map[string]float64),
-		Controls:   make(map[string]bool),
+		Relays:     make(map[string]bool),
 	}
 	return st
 }
@@ -41,6 +41,7 @@ func (s *Station) Update(msg *Msg) {
 
 	if msg.Type == "d" {
 		s.Sensors = msg.Data.Sensors
+		s.Relays = msg.Data.Relays
 	}
 	s.LastHeard = msg.Time
 	s.mu.Unlock()
@@ -76,13 +77,18 @@ func (s *Station) Advertise(d time.Duration) {
 	}()
 }
 
+func (s *Station) Relay(id string, v bool) {
+	topic := "ss/c/" + s.ID + "/relay/" + id
+	val := "off"
+	if v {
+		val = "on"
+	}
+	mqtt.Publish(topic, val)
+}
+
 // Stop the station from advertising
 func (s *Station) Stop() {
 	s.quit <- true
-}
-
-func (s Station) String() string {
-	return s.ID
 }
 
 // func (s Station) MarshalJSON() (j []byte, err error) {

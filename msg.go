@@ -56,25 +56,3 @@ func MsgFromMQTT(topic string, payload []byte) (m *Msg, err error) {
 	m.Data = data
 	return m, nil
 }
-
-func (m Msg) String() string {
-	var str string
-	str = fmt.Sprintf("ID: %d, Time: %s, Type: %s, ",
-		m.ID, m.Time.Format(time.RFC3339), m.Type)
-	str += m.Data.String()
-	return str
-}
-
-func (m MsgStation) String() string {
-	str := fmt.Sprintf("Station: %s, tempf: %f, humidity: %f, ",
-		m.ID, m.Sensors["tempf"], m.Sensors["humidity"])
-
-	for k, v := range m.Relays {
-		vs := "off"
-		if v {
-			vs = "on"
-		}
-		str += k + ": " + vs
-	}
-	return str
-}

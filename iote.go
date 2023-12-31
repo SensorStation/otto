@@ -47,7 +47,7 @@ this:
 		"humidity",
 		"light"
 	],
-	"controls": [
+	"relays": [
 		"heater",
 		"light"
 	],

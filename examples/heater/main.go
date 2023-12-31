@@ -80,6 +80,7 @@ func DataCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 		log.Printf("Failed to update station for %+v\n", msg)
 		return
 	}
+
 	msg.Type = "station"
 	disp.InQ <- msg
 }

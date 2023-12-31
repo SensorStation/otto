@@ -1,6 +1,7 @@
 package iote
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -82,9 +83,18 @@ func (sub *Subscriber) String() string {
 
 // Publish will publish a value to the given channel
 func (m MQTT) Publish(topic string, value string) {
-	if t := m.Client.Publish(topic, byte(0), false, value); t == nil {
-		if m.Debug {
-			log.Printf("%v - I have a NULL token: %+v %s", m.Client, topic, value)
+	log.Printf("[I] MQTT Publishing %s -> %v", topic, value)
+	var t gomqtt.Token
+
+	if t = m.Client.Publish(topic, byte(0), false, value); t == nil {
+		if true {
+			log.Printf("[I] MQTT Pub NULL token: %s - %v", topic, value)
 		}
+		return
 	}
+	t.Wait()
+	if t.Error() != nil {
+		fmt.Printf("MQTT Publish token: %+v\n", t.Error())
+	}
+
 }

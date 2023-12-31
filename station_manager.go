@@ -13,9 +13,17 @@ import (
 type StationManager struct {
 	Stations map[string]*Station `json:"stations"`
 	Stale    map[string]*Station `json:"stale"`
+	EventQ   chan *StationEvent
 
 	ticker *time.Ticker `json:"-"`
 	mu     sync.Mutex   `json:"-"`
+}
+
+type StationEvent struct {
+	Type      string `json:"type"`
+	Device    string `json:"device"`
+	StationID string `json:"stationid"`
+	Value     bool   `json:"value"`
 }
 
 var (
@@ -32,7 +40,7 @@ func NewStationManager() (sm StationManager) {
 	sm.Stale = make(map[string]*Station)
 
 	// Start a ticker to clean up stale entries
-
+	sm.EventQ = make(chan *StationEvent)
 	quit := make(chan struct{})
 	sm.ticker = time.NewTicker(10 * time.Second)
 	go func() {
@@ -61,6 +69,15 @@ func NewStationManager() (sm StationManager) {
 					}
 					st.mu.Unlock()
 				}
+
+			case ev := <-sm.EventQ:
+				fmt.Printf("Station Event: ! %+v\n", ev)
+				st := sm.Get(ev.StationID)
+				if st == nil {
+					log.Printf("[W] Station Event could not find station: %s", ev.StationID)
+					continue
+				}
+				st.Relay(ev.Device, ev.Value)
 
 			case <-quit:
 				sm.ticker.Stop()

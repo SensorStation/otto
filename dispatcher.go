@@ -34,8 +34,6 @@ func NewDispatcher() (d *Dispatcher) {
 		for true {
 			select {
 			case msg := <-d.InQ:
-				log.Printf("[I] %s", msg.String())
-
 				switch msg.Type {
 				case "station":
 					st := Stations.Update(msg)

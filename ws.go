@@ -31,17 +31,21 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		for {
-			mt, message, err := conn.ReadMessage()
+			var message StationEvent
+			err := conn.ReadJSON(&message)
 			if err != nil {
 				log.Println("read:", err)
 				break
 			}
-			log.Printf("recv: %s", message)
-			err = conn.WriteMessage(mt, message)
-			if err != nil {
-				log.Println("write:", err)
-				break
+
+			switch message.Type {
+			case "relay":
+				Stations.EventQ <- &message
+
+			default:
+				log.Printf("ERROR: unknown event type: %+v", message)
 			}
+
 		}
 	}()
 
