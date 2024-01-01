@@ -1,4 +1,4 @@
-module github.com/rustyeddy/iote
+module github.com/rustyeddy/otto
 
 go 1.20
 

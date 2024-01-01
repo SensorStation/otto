@@ -51,16 +51,6 @@ func main() {
 	log.Printf("%s shutting down", os.Args[0])
 }
 
-func StationCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
-	log.Printf("Incoming Station: %s, %s", mqttmsg.Topic(), mqttmsg.Payload())
-	msg, err := iote.MsgFromMQTT(mqttmsg.Topic(), mqttmsg.Payload())
-	if err != nil {
-		log.Printf("ERROR - parsing incoming message: %+v\n", err)
-		return
-	}
-	iote.Stations.Update(msg)
-}
-
 // TimeseriesCB call and parse callback msg
 func DataCallback(mc gomqtt.Client, mqttmsg gomqtt.Message) {
 

@@ -1,4 +1,4 @@
-package iote
+package otto
 
 import (
 	"log"

@@ -81,4 +81,4 @@ commands are used to have a particular device change, for example
 turning a relay on or off.
 
 */
-package iote
+package otto
