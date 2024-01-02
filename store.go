@@ -29,7 +29,7 @@ func NewStore() *MsgStore {
 	go func() {
 		for {
 			select {
-			case msg := <-dispatcher.StoreQ:
+			case msg := <-o.Dispatcher.StoreQ:
 				store.Store(msg)
 			}
 		}

@@ -8,9 +8,7 @@ import (
 )
 
 type Server struct {
-	Addr   string
-	Appdir string
-
+	Addr string
 	*http.Server
 }
 
@@ -21,6 +19,7 @@ var (
 // Register to handle HTTP requests for particular paths in the
 // URL or MQTT channel.
 func (s *Server) Register(p string, h http.Handler) {
+	log.Println("HTTP REST API Registered: ", p)
 	http.Handle(p, h)
 }
 
@@ -34,16 +33,19 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) Start(addr string) error {
+func (s *Server) Start() {
 	log.Println("Starting hub Web and REST server on ", s.Addr)
 
 	// The web app
-	fs := http.FileServer(http.Dir("/srv/iot/iotvue/dist"))
+	fs := http.FileServer(http.Dir("/srv/otto/www"))
 	s.Register("/", fs)
 	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
 	s.Register("/api/data", s)
 	s.Register("/api/stations", Stations)
 
-	return http.ListenAndServe(s.Addr, nil)
+	go http.ListenAndServe(s.Addr, nil)
+
+	log.Println("HTTP Start on ", s.Addr)
+	return
 }

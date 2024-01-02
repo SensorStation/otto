@@ -17,15 +17,11 @@ type MQTT struct {
 	gomqtt.Client
 }
 
-var (
-	mqtt *MQTT
-)
+// var (
+// 	mqtt *MQTT
+// )
 
 func (m *MQTT) Start() {
-	if mqtt == nil {
-		mqtt = m
-	}
-
 	m.subscribers = make(map[string]*Subscriber)
 	m.Connect()
 }
@@ -82,7 +78,7 @@ func (sub *Subscriber) String() string {
 }
 
 // Publish will publish a value to the given channel
-func (m MQTT) Publish(topic string, value string) {
+func (m MQTT) Publish(topic string, value interface{}) {
 	log.Printf("[I] MQTT Publishing %s -> %v", topic, value)
 	var t gomqtt.Token
 

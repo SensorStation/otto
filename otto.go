@@ -82,3 +82,104 @@ turning a relay on or off.
 
 */
 package otto
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"plugin"
+
+	gomqtt "github.com/eclipse/paho.mqtt.golang"
+)
+
+type Sub interface {
+	Callback(string, []byte)
+}
+
+type Config interface {
+	GetAddr() string
+	GetAppdir() string
+	GetBroker() string
+}
+
+type OttO struct {
+	Config
+	*Dispatcher
+	*Server
+	*MQTT
+
+	Done chan bool
+}
+
+type controller interface {
+	Init() error
+}
+
+var (
+	o *OttO = &OttO{}
+)
+
+func O() *OttO {
+	return o
+}
+
+func (o *OttO) Start(c Config, plugins []string) {
+	// Start the dispatcher
+	o.Dispatcher = NewDispatcher()
+
+	// Start the MQTT Server
+	o.MQTT = &MQTT{Broker: c.GetBroker()}
+	o.MQTT.Start()
+
+	o.Server = &Server{Addr: c.GetAddr()}
+	go o.Server.Start()
+
+	o.LoadPlugins(plugins)
+}
+
+func (o *OttO) LoadPlugins(plugins []string) {
+	// Register some callbacks
+	// Start the HTTP Server
+	for _, p := range plugins {
+		plug, err := plugin.Open(p)
+		if err != nil {
+			log.Println("Failed to load plugin", err)
+			continue
+		}
+
+		ctlsym, err := plug.Lookup("Controller")
+		if err != nil {
+			fmt.Println("Lookup Init symbol", err)
+			continue
+		}
+
+		// 3. Assert that loaded symbol is of a desired type
+		// in this case interface type Greeter (defined above)
+		var c controller
+		c, ok := ctlsym.(controller)
+		if !ok {
+			fmt.Println("Load Plugins: unexpected type from module symbol")
+			os.Exit(1)
+		}
+
+		// 4. use the module
+		c.Init()
+	}
+
+}
+
+func (o *OttO) Subscribe(topic string, s Sub) {
+	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
+		s.Callback(m.Topic(), m.Payload())
+	}
+	o.MQTT.Subscribe(topic, topic, mfunc)
+}
+
+func (o *OttO) Register(path string, h http.Handler) {
+	o.Server.Register(path, h)
+}
+
+func (o *OttO) Publish(t string, v interface{}) {
+	o.MQTT.Publish(t, v)
+}

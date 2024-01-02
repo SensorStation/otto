@@ -22,9 +22,11 @@ func checkOrigin(r *http.Request) bool {
 }
 
 func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("[I] Connected with Websocket")
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("First err", err)
+		log.Println("Websocket Upgrader err", err)
 		return
 	}
 	defer conn.Close()
@@ -49,8 +51,8 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	wq := dispatcher.AddWebQ()
-	defer dispatcher.FreeWebQ(wq)
+	wq := o.Dispatcher.AddWebQ()
+	defer o.Dispatcher.FreeWebQ(wq)
 
 	for {
 		msg := <-wq

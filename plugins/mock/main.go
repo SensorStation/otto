@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/rustyeddy/iote"
+	"github.com/sensorstation/otto"
 )
 
 type Station struct {
@@ -15,7 +15,7 @@ type Station struct {
 }
 
 var (
-	mqtt *iote.MQTT
+	mqtt *otto.MQTT
 )
 
 func main() {

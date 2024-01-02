@@ -12,8 +12,8 @@ import (
 // to alter the way the program works.
 type Configuration struct {
 	Addr   string
-	App    string
 	Broker string
+	Appdir string
 
 	Debug     bool
 	DebugMQTT bool
@@ -29,7 +29,7 @@ type Configuration struct {
 
 func init() {
 	flag.StringVar(&config.Addr, "addr", "0.0.0.0:8011", "Address to listen for web connections")
-	flag.StringVar(&config.App, "app", "../app/dist", "Directory for the web app distribution")
+	flag.StringVar(&config.Appdir, "appdir", "/srv/otto/dist", "Directory for the web app distribution")
 	flag.StringVar(&config.Broker, "broker", "localhost", "Address of MQTT broker")
 	flag.BoolVar(&config.Debug, "debug", false, "Start debugging")
 	flag.BoolVar(&config.DebugMQTT, "debug-mqtt", false, "Debugging MQTT messages")
@@ -93,4 +93,16 @@ func (c *Configuration) ReadFile(fname string) error {
 	}
 
 	return err
+}
+
+func (c Configuration) GetAddr() string {
+	return c.Addr
+}
+
+func (c Configuration) GetAppdir() string {
+	return c.Appdir
+}
+
+func (c Configuration) GetBroker() string {
+	return c.Broker
 }

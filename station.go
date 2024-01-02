@@ -1,8 +1,6 @@
 package otto
 
 import (
-	"encoding/json"
-	"log"
 	"sync"
 	"time"
 )
@@ -47,49 +45,49 @@ func (s *Station) Update(msg *Msg) {
 	s.mu.Unlock()
 }
 
-func (s *Station) Announce() {
-	json, err := json.Marshal(s)
-	if err != nil {
-		log.Printf("ERROR - Station: %s - jsonified %+v", s.ID, err)
-		return
-	}
-	mqtt.Publish("ss/m/station/"+s.ID, string(json))
-}
-
-func (s *Station) Advertise(d time.Duration) {
-	if s.ticker == nil {
-		s.ticker = time.NewTicker(d)
-		s.Announce()
-	}
-
-	s.quit = make(chan bool)
-	go func() {
-		for {
-			select {
-			case <-s.ticker.C:
-				s.Announce()
-
-			case <-s.quit:
-				s.ticker.Stop()
-				return
-			}
-		}
-	}()
-}
-
 func (s *Station) Relay(id string, v bool) {
 	topic := "ss/c/" + s.ID + "/relay/" + id
 	val := "off"
 	if v {
 		val = "on"
 	}
-	mqtt.Publish(topic, val)
+	O().Publish(topic, val)
 }
 
 // Stop the station from advertising
 func (s *Station) Stop() {
 	s.quit <- true
 }
+
+// func (s *Station) Announce() {
+// 	json, err := json.Marshal(s)
+// 	if err != nil {
+// 		log.Printf("ERROR - Station: %s - jsonified %+v", s.ID, err)
+// 		return
+// 	}
+// 	otto.Publish("ss/m/station/"+s.ID, string(json))
+// }
+
+// func (s *Station) Advertise(d time.Duration) {
+// 	if s.ticker == nil {
+// 		s.ticker = time.NewTicker(d)
+// 		s.Announce()
+// 	}
+
+// 	s.quit = make(chan bool)
+// 	go func() {
+// 		for {
+// 			select {
+// 			case <-s.ticker.C:
+// 				s.Announce()
+
+// 			case <-s.quit:
+// 				s.ticker.Stop()
+// 				return
+// 			}
+// 		}
+// 	}()
+// }
 
 // func (s Station) MarshalJSON() (j []byte, err error) {
 

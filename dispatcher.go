@@ -4,23 +4,11 @@ import (
 	"log"
 )
 
-var (
-	dispatcher *Dispatcher
-)
-
-func init() {
-	dispatcher = NewDispatcher()
-}
-
 // Dispatcher accepts
 type Dispatcher struct {
 	InQ    chan *Msg
 	StoreQ chan *Msg
 	WebQ   map[chan *Station]chan *Station
-}
-
-func GetDispatcher() *Dispatcher {
-	return dispatcher
 }
 
 func NewDispatcher() (d *Dispatcher) {
@@ -32,10 +20,12 @@ func NewDispatcher() (d *Dispatcher) {
 	go func() {
 
 		for true {
+
 			select {
 			case msg := <-d.InQ:
 				switch msg.Type {
 				case "station":
+
 					st := Stations.Update(msg)
 					for c, _ := range d.WebQ {
 						c <- st
