@@ -19,7 +19,7 @@ var (
 )
 
 func main() {
-	mqtt = &iote.MQTT{
+	mqtt = &otto.MQTT{
 		Broker: "localhost",
 		ID:     "mock",
 	}

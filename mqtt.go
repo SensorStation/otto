@@ -41,8 +41,7 @@ func (m *MQTT) Connect() {
 	opts.SetCleanSession(true)
 	m.Client = gomqtt.NewClient(opts)
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
-		// fmt.Println(token.Error())
+		fmt.Println("MQTT Connect: ", token.Error())
 		return
 	}
 	log.Println("Connected to broker: ", m.Broker)

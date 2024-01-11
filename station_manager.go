@@ -16,7 +16,7 @@ type StationManager struct {
 	EventQ   chan *StationEvent
 
 	ticker *time.Ticker `json:"-"`
-	mu     sync.Mutex   `json:"-"`
+	mu     *sync.Mutex  `json:"-"`
 }
 
 type StationEvent struct {
@@ -27,17 +27,18 @@ type StationEvent struct {
 }
 
 var (
-	Stations StationManager
+	Stations *StationManager
 )
 
 func init() {
 	Stations = NewStationManager()
 }
 
-func NewStationManager() (sm StationManager) {
-	sm = StationManager{}
+func NewStationManager() (sm *StationManager) {
+	sm = &StationManager{}
 	sm.Stations = make(map[string]*Station)
 	sm.Stale = make(map[string]*Station)
+	sm.mu = new(sync.Mutex)
 
 	// Start a ticker to clean up stale entries
 	sm.EventQ = make(chan *StationEvent)
