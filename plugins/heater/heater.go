@@ -23,7 +23,7 @@ func (c controller) Init() error {
 
 func (c controller) Callback(t string, p []byte) {
 
-	log.Printf("MQTT [I] Data: %s, %s", t, string(p))
+	// log.Printf("MQTT [I] Data: %s, %s", t, string(p))
 	msg, err := otto.MsgFromMQTT(t, p)
 	if err != nil {
 		log.Printf("ERROR - parsing incoming message: %+v\n", err)

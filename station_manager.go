@@ -23,7 +23,7 @@ type StationEvent struct {
 	Type      string `json:"type"`
 	Device    string `json:"device"`
 	StationID string `json:"stationid"`
-	Value     bool   `json:"value"`
+	Value     string `json:"value"`
 }
 
 var (
