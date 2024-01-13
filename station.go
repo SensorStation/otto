@@ -45,13 +45,9 @@ func (s *Station) Update(msg *Msg) {
 	s.mu.Unlock()
 }
 
-func (s *Station) Relay(id string, v bool) {
+func (s *Station) Relay(id string, v string) {
 	topic := "ss/c/" + s.ID + "/relay/" + id
-	val := "off"
-	if v {
-		val = "on"
-	}
-	O().Publish(topic, val)
+	O().Publish(topic, v)
 }
 
 // Stop the station from advertising

@@ -36,7 +36,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			var message StationEvent
 			err := conn.ReadJSON(&message)
 			if err != nil {
-				log.Println("read:", err)
+				log.Printf("WS [I]: %+v - %+v", message, err)
 				break
 			}
 
@@ -62,6 +62,4 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	log.Println("WS Connection going to close")
 }
