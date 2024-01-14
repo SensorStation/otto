@@ -1,7 +1,6 @@
 package otto
 
 import (
-	"fmt"
 	"log"
 
 	"encoding/json"
@@ -40,10 +39,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Start the HTTP server after registering REST API callbacks
 // and initializing the Web application directory
 func (s *Server) Start() {
-	fmt.Printf("SERVER ============> %+v\n", s)
-
 	log.Println("Starting hub Web and REST server on ", s.Addr)
-	fmt.Println("=================> APPDIR: ", s.Appdir)
 
 	if s.Appdir != "" {
 		log.Println("Server: webapp dir", s.Appdir)
@@ -56,7 +52,5 @@ func (s *Server) Start() {
 	s.Register("/api/stations", Stations)
 
 	go http.ListenAndServe(s.Addr, nil)
-
-	log.Println("HTTP Start on ", s.Addr)
 	return
 }
