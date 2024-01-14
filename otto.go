@@ -115,21 +115,26 @@ var (
 	O *OttO = nil
 )
 
+func NewOttO() *OttO {
+	O = &OttO{
+		MQTT:   &MQTT{},
+		Server: &Server{},
+		Store:  &Store{},
+	}
+	return O
+}
+
 func (o *OttO) Start() {
 	// Start the dispatcher
 	o.Dispatcher = NewDispatcher()
+	o.Store = NewStore()
 
 	if o.Broker != "" {
 		o.MQTT = &MQTT{Broker: o.Broker}
 		o.MQTT.Start()
 	}
 
-	if o.Addr != "" {
-		o.Server = &Server{Addr: o.Addr}
-		go o.Server.Start()
-	}
-
-	o.Store = NewStore()
+	go o.Server.Start()
 
 	o.LoadPlugins(o.Plugins)
 }
@@ -138,6 +143,7 @@ func (o *OttO) LoadPlugins(plugins []string) {
 	// Register some callbacks
 	// Start the HTTP Server
 	for _, p := range plugins {
+		fmt.Println("Loading plugin: ", p)
 		o.LoadPlugin(p)
 	}
 }

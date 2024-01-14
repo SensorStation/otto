@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
-	"os"
 
 	"github.com/sensorstation/otto"
 )
@@ -18,13 +18,18 @@ func main() {
 
 	flag.Parse()
 
-	o = &otto.OttO{}
+	o = otto.NewOttO()
+	fmt.Printf("-----> BEFORE: O.Server: %+v\n", o.Server)
+
 	o.Broker = config.Broker
 	o.Addr = config.Addr
 	o.Appdir = config.Appdir
-	o.Plugins = os.Args[1:]
+	o.Plugins = append(o.Plugins, config.Plugin)
 
+	fmt.Printf("-----> AFTER1: O.Server: %+v\n", o.Server)
 	o.Start()
+	fmt.Printf("-----> AFTER2: O.Server: %+v\n", o.Server)
+
 	o.Register("/api/config", config)
 	o.Subscribe("ss/c/otto/#", e)
 	<-o.Done

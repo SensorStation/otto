@@ -1,6 +1,7 @@
 package otto
 
 import (
+	"fmt"
 	"log"
 
 	"encoding/json"
@@ -13,8 +14,6 @@ import (
 type Server struct {
 	Addr   string
 	Appdir string
-
-	*http.Server
 }
 
 var (
@@ -41,11 +40,16 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Start the HTTP server after registering REST API callbacks
 // and initializing the Web application directory
 func (s *Server) Start() {
-	log.Println("Starting hub Web and REST server on ", s.Addr)
+	fmt.Printf("SERVER ============> %+v\n", s)
 
-	// The web app
-	fs := http.FileServer(http.Dir("/srv/otto/www"))
-	s.Register("/", fs)
+	log.Println("Starting hub Web and REST server on ", s.Addr)
+	fmt.Println("=================> APPDIR: ", s.Appdir)
+
+	if s.Appdir != "" {
+		log.Println("Server: webapp dir", s.Appdir)
+		fs := http.FileServer(http.Dir(s.Appdir))
+		s.Register("/", fs)
+	}
 	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
 	s.Register("/api/data", s)

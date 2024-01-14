@@ -20,8 +20,8 @@ type Configuration struct {
 	FakeWS    bool
 	Filename  string
 	Mock      bool
-
-	MaxData int // maximum data values to save
+	MaxData   int // maximum data values to save
+	Plugin    string
 
 	GPIO    bool
 	Verbose bool
@@ -34,10 +34,10 @@ func init() {
 	flag.BoolVar(&config.Debug, "debug", false, "Start debugging")
 	flag.BoolVar(&config.DebugMQTT, "debug-mqtt", false, "Debugging MQTT messages")
 	flag.BoolVar(&config.FakeWS, "fake-ws", false, "Fake websocket data")
+	flag.StringVar(&config.Filename, "config", "~/.config/sensors.json", "Where to read and store config")
 	flag.IntVar(&config.MaxData, "max-data", 1000, "Maximum data length for sensors")
 	flag.BoolVar(&config.Mock, "mock", false, "Mock sensor data")
-	flag.StringVar(&config.Filename, "config", "~/.config/sensors.json", "Where to read and store config")
-
+	flag.StringVar(&config.Plugin, "plugin", "", "Plugins to be loaded")
 	flag.BoolVar(&config.Verbose, "verbose", false, "Crank up the output")
 	flag.BoolVar(&config.GPIO, "gpio", false, "Utilize GPIO for Raspberry PI")
 }
