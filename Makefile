@@ -1,7 +1,7 @@
 PLUGINS := $(wildcard plugins/*)
-SUBDIRS = $(PLUGINS) mock otto
+SUBDIRS = $(PLUGINS) otto
 
-all: test build
+all: test $(SUBDIRS)
 
 test:
 	go test ./...
