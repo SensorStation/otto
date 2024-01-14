@@ -56,3 +56,11 @@ func MsgFromMQTT(topic string, payload []byte) (m *Msg, err error) {
 	m.Data = data
 	return m, nil
 }
+
+func (m *Msg) String() string {
+	now := time.Now()
+
+	formatted := fmt.Sprintf("ID: %d, Time: %s, Type: %s, Station: %s, tempf: %f, humidity: %f, ",
+		m.ID, now.Format(time.RFC3339), m.Type, m.Data.ID, m.Data.Sensors["tempf"], m.Data.Sensors["humidity"])
+	return formatted
+}

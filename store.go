@@ -4,32 +4,23 @@ import (
 	"log"
 )
 
-type Store interface {
-	Store(msg *Msg) error
-}
-
-type MsgStore struct {
+type Store struct {
 	Source map[string]map[string]float64
+	StoreQ chan *Msg
 }
 
-var (
-	store *MsgStore
-)
-
-func init() {
-	store = NewStore()
-}
-
-func NewStore() *MsgStore {
+func NewStore() *Store {
 	m := make(map[string]map[string]float64)
-	store = &MsgStore{
+	q := make(chan *Msg)
+	store := &Store{
 		Source: m,
+		StoreQ: q,
 	}
 
 	go func() {
 		for {
 			select {
-			case msg := <-o.Dispatcher.StoreQ:
+			case msg := <-store.StoreQ:
 				store.Store(msg)
 			}
 		}
@@ -38,7 +29,7 @@ func NewStore() *MsgStore {
 	return store
 }
 
-func (s *MsgStore) Store(msg *Msg) error {
+func (s *Store) Store(msg *Msg) error {
 	log.Printf("Store: %+v\n", msg)
 	return nil
 }

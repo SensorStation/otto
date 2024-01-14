@@ -15,11 +15,11 @@ type Control struct {
 }
 
 func (c Control) On(station string) {
-	otto.O().Publish("ss/c/"+station+"/heater", "on")
+	otto.O.Publish("ss/c/"+station+"/heater", "on")
 }
 
 func (c Control) Off(station string) {
-	otto.O().Publish("ss/c/"+station+"/heater", "off")
+	otto.O.Publish("ss/c/"+station+"/heater", "off")
 }
 
 func (c Control) Update(msg *otto.MsgStation) {

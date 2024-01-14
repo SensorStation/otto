@@ -47,7 +47,7 @@ func (s *Station) Update(msg *Msg) {
 
 func (s *Station) Relay(id string, v string) {
 	topic := "ss/c/" + s.ID + "/relay/" + id
-	O().Publish(topic, v)
+	O.MQTT.Publish(topic, v)
 }
 
 // Stop the station from advertising

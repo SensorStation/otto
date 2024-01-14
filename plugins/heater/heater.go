@@ -16,8 +16,7 @@ var (
 )
 
 func (c controller) Init() error {
-	o := otto.O()
-	o.Subscribe("ss/d/#", Controller)
+	otto.O.Subscribe("ss/d/#", Controller)
 	return nil
 }
 
@@ -40,7 +39,7 @@ func (c controller) Callback(t string, p []byte) {
 		return
 	}
 
-	o := otto.O()
+	o := otto.O
 	msg.Type = "station"
 	o.InQ <- msg
 }

@@ -1,0 +1,4 @@
+package otto
+
+func init() {
+}

@@ -15,8 +15,8 @@ func checkDefaults(t *testing.T, c *Configuration) bool {
 		return false
 	}
 
-	if c.App != "../app/dist" {
-		t.Errorf("config.App expected (../app/dist) got (%s)", c.App)
+	if c.Appdir != "../app/dist" {
+		t.Errorf("config.App expected (../app/dist) got (%s)", c.Appdir)
 		return false
 	}
 

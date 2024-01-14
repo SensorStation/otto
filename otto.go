@@ -87,7 +87,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"plugin"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
@@ -97,17 +96,13 @@ type Sub interface {
 	Callback(string, []byte)
 }
 
-type Config interface {
-	GetAddr() string
-	GetAppdir() string
-	GetBroker() string
-}
-
 type OttO struct {
-	Config
 	*Dispatcher
-	*Server
 	*MQTT
+	*Server
+	*Store
+
+	Plugins []string
 
 	Done chan bool
 }
@@ -117,58 +112,65 @@ type controller interface {
 }
 
 var (
-	o *OttO = &OttO{}
+	O *OttO = nil
 )
 
-func O() *OttO {
-	return o
-}
-
-func (o *OttO) Start(c Config, plugins []string) {
+func (o *OttO) Start() {
 	// Start the dispatcher
 	o.Dispatcher = NewDispatcher()
 
-	// Start the MQTT Server
-	o.MQTT = &MQTT{Broker: c.GetBroker()}
-	o.MQTT.Start()
+	if o.Broker != "" {
+		o.MQTT = &MQTT{Broker: o.Broker}
+		o.MQTT.Start()
+	}
 
-	o.Server = &Server{Addr: c.GetAddr()}
-	go o.Server.Start()
+	if o.Addr != "" {
+		o.Server = &Server{Addr: o.Addr}
+		go o.Server.Start()
+	}
 
-	o.LoadPlugins(plugins)
+	o.Store = NewStore()
+
+	o.LoadPlugins(o.Plugins)
 }
 
 func (o *OttO) LoadPlugins(plugins []string) {
 	// Register some callbacks
 	// Start the HTTP Server
 	for _, p := range plugins {
-		plug, err := plugin.Open(p)
-		if err != nil {
-			log.Println("Failed to load plugin", err)
-			continue
-		}
-
-		ctlsym, err := plug.Lookup("Controller")
-		if err != nil {
-			fmt.Println("Lookup Init symbol", err)
-			continue
-		}
-
-		// 3. Assert that loaded symbol is of a desired type
-		// in this case interface type Greeter (defined above)
-		var c controller
-		c, ok := ctlsym.(controller)
-		if !ok {
-			fmt.Println("Load Plugins: unexpected type from module symbol")
-			os.Exit(1)
-		}
-
-		// 4. use the module
-		c.Init()
+		o.LoadPlugin(p)
 	}
-
 }
 
+func (o *OttO) LoadPlugin(p string) {
+	plug, err := plugin.Open(p)
+	if err != nil {
+		log.Println("Failed to load plugin", err)
+		return
+	}
+
+	ctlsym, err := plug.Lookup("Controller")
+	if err != nil {
+		fmt.Println("Lookup Init symbol", err)
+		return
+	}
+
+	// 3. Assert that loaded symbol is of a desired type
+	// in this case interface type Greeter (defined above)
+	var c controller
+	c, ok := ctlsym.(controller)
+	if !ok {
+		fmt.Println("Load Plugins: unexpected type from module symbol")
+		return
+	}
+
+	// 4. use the module
+	c.Init()
+}
+
+// Subscribe to MQTT Message the Sub (Subscriber) will is an
+// Interface that must have a Callback(topic string, payload []byte)
+// signature
 func (o *OttO) Subscribe(topic string, s Sub) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
 		s.Callback(m.Topic(), m.Payload())

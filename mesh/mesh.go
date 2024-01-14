@@ -1,13 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"time"
-	"strings"
-	"encoding/json"
 	"net/http"
-
+	"time"
 	// mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -17,9 +15,11 @@ type MeshNetwork struct {
 	Pass string
 	MeshRouter
 
-	RootId	string				// Id of the root node
-	Nodes map[string]*MeshNode
+	RootId string // Id of the root node
+	Nodes  map[string]*MeshNode
 }
+
+var mn MeshNetwork
 
 func (m *MeshNetwork) GetNode(nid string) (mn *MeshNode) {
 	var e bool
@@ -36,13 +36,12 @@ func (m *MeshNetwork) UpdateRoot(rootid string) {
 	// TODO create a fully configured node and schedule network topology updates.
 	// log.Printf("%s.%s %s[%.0f]: rootid: %s, self: %s, parent: %s\n",
 	//	addr, typ, msgtype, layer, rootid, self, parent);
-	if (mesh.RootId != rootid) {
+	if m.RootId != rootid {
 		// we have a change of roots
-		log.Println("Root Node has changed from ", mesh.RootId, " to ", rootid)
-		mesh.RootId = rootid
+		log.Println("Root Node has changed from ", m.RootId, " to ", rootid)
+		m.RootId = rootid
 	}
 }
-
 
 // ServeHTTP provides a REST interface to the config structure
 func (m MeshNetwork) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -51,14 +50,13 @@ func (m MeshNetwork) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	switch r.Method {
 	case "GET":
-		json.NewEncoder(w).Encode(mesh)
+		json.NewEncoder(w).Encode(m)
 
 	case "POST", "PUT":
 		// TODO
 		http.Error(w, "Not Yet Supported", 401)
 	}
 }
-
 
 // MeshRouter is the optional IP router for the mesh network
 type MeshRouter struct {
@@ -70,20 +68,20 @@ type MeshRouter struct {
 // MeshNode represents a single node in the ESP-MESH network, this allows us
 // to keep track of our inventory fleet.
 type MeshNode struct {
-	Id     string
+	Id       string
 	Parent   string
 	Layer    int
 	Children map[string]string
-	Updated time.Time
+	Updated  time.Time
 }
 
 func NewNode(d map[string]interface{}) *MeshNode {
 	self := d["self"].(string)
 	parent := d["parent"].(string)
-	pnode := mesh.GetNode(parent)
+	pnode := mn.GetNode(parent)
 
 	mn := &MeshNode{
-		Id:    self,
+		Id:      self,
 		Parent:  pnode.Id,
 		Layer:   int(d["layer"].(float64)),
 		Updated: time.Now(),
@@ -92,7 +90,7 @@ func NewNode(d map[string]interface{}) *MeshNode {
 }
 
 func (n *MeshNode) UpdateParent(p *MeshNode) {
-	if (n.Parent != p.Id) {
+	if n.Parent != p.Id {
 		log.Printf("n.Parent has changed from %s -> %s\n", n.Parent, p.Id)
 	}
 	n.Parent = p.Id
@@ -100,7 +98,7 @@ func (n *MeshNode) UpdateParent(p *MeshNode) {
 
 func (n *MeshNode) UpdateChild(c *MeshNode) {
 	log.Print("Parent ", n.Id)
-	if (n.Children == nil) {
+	if n.Children == nil {
 		n.Children = make(map[string]string)
 	}
 
@@ -134,58 +132,58 @@ type MeshMessage struct {
 
 type MeshHeartBeat struct {
 	Typ    string `json:"type"`   // heartbeat
-	Id   string `json:"self"`   // macaddr of advertising node
+	Id     string `json:"self"`   // macaddr of advertising node
 	Parent string `json:"parent"` // macaddr of parent
 	Layer  int    `json:"layer"`  // node layer
 }
 
 func (mn MeshNetwork) MsgRecv(topic string, payload []byte) {
-	
-	var m ToCloudMsg
-	err := json.Unmarshal(payload, &m)
-	if err != nil {
-		log.Fatal("Failed to unmarshal payload")
-	}
 
-	// unravel the json message and verify our current node information
-	paths := strings.Split(topic, "/");
-	if len(paths) != 3 {
-		log.Fatal("Error unsupported path")
-	}
+	// var m MeshMessage
+	// err := json.Unmarshal(payload, &m)
+	// if err != nil {
+	// 	log.Fatal("Failed to unmarshal payload")
+	// }
 
-	rootid := paths[1]
-	//addr := m.Addr
-	//typ  := m.Type
-	data := m.Data
-	msgtype, _ := data["type"]
+	// // unravel the json message and verify our current node information
+	// paths := strings.Split(topic, "/")
+	// if len(paths) != 3 {
+	// 	log.Fatal("Error unsupported path")
+	// }
 
-	switch (msgtype) {
-	case "heartbeat":
-		
-		self, _ := data["self"].(string)
-		parent, _ := data["parent"].(string)
-		layer, _ := data["layer"].(int)
-		mesh.Update(rootid, self, parent, layer)
+	// rootid := paths[1]
+	// data := m.Data
+	// msgtype := data["type"]
 
-	default:
-		log.Fatalln("Unknown message type: ", msgtype)
-	}
+	// switch msgtype {
+	// case "heartbeat":
+
+	// 	self, _ := data["self"].(string)
+	// 	parent, _ := data["parent"].(string)
+	// 	layer, _ := data["layer"].(int)
+	// 	mn.Update(rootid, self, parent, layer)
+
+	// default:
+	// 	log.Fatalln("Unknown message type: ", msgtype)
+	// }
+	return
 }
 
 func (mn MeshNetwork) Update(rootid, id, parent string, layer int) {
 
-	if config.Debug {
-		log.Println("[MESH] Update [id/parent/rootid/layer]: ", id, parent, rootid, layer)		
+	var debug bool
+	if debug {
+		log.Println("[MESH] Update [id/parent/rootid/layer]: ", id, parent, rootid, layer)
 	}
 
-	if mesh.RootId != rootid {
+	if mn.RootId != rootid {
 		log.Printf("[MESH] Root %s has changed to %s\n", mn.RootId, rootid)
-		mesh.RootId = rootid
+		mn.RootId = rootid
 	}
 
-	node := mesh.GetNode(id)
+	node := mn.GetNode(id)
 	if node == nil || node.Id == "" {
-		node.Parent = parent		
+		node.Parent = parent
 	}
 
 	if node.Layer != layer {
