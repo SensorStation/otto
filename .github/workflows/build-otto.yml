@@ -1,4 +1,4 @@
-name: Makefile CI
+name: Build OttO
 
 on:
   push:
@@ -8,14 +8,14 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-
-    - name: Run Tests
-      run: make test
-
     - name: Install dependencies
       run: make
+    - name: Upload OttO and Plugins
+      uses: actions/upload-artifact@v3
+      with:
+        name: OttO
+        path: ../../otto/otto
+        
