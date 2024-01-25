@@ -143,7 +143,7 @@ func (o *OttO) LoadPlugins(plugins []string) {
 	// Register some callbacks
 	// Start the HTTP Server
 	for _, p := range plugins {
-		fmt.Println("Loading plugin: ", p)
+		log.Println("Loading plugin: ", p)
 		o.LoadPlugin(p)
 	}
 }

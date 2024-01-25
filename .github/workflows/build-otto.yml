@@ -1,0 +1,22 @@
+name: Build OttO
+run-name: ${{ github.actor }} Makefile CI/CD
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run Tests
+      run: make test
+    - name: Install dependencies
+      run: make
+    - name: Upload OttO and Plugins
+      uses: actions/upload-artifact@v3
+      with:
+        name: OttO
+        path: ../../otto/otto
+        
