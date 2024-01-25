@@ -6,6 +6,9 @@ all: test $(SUBDIRS)
 test:
 	go test ./...
 
+test-v:
+	go test -v ./...
+
 $(SUBDIRS):
 	$(MAKE) -C $@
 
