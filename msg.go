@@ -14,10 +14,13 @@ type Msg struct {
 	ID   int64      `json:"id"`
 	Type string     `json:"type"`
 	Data MsgStation `json:"station"`
+	Time string		`json:"time"`
 
-	time.Time `json:"time"`
+	// time.Time `json:"time"`
 }
 
+// MsgStation carries a message containing Station information
+// including the Station ID, Sensors and Relays (On/Off)
 type MsgStation struct {
 	ID      string             `json:"id"`
 	Sensors map[string]float64 `json:"sensors"`
@@ -33,7 +36,9 @@ func getMsgID() int64 {
 	return msgid
 }
 
-func MsgFromMQTT(topic string, payload []byte) (m *Msg, err error) {
+// MsgFromMQTT will parse the topic and pass the payload
+// to the correct station for the given value.
+func MsgFromMQTT(topic string, payload []byte) (*Msg, error) {
 
 	// extract the station from the topic
 	paths := strings.Split(topic, "/")
@@ -42,21 +47,21 @@ func MsgFromMQTT(topic string, payload []byte) (m *Msg, err error) {
 		return nil, err
 	}
 
-	m = &Msg{
-		ID:   getMsgID(),
-		Type: paths[1],
-		Time: time.Now(),
-	}
+	// m = &Msg{
+	// 	ID:   getMsgID(),
+	// 	Type: paths[1],
+	// 	Time: time.Now().Format(time.RFC3339),
+	// }
 
-	var data MsgStation
-	err = json.Unmarshal(payload, &data)
+	var m Msg
+	err := json.Unmarshal(payload, &m)
 	if err != nil {
 		return nil, err
 	}
-	m.Data = data
-	return m, nil
+	return &m, nil
 }
 
+// String will stringify the payload and topic from MQTT
 func (m *Msg) String() string {
 	now := time.Now()
 
