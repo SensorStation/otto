@@ -8,6 +8,8 @@ import (
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+// MQTT is a wrapper around the Paho MQTT Go package
+// Wraps the Broker, ID and Debug variables.
 type MQTT struct {
 	ID     string
 	Broker string
@@ -17,15 +19,14 @@ type MQTT struct {
 	gomqtt.Client
 }
 
-// var (
-// 	mqtt *MQTT
-// )
-
+// Start causes a Connect to the MQTT Broker
 func (m *MQTT) Start() {
 	m.subscribers = make(map[string]*Subscriber)
 	m.Connect()
 }
 
+// Connect to the MQTT broker after setting some MQTT options
+// then connecting to the MQTT broker
 func (m *MQTT) Connect() {
 	if m.Debug {
 		gomqtt.DEBUG = log.New(os.Stdout, "", 0)
@@ -47,10 +48,11 @@ func (m *MQTT) Connect() {
 	log.Println("Connected to broker: ", m.Broker)
 }
 
+// Subscribe to MQTT messages that follow specific topic patterns
+// wildcards '+' and '#' are supported.  Examples
 //
 // ss/<ethaddr>/<data>/tempf value
 // ss/<ethaddr>/<data>/humidity value
-//
 func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
 	sub := &Subscriber{id, path, f}
 	m.subscribers[id] = sub
@@ -66,12 +68,16 @@ func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
 	log.Println(id, "subscribed to", path)
 }
 
+// Subscriber contains a Subscriber ID, a topic Path and a
+// Message Handler for messages to the corresponding topic path
 type Subscriber struct {
 	ID   string
 	Path string
 	gomqtt.MessageHandler
 }
 
+// String returns a string representation of the Subscriber and
+// Subscriber ID
 func (sub *Subscriber) String() string {
 	return sub.ID + " " + sub.Path
 }

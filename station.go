@@ -1,6 +1,7 @@
 package otto
 
 import (
+	"log"
 	"sync"
 	"time"
 )
@@ -41,7 +42,13 @@ func (s *Station) Update(msg *Msg) {
 		s.Sensors = msg.Data.Sensors
 		s.Relays = msg.Data.Relays
 	}
-	s.LastHeard = msg.Time
+	t, err := time.Parse(time.RFC3339, msg.Time)
+	if err != nil {
+		log.Println("Station Failed to parse msg.Time , err")
+	} else {
+		s.LastHeard = t		
+	}
+
 	s.mu.Unlock()
 }
 

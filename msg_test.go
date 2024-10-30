@@ -17,13 +17,34 @@ func getMsg() (Msg, time.Time) {
 	s.Sensors["tempf"] = 97.8
 	s.Sensors["humidity"] = 99.3
 
+	t := now.Format(time.RFC3339)
 	m := Msg{
 		ID:   1,
 		Type: "d",
-		Time: now,
+		Time: t,
 		Data: s,
 	}
 	return m, now
+}
+
+func TestStationMsg(t *testing.T) {
+	topic := "ss/d/be:ef:ca:fe:01/station"
+	omsg, _ := getMsg()
+
+	j, err := json.Marshal(omsg)
+	if err != nil {
+		t.Errorf("json marshal failed %+v", err)
+		return
+	}
+
+	// t.Logf("j: %s\n", string(j))
+	msg, err := MsgFromMQTT(topic, j)
+	if err != nil {
+		t.Errorf("Extracting message from MQTT %+v", err)
+		return
+	}
+
+	t.Logf("MSG: %+v", msg)
 }
 
 func TestJSON(t *testing.T) {

@@ -1,8 +1,3 @@
-PLUGINS := $(wildcard plugins/*)
-SUBDIRS = $(PLUGINS) otto
-
-all: test $(SUBDIRS)
-
 test:
 	go test ./...
 

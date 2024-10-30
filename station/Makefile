@@ -1,7 +1,5 @@
-PLUGINS := $(wildcard plugins/*)
-SUBDIRS = $(PLUGINS) otto
-
-all: test $(SUBDIRS)
+pi:
+	env GOOS=linux GOARCH=arm GOARM=7 go build -v . 
 
 test:
 	go test ./...
