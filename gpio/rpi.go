@@ -25,23 +25,28 @@ type Pin struct {
 	*gpiocdev.Line
 }
 
-type Pinmap struct {
+type RPI struct {
 	Chip     *gpiocdev.Chip
 	ChipName string       `json:chip-name`
 	Pins     map[int]*Pin `json:pins`
 }
 
 var (
-	pm Pinmap
+	rpi *RPI
 )
 
-func init() {
-	pm.ChipName = "gpiochip4"
+func GetRPI() *RPI {
+	if rpi == nil {
+		rpi = &RPI{
+			ChipName: "gpiochip4",
+		}
+	}
+	rpi.Pins = make(map[int]*Pin)
+	return rpi
 }
 
-func (pin *Pin) Init(desc string, offset int, mode Mode) *Pin {
-	p := pm.PinInit(desc, offset, mode)
-	return p
+func (rpi *RPI) Output(val int) Mode {
+	return ModeOutput
 }
 
 func (pin *Pin) String() string {
@@ -61,15 +66,15 @@ func (pin *Pin) On() error {
 	return pin.Set(1)
 }
 
-func (pin *Pin) Off() {
+func (pin *Pin) Off() error {
 	return pin.Set(0)
 }
 
-func (pm *Pinmap) Find(offset int) (p *Pin) {
+func (rpi *RPI) Find(offset int) (p *Pin) {
 
-	l, err := gpiocdev.RequestLine(pm.ChipName, offset, gpiocdev.AsInput)
+	l, err := gpiocdev.RequestLine(rpi.ChipName, offset, gpiocdev.AsInput)
 	if err != nil {
-		fmt.Printf("Finding line %s returned error: %s\n", pm.ChipName, err)
+		fmt.Printf("Finding line %s returned error: %s\n", rpi.ChipName, err)
 		os.Exit(1)
 	}
 
@@ -80,20 +85,31 @@ func (pm *Pinmap) Find(offset int) (p *Pin) {
 	return p
 }
 
-func (pm *Pinmap) PinInit(desc string, offset int, mode Mode) (p *Pin) {
+func (rpi *RPI) PinInit(desc string, offset int, mode Mode) (p *Pin) {
+
+	// m := gpiocdev.LineDirectionInput
+	// if mode == ModeOutput {
+	// 	m = gpiocdev.LineDirectionOutput
+	// }
+
+	l, err := gpiocdev.RequestLine(rpi.ChipName, offset, gpiocdev.AsOutput(0))
+	if err != nil {
+		panic(err)
+	}
+
 	p = &Pin{
 		Description: desc,
 		Offset:      offset,
+		Line:        l,
 	}
 
-	p.Init(desc, offset, mode)
-	pm.Pins[offset] = p
+	rpi.Pins[offset] = p
 	return p
 }
 
-func (pm *Pinmap) String() string {
+func (rpi *RPI) String() string {
 	str := ""
-	for p, pin := range pm.Pins {
+	for p, pin := range rpi.Pins {
 		str += fmt.Sprintf("%4d: %s\n", p, pin.String())
 	}
 	return str

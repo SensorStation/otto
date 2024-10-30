@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/rustyeddy/otto/gpio"
+	"github.com/sensorstation/otto/gpio"
 )
 
 // GPIO16 DHT22
@@ -15,8 +15,8 @@ import (
 
 func main() {
 
-	rpi := gpio.GetRPI()
-	led := rpi.PinInit("green-led", 6, rpi.Output(0))
+	gpio := gpio.GetRPI()
+	led := gpio.PinInit("green-led", 6, gpio.Output(0))
 	// dht := rpi.Pin(16, "am2302", rpi.Input)
 
 	// capture exit signals to ensure pin is reverted to input on exit.
