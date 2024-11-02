@@ -14,8 +14,9 @@ import (
 
 var (
 	config *Configuration
-	e      Echo
 	mqtt   *otto.MQTT
+
+	e Echo
 )
 
 // DHT22		- GPIO 16 DHT22
@@ -28,21 +29,13 @@ func init() {
 func main() {
 	flag.Parse()
 
-	mqtt := &otto.MQTT{
+	mqtt = &otto.MQTT{
 		Broker: config.Broker,
 	}
 	mqtt.Start()
 	mqtt.Subscribe("ss/echo", e)
-	mqtt.Subscribe("ss/echo2", e2)
 
 	run()
-}
-
-type Echo struct {
-}
-
-func (e Echo) Callback(t string, payload []byte) {
-	log.Println("echo: ", t, string(payload))
 }
 
 func run() {
@@ -70,7 +63,7 @@ func run() {
 	v := 0
 	for {
 		select {
-		case <-time.After(1 * time.Second):
+		case <-time.After(5 * time.Second):
 			v ^= 1
 			led.Set(v)
 			fmt.Printf("LED %s\n", led.String())
@@ -80,4 +73,11 @@ func run() {
 		}
 
 	}
+}
+
+type Echo struct {
+}
+
+func (e Echo) Callback(t string, payload []byte) {
+	log.Println("echo: ", t, string(payload))
 }

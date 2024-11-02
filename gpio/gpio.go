@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/warthog618/go-gpiocdev"
 )
@@ -16,11 +17,11 @@ const (
 )
 
 type Pin struct {
-	Description string `json:"description"`
-	Offset      int    `json:"offset"`
-	Name        string `json:"name"`
+	Name   string `json:"name"`
+	Offset int    `json:"offset"`
+	Value  int    `json:"value"`
+	Mode   `json:"mode"`
 
-	Mode `json:"mode"`
 	*gpiocdev.Line
 }
 
@@ -29,7 +30,7 @@ var (
 )
 
 func (pin *Pin) String() string {
-	str := fmt.Sprintf("%s : %s - pin %4d", pin.Name, pin.Description, pin.Offset)
+	str := fmt.Sprintf("%s - pin %4d", pin.Name, pin.Offset)
 	return str
 }
 
@@ -42,6 +43,7 @@ func (pin *Pin) Get() (int, error) {
 }
 
 func (pin *Pin) Set(v int) error {
+	pin.Value = v
 	return pin.Line.SetValue(v)
 }
 
@@ -51,6 +53,26 @@ func (pin *Pin) On() error {
 
 func (pin *Pin) Off() error {
 	return pin.Set(0)
+}
+
+func (pin *Pin) Toggle() error {
+	val := ^pin.Value
+	return pin.Set(val)
+}
+
+func (pin Pin) Callback(t string, payload []byte) {
+	val := string(payload)
+	switch val {
+	case "on":
+		pin.On()
+
+	case "off":
+		pin.Off()
+
+	case "toggle":
+		pin.Toggle()
+
+	}
 }
 
 type GPIO struct {
@@ -67,7 +89,7 @@ func GetGPIO() *GPIO {
 	return gpio
 }
 
-func (gpio *GPIO) Pin(desc string, offset int, mode Mode) (p *Pin) {
+func (gpio *GPIO) Pin(name string, offset int, mode Mode) (p *Pin) {
 
 	l, err := gpiocdev.RequestLine(gpio.chipname, offset, gpiocdev.AsOutput(0))
 	if err != nil {
@@ -75,12 +97,27 @@ func (gpio *GPIO) Pin(desc string, offset int, mode Mode) (p *Pin) {
 	}
 
 	p = &Pin{
-		Description: desc,
-		Offset:      offset,
-		Line:        l,
+		Name:   name,
+		Offset: offset,
+		Line:   l,
 	}
 
 	gpio.Pins[offset] = p
+
+	if mqtt != nil {
+		log.Printf("mode: %d\n", mode)
+
+		switch mode {
+		case ModeInput:
+			log.Println("mode input")
+
+		case ModeOutput:
+			log.Println("mode output")
+			mqtt.Subscribe("ss/station/dev/"+p.Name, p)
+
+		}
+	}
+
 	return p
 }
 
@@ -100,7 +137,6 @@ func (gpio *GPIO) String() string {
 }
 
 // func (gpio *GPIO) Find(offset int) (p *Pin) {
-
 // 	l, err := gpiocdev.RequestLine(gpio.chipname, offset, gpiocdev.AsInput)
 // 	if err != nil {
 // 		fmt.Printf("Finding line %s returned error: %s\n", gpio.chipname, err)
