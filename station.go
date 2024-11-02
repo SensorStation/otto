@@ -46,7 +46,7 @@ func (s *Station) Update(msg *Msg) {
 	if err != nil {
 		log.Println("Station Failed to parse msg.Time , err")
 	} else {
-		s.LastHeard = t		
+		s.LastHeard = t
 	}
 
 	s.mu.Unlock()

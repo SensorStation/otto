@@ -53,7 +53,7 @@ func (m *MQTT) Connect() {
 //
 // ss/<ethaddr>/<data>/tempf value
 // ss/<ethaddr>/<data>/humidity value
-func (m *MQTT) Subscribe(id string, path string, f gomqtt.MessageHandler) {
+func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) {
 	sub := &Subscriber{id, path, f}
 	m.subscribers[id] = sub
 
@@ -93,9 +93,17 @@ func (m MQTT) Publish(topic string, value interface{}) {
 		}
 		return
 	}
+
 	t.Wait()
 	if t.Error() != nil {
 		fmt.Printf("MQTT Publish token: %+v\n", t.Error())
 	}
 
+}
+
+func (m *MQTT) Subscribe(topic string, s Sub) {
+	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
+		s.Callback(m.Topic(), m.Payload())
+	}
+	m.Sub(topic, topic, mfunc)
 }

@@ -39,19 +39,21 @@ it's capabilities.  The body of the message might look something like
 this:
 
 ```json
-{
-	"id": "be:ef:ca:fe:02",
-	"ip": "10.11.24.24",
-    "sensors": [
-		"tempc",
-		"humidity",
-		"light"
-	],
-	"relays": [
-		"heater",
-		"light"
-	],
-}
+
+	{
+		"id": "be:ef:ca:fe:02",
+		"ip": "10.11.24.24",
+	    "sensors": [
+			"tempc",
+			"humidity",
+			"light"
+		],
+		"relays": [
+			"heater",
+			"light"
+		],
+	}
+
 ```
 
 ### Sensor Data
@@ -79,7 +81,6 @@ string values, including nema-0183.
 This is essentially the same as the sensor except that control
 commands are used to have a particular device change, for example
 turning a relay on or off.
-
 */
 package otto
 
@@ -181,7 +182,7 @@ func (o *OttO) Subscribe(topic string, s Sub) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
 		s.Callback(m.Topic(), m.Payload())
 	}
-	o.MQTT.Subscribe(topic, topic, mfunc)
+	o.MQTT.Sub(topic, topic, mfunc)
 }
 
 func (o *OttO) Register(path string, h http.Handler) {
