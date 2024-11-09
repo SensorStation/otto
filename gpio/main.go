@@ -15,6 +15,7 @@ import (
 var (
 	config *Configuration
 	mqtt   *otto.MQTT
+	gpio   *GPIO
 
 	e Echo
 )
@@ -41,11 +42,11 @@ func main() {
 func run() {
 
 	// Open GPIO
-	gpio := GetGPIO()
+	gpio = GetGPIO()
 
 	// Configure all the devices
 	led := gpio.Pin("green-led", 6, Output(0))
-	// dht := rpi.PinInit("input", 16, ModeInput)
+	dht := NewDHT("am2302", 16, ModeInput)
 
 	// revert line to input on the way out.
 	defer func() {
@@ -67,6 +68,9 @@ func run() {
 			v ^= 1
 			led.Set(v)
 			fmt.Printf("LED %s\n", led.String())
+
+			fmt.Printf("temperature: %5.2f - humidity: %5.2f\n",
+				dht.Temperature(), dht.Humidity())
 
 		case <-quit:
 			return

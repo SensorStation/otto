@@ -20,14 +20,11 @@ type Pin struct {
 	Name   string `json:"name"`
 	Offset int    `json:"offset"`
 	Value  int    `json:"value"`
-	Mode   `json:"mode"`
+
+	Mode `json:"mode"`
 
 	*gpiocdev.Line
 }
-
-var (
-	gpio *GPIO
-)
 
 func (pin *Pin) String() string {
 	str := fmt.Sprintf("%s - pin %4d", pin.Name, pin.Offset)
@@ -75,6 +72,14 @@ func (pin Pin) Callback(t string, payload []byte) {
 	}
 }
 
+func (p *Pin) Input() error {
+	return p.Reconfigure(gpiocdev.AsInput)
+}
+
+func (p *Pin) Output(v int) error {
+	return p.Reconfigure(gpiocdev.AsOutput(v))
+}
+
 type GPIO struct {
 	*gpiocdev.Chip
 	chipname string
@@ -82,14 +87,18 @@ type GPIO struct {
 }
 
 func GetGPIO() *GPIO {
-	gpio := &GPIO{
-		chipname: "gpiochip4",
+	if gpio == nil {
+		gpio = &GPIO{
+			chipname: "gpiochip4",
+		}
+		gpio.Pins = make(map[int]*Pin)
 	}
-	gpio.Pins = make(map[int]*Pin)
 	return gpio
 }
 
 func (gpio *GPIO) Pin(name string, offset int, mode Mode) (p *Pin) {
+
+	fmt.Printf("GPIO: %v\n", gpio)
 
 	l, err := gpiocdev.RequestLine(gpio.chipname, offset, gpiocdev.AsOutput(0))
 	if err != nil {
