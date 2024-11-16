@@ -69,6 +69,10 @@ func run() {
 			led.Set(v)
 			fmt.Printf("LED %s\n", led.String())
 
+			err := dht.Read()
+			if err != nil {
+				fmt.Printf("dht err: %v\n", err)
+			}
 			fmt.Printf("temperature: %5.2f - humidity: %5.2f\n",
 				dht.Temperature(), dht.Humidity())
 

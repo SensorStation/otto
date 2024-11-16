@@ -8,6 +8,10 @@ import (
 	"net/http"
 )
 
+var (
+	config Configuration
+)
+
 // Configuration holds all variables that can be changed
 // to alter the way the program works.
 type Configuration struct {
