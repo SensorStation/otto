@@ -10,7 +10,8 @@ import (
 )
 
 type mqttConfiguration struct {
-	Broker string
+	Broker  string
+	Enabled bool
 }
 
 var (
@@ -27,26 +28,14 @@ var (
 
 func init() {
 	rootCmd.AddCommand(mqttCmd)
-
-	// Here you will define your flags and configuration settings.
-	mqttCmd.Flags().StringVarP(&mqttConfig.Broker, "broker", "b", "localhost", "The IP address of the MQTT Broker")
 }
 
 func RunMQTT(cmd *cobra.Command, args []string) {
 
-	switch args[0] {
-	case "broker":
-		switch len(args) {
-		case 1:
-			fmt.Println(mqttConfig.Broker)
+	fmt.Println("TODO print mqtt configuration and connectivity")
+}
 
-		case 2:
-			mqttReconfig(args[1])
-
-		default:
-			fmt.Printf("Error too many commands: %p\n", args)
-		}
-	}
+func mqttDisable() {
 
 }
 

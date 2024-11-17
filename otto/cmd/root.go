@@ -14,7 +14,7 @@ var rootCmd = &cobra.Command{
                 in the following documentation https://rustyeddy.com/otto/`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
-		fmt.Printf("args: %q\n", args)
+		fmt.Printf("Start otto here: %q\n", args)
 	},
 }
 
