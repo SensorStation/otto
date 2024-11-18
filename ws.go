@@ -9,6 +9,7 @@ import (
 
 type Websock struct {
 	msgQ chan *Station
+	webQ map[chan *Station]chan *Station
 }
 
 var upgrader = websocket.Upgrader{
@@ -19,6 +20,12 @@ var upgrader = websocket.Upgrader{
 
 func checkOrigin(r *http.Request) bool {
 	return true
+}
+
+func (w *Websock) AddWebQ() chan *Station {
+	c := make(chan *Station)
+	w.webQ[c] = c
+	return c
 }
 
 func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +49,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 			switch message.Type {
 			case "relay":
-				Stations.EventQ <- &message
+				// Stations.EventQ <- &message
 
 			default:
 				log.Printf("ERROR: unknown event type: %+v", message)
@@ -51,8 +58,8 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	wq := O.Dispatcher.AddWebQ()
-	defer O.Dispatcher.FreeWebQ(wq)
+	wq := ws.AddWebQ()
+	// defer O.Dispatcher.FreeWebQ(wq)
 
 	for {
 		msg := <-wq

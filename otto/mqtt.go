@@ -1,11 +1,12 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
-package cmd
+package main
 
 import (
 	"fmt"
 
+	"github.com/sensorstation/otto"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +23,7 @@ var (
 		Use:   "mqtt",
 		Short: "Configure and interact with MQTT broker",
 		Long:  `This command can be used to interact and diagnose an MQTT broker`,
-		Run:   RunMQTT,
+		Run:   mqttRun,
 	}
 )
 
@@ -30,18 +31,11 @@ func init() {
 	rootCmd.AddCommand(mqttCmd)
 }
 
-func RunMQTT(cmd *cobra.Command, args []string) {
-
+func mqttRun(cmd *cobra.Command, args []string) {
 	fmt.Println("TODO print mqtt configuration and connectivity")
-}
-
-func mqttDisable() {
-
-}
-
-func mqttReconfig(broker string) {
-	// if mqtt is already connected shut it down
-
-	// if mqtt is not connected then connect to the broker
-
+	m := otto.GetMQTT()
+	if m == nil {
+		fmt.Println("MQTT is nil")
+	}
+	fmt.Printf("MQTT: %+v\n", m)
 }

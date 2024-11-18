@@ -52,11 +52,6 @@ func (s *Station) Update(msg *Msg) {
 	s.mu.Unlock()
 }
 
-func (s *Station) Relay(id string, v string) {
-	topic := "ss/c/" + s.ID + "/relay/" + id
-	O.MQTT.Publish(topic, v)
-}
-
 // Stop the station from advertising
 func (s *Station) Stop() {
 	s.quit <- true

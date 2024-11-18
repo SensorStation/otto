@@ -3,7 +3,6 @@ package otto
 import (
 	"log"
 
-	"encoding/json"
 	"net/http"
 )
 
@@ -19,6 +18,10 @@ var (
 	wserv Websock
 )
 
+func NewServer() *Server {
+	return &Server{}
+}
+
 // Register to handle HTTP requests for particular paths in the
 // URL or MQTT channel.
 func (s *Server) Register(p string, h http.Handler) {
@@ -26,15 +29,15 @@ func (s *Server) Register(p string, h http.Handler) {
 	http.Handle(p, h)
 }
 
-// ServeHTTP provides a REST interface to the config structure
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+// // ServeHTTP provides a REST interface to the config structure
+// func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-Type", "application/json")
 
-	switch r.Method {
-	case "GET":
-		json.NewEncoder(w).Encode(Stations)
-	}
-}
+// 	switch r.Method {
+// 	case "GET":
+// 		json.NewEncoder(w).Encode(Stations)
+// 	}
+// }
 
 // Start the HTTP server after registering REST API callbacks
 // and initializing the Web application directory
@@ -48,9 +51,6 @@ func (s *Server) Start() {
 	}
 	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
-	s.Register("/api/data", s)
-	s.Register("/api/stations", Stations)
-
 	go http.ListenAndServe(s.Addr, nil)
 	return
 }

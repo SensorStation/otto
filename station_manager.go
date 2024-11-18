@@ -26,22 +26,18 @@ type StationEvent struct {
 	Value     string `json:"value"`
 }
 
-var (
-	Stations *StationManager
-)
-
-func init() {
-	Stations = NewStationManager()
-}
-
 func NewStationManager() (sm *StationManager) {
 	sm = &StationManager{}
 	sm.Stations = make(map[string]*Station)
 	sm.Stale = make(map[string]*Station)
 	sm.mu = new(sync.Mutex)
+	sm.EventQ = make(chan *StationEvent)
+	return sm
+}
+
+func (sm *StationManager) Start() {
 
 	// Start a ticker to clean up stale entries
-	sm.EventQ = make(chan *StationEvent)
 	quit := make(chan struct{})
 	sm.ticker = time.NewTicker(10 * time.Second)
 	go func() {
@@ -78,7 +74,6 @@ func NewStationManager() (sm *StationManager) {
 					log.Printf("[W] Station Event could not find station: %s", ev.StationID)
 					continue
 				}
-				st.Relay(ev.Device, ev.Value)
 
 			case <-quit:
 				sm.ticker.Stop()
@@ -86,8 +81,6 @@ func NewStationManager() (sm *StationManager) {
 			}
 		}
 	}()
-
-	return sm
 }
 
 func (sm *StationManager) Get(stid string) *Station {
