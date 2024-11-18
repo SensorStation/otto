@@ -19,7 +19,9 @@ var (
 )
 
 func NewServer() *Server {
-	return &Server{}
+	return &Server{
+		Addr: ":8011",
+	}
 }
 
 // Register to handle HTTP requests for particular paths in the
