@@ -5,13 +5,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	mqtt     *otto.MQTT
-	server   *otto.Server
-	stations *otto.StationManager
-	sensors  *otto.SensorManager
-)
-
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start oTTo the Server",
@@ -28,26 +21,17 @@ func serveRun(cmd *cobra.Command, args []string) {
 	done := make(chan interface{})
 
 	// Allocate and start the station manager
-	stations = otto.NewStationManager()
+	stations := otto.GetStationManager()
 	stations.Start()
 
-	// Open the data storage
-	sensors = otto.NewSensorManager()
-	mqtt_init()
+	mqtt := otto.GetMQTT()
+	mqtt.Connect()
+	mqtt.Subscribe("ss/d/+/+", otto.GetSensorManager())
 
 	// start web server / rest server
-	server = otto.NewServer()
+	server := otto.GetServer()
 	server.Start()
 
 	// start websockets
 	<-done
-}
-
-func mqtt_init() {
-	// Start MQTT
-	mqtt := otto.GetMQTT()
-	mqtt.Connect()
-
-	// ss/d/<station>/<sensor>
-	mqtt.Subscribe("ss/d/+/+", sensors)
 }

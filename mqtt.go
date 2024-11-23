@@ -19,16 +19,16 @@ type MQTT struct {
 	Broker string
 	Debug  bool
 
-	subscribers map[string]*Subscriber
+	Subscribers map[string]*Subscriber
 	gomqtt.Client
 }
 
-func GetMQTT() *MQTT {
+func NewMQTT() *MQTT {
 	mqtt := &MQTT{
 		ID:     "otto",
 		Broker: "localhost",
 	}
-	mqtt.subscribers = make(map[string]*Subscriber)
+	mqtt.Subscribers = make(map[string]*Subscriber)
 	return mqtt
 }
 
@@ -52,7 +52,6 @@ func (m *MQTT) Connect() error {
 		fmt.Println("MQTT Connect: ", token.Error())
 		return fmt.Errorf("Failed to connect to MQTT broker %s", token.Error())
 	}
-	// log.Println("Connected to broker: ", m.Broker)
 	return nil
 }
 
@@ -62,7 +61,7 @@ func (m *MQTT) Connect() error {
 // ss/<ethaddr>/<data>/humidity value
 func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) {
 	sub := &Subscriber{id, path, f}
-	m.subscribers[id] = sub
+	m.Subscribers[id] = sub
 
 	qos := 0
 	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
@@ -72,7 +71,6 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) {
 			log.Printf("subscribe token: %v", token)
 		}
 	}
-	// log.Println(id, "subscribed to", path)
 }
 
 // Publish will publish a value to the given channel

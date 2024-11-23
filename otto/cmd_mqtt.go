@@ -29,13 +29,33 @@ var (
 
 func init() {
 	rootCmd.AddCommand(mqttCmd)
+	mqttCmd.PersistentFlags().StringVar(&mqttConfig.Broker, "broker", "localhost", "Set the MQTT Broker")
 }
 
 func mqttRun(cmd *cobra.Command, args []string) {
-	fmt.Println("TODO print mqtt configuration and connectivity")
 	m := otto.GetMQTT()
 	if m == nil {
-		fmt.Println("MQTT is nil")
+		fmt.Println("MQTT has not been initialized")
+		return
 	}
-	fmt.Printf("MQTT: %+v\n", m)
+
+	// If the broker config changes and mqtt is connected, disconnect
+	// and reconnect to new broker
+	if mqttConfig.Broker != m.Broker {
+		m.Broker = mqttConfig.Broker
+	}
+
+	connected := false
+	if m.Client != nil {
+		connected = m.IsConnected()
+	}
+
+	fmt.Printf("   Broker: %s\n", m.Broker)
+	fmt.Printf("Connected: %t\n", connected)
+	fmt.Printf("    Debug: %t\n", m.Debug)
+	fmt.Printf("Subscribers")
+
+	for _, s := range m.Subscribers {
+		fmt.Println(s)
+	}
 }

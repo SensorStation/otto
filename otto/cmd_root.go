@@ -22,6 +22,10 @@ func Execute() {
 	}
 }
 
+// func ottoRun(cmd *cobra.Command, args []string) {
+// 	cmd.Usage()
+// }
+
 func ottoRun(cmd *cobra.Command, args []string) {
-	fmt.Printf("The otto command %q\n", args)
+	cmd.Usage()
 }

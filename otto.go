@@ -84,6 +84,42 @@ turning a relay on or off.
 */
 package otto
 
+// global variables and structures
+var (
+	mqtt     *MQTT
+	server   *Server
+	stations *StationManager
+	sensors  *SensorManager
+)
+
+func GetMQTT() *MQTT {
+	if mqtt == nil {
+		mqtt = NewMQTT()
+	}
+	return mqtt
+}
+
+func GetSensorManager() *SensorManager {
+	if sensors == nil {
+		sensors = NewSensorManager()
+	}
+	return sensors
+}
+
+func GetStationManager() *StationManager {
+	if stations == nil {
+		stations = NewStationManager()
+	}
+	return stations
+}
+
+func GetServer() *Server {
+	if server == nil {
+		server = NewServer()
+	}
+	return server
+}
+
 // import (
 // 	"fmt"
 // 	"log"
