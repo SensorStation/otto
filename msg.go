@@ -1,7 +1,6 @@
 package otto
 
 import (
-	"fmt"
 	"strings"
 	"time"
 )
@@ -14,7 +13,8 @@ type Msg struct {
 	Args    []string `json:"args"`
 	Message []byte   `json:"msg"`
 	Source  string   `json:"source"`
-	Time    string   `json:"time"`
+
+	time.Time `json:"time"`
 }
 
 var (
@@ -33,24 +33,9 @@ func MsgFromMQTT(topic string, payload []byte) (*Msg, error) {
 	var m Msg = Msg{}
 	m.ID = getMsgID()
 
-	fmt.Printf("TOPIC: %s\n", topic)
-
 	// extract the station from the topic
 	m.Path = strings.Split(topic, "/")
-	if len(m.Path) < 3 {
-		err := fmt.Errorf("[E] Unknown path %s", topic)
-		return nil, err
-	}
-
 	m.Message = payload
+	m.Time = time.Now()
 	return &m, nil
-}
-
-// String will stringify the payload and topic from MQTT
-func (m *Msg) OString() string {
-	now := time.Now()
-
-	formatted := fmt.Sprintf("ID: %d, Time: %s, Station: %s",
-		m.ID, now.Format(time.RFC3339), m.ID)
-	return formatted
 }

@@ -37,7 +37,7 @@ func (s *Station) Update(msg *Msg) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	t, err := time.Parse(time.RFC3339, msg.Time)
+	t, err := time.Parse(time.RFC3339, msg.Time.String())
 	if err != nil {
 		log.Println("Station Failed to parse msg.Time , err")
 	} else {

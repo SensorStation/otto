@@ -98,12 +98,11 @@ func (m *MQTT) Subscribe(topic string, s Sub) {
 		// MQTT Middleware here
 		msg, err := MsgFromMQTT(m.Topic(), m.Payload())
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to parse mqtt message topic: %s message: %s",
-				topic, string(m.Payload()))
+			fmt.Fprintf(os.Stderr, "Failed to parse mqtt message topic: %s message: %s - err %s\n",
+				topic, string(m.Payload()), err)
+			return
 		}
 		msg.Source = "mqtt"
-		fmt.Printf("MsgFromMQTT: %+v\n", msg)
-
 		s.Callback(msg)
 	}
 	m.Sub(topic, topic, mfunc)
@@ -121,4 +120,17 @@ type Subscriber struct {
 // Subscriber ID
 func (sub *Subscriber) String() string {
 	return sub.ID + " " + sub.Path
+}
+
+type MQTTPrinter struct {
+}
+
+func (mp *MQTTPrinter) Callback(msg *Msg) {
+	fmt.Printf("  ID: %d\n", msg.ID)
+	fmt.Printf("Path: %q\n", msg.Path)
+	fmt.Printf("Args: %q\n", msg.Args)
+	fmt.Printf(" Msg: %s\n", string(msg.Message))
+	fmt.Printf(" Src: %s\n", msg.Source)
+	fmt.Printf("Time: %s\n", msg.Time)
+	fmt.Println()
 }

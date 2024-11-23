@@ -11,18 +11,18 @@ import (
 )
 
 // brokerCmd represents the broker command
-var mqttConnectCmd = &cobra.Command{
-	Use:   "connect",
-	Short: "Connect to the mqtt broker",
-	Long:  `Connect to the MQTT broker`,
-	Run:   runMQTTConnect,
+var mqttSubCmd = &cobra.Command{
+	Use:   "sub",
+	Short: "Subscribe to the mqtt topic",
+	Long:  `Subscribe to mqtt tocpic`,
+	Run:   runMQTTSub,
 }
 
 func init() {
-	mqttCmd.AddCommand(mqttConnectCmd)
+	mqttCmd.AddCommand(mqttSubCmd)
 }
 
-func runMQTTConnect(cmd *cobra.Command, args []string) {
+func runMQTTSub(cmd *cobra.Command, args []string) {
 	m := otto.GetMQTT()
 	if m.Client == nil || !m.IsConnected() {
 		err := m.Connect()
@@ -30,11 +30,7 @@ func runMQTTConnect(cmd *cobra.Command, args []string) {
 			fmt.Printf("Failed to connect to mqtt broker: %s: %s\n", mqtt.Broker, err)
 		}
 	}
-}
 
-func mqtt_init() {
-	// Start MQTT
-	mqtt := otto.GetMQTT()
-	mqtt.Connect()
-	mqtt.Subscribe("ss/d/+/+", otto.GetSensorManager())
+	p := &otto.MQTTPrinter{}
+	m.Subscribe(args[0], p)
 }
