@@ -68,7 +68,7 @@ func (sm *StationManager) Start() {
 				}
 
 			case ev := <-sm.EventQ:
-				fmt.Printf("Station Event: ! %+v\n", ev)
+				log.Printf("Station Event: ! %+v\n", ev)
 				st := sm.Get(ev.StationID)
 				if st == nil {
 					log.Printf("[W] Station Event could not find station: %s", ev.StationID)

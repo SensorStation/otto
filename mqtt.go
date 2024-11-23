@@ -49,7 +49,7 @@ func (m *MQTT) Connect() error {
 	opts.SetCleanSession(true)
 	m.Client = gomqtt.NewClient(opts)
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
-		fmt.Println("MQTT Connect: ", token.Error())
+		log.Println("MQTT Connect: ", token.Error())
 		return fmt.Errorf("Failed to connect to MQTT broker %s", token.Error())
 	}
 	return nil
@@ -87,7 +87,7 @@ func (m MQTT) Publish(topic string, value interface{}) {
 
 	t.Wait()
 	if t.Error() != nil {
-		fmt.Printf("MQTT Publish token: %+v\n", t.Error())
+		log.Println("MQTT Publish token: ", t.Error())
 	}
 
 }
@@ -98,7 +98,7 @@ func (m *MQTT) Subscribe(topic string, s Sub) {
 		// MQTT Middleware here
 		msg, err := MsgFromMQTT(m.Topic(), m.Payload())
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to parse mqtt message topic: %s message: %s - err %s\n",
+			log.Printf("Failed to parse mqtt message topic: %s message: %s - err %s\n",
 				topic, string(m.Payload()), err)
 			return
 		}
