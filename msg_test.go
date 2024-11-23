@@ -41,10 +41,20 @@ func TestStationMsg(t *testing.T) {
 	msg, err := MsgFromMQTT(topic, j)
 	if err != nil {
 		t.Errorf("Extracting message from MQTT %+v", err)
-		return
 	}
 
-	t.Logf("MSG: %+v", msg)
+	if msg == nil {
+		t.Error("msg topic expected but is nil")
+	}
+
+	// if string(msg.Station) != "be:ef:ca:fe:01" {
+	// 	t.Error("msg station expected (be:ef:ca:fe:01) got (%s)", msg.Station)
+	// }
+
+	// if msg.Type != "d" {
+	// 	t.Error("msg Type expected (d) got (%s)", msg.Type)
+	// }
+
 }
 
 func TestJSON(t *testing.T) {

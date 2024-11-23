@@ -13,8 +13,8 @@ type Station struct {
 	LastHeard  time.Time     `json:"last-heard"`
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
 
-	Sensors map[string]float64 `json:"sensors"`
-	Relays  map[string]bool    `json:"relays"`
+	// Sensors map[string]float64 `json:"sensors"`
+	// Relays  map[string]bool    `json:"relays"`
 
 	ticker *time.Ticker `json:"-"`
 	quit   chan bool    `json:"-"`
@@ -27,8 +27,6 @@ func NewStation(id string) (st *Station) {
 	st = &Station{
 		ID:         id,
 		Expiration: 30 * time.Second,
-		Sensors:    make(map[string]float64),
-		Relays:     make(map[string]bool),
 	}
 	return st
 }
@@ -37,19 +35,14 @@ func NewStation(id string) (st *Station) {
 // of data points.
 func (s *Station) Update(msg *Msg) {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	if msg.Type == "d" {
-		s.Sensors = msg.Data.Sensors
-		s.Relays = msg.Data.Relays
-	}
 	t, err := time.Parse(time.RFC3339, msg.Time)
 	if err != nil {
 		log.Println("Station Failed to parse msg.Time , err")
 	} else {
 		s.LastHeard = t
 	}
-
-	s.mu.Unlock()
 }
 
 // Stop the station from advertising

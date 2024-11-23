@@ -9,7 +9,7 @@ import (
 )
 
 type Sub interface {
-	Callback(string, []byte)
+	Callback(msg *Msg)
 }
 
 // MQTT is a wrapper around the Paho MQTT Go package
@@ -34,7 +34,7 @@ func GetMQTT() *MQTT {
 
 // Connect to the MQTT broker after setting some MQTT options
 // then connecting to the MQTT broker
-func (m *MQTT) Connect() {
+func (m *MQTT) Connect() error {
 	if m.Debug {
 		gomqtt.DEBUG = log.New(os.Stdout, "", 0)
 		gomqtt.ERROR = log.New(os.Stdout, "", 0)
@@ -50,14 +50,14 @@ func (m *MQTT) Connect() {
 	m.Client = gomqtt.NewClient(opts)
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
 		fmt.Println("MQTT Connect: ", token.Error())
-		return
+		return fmt.Errorf("Failed to connect to MQTT broker %s", token.Error())
 	}
-	log.Println("Connected to broker: ", m.Broker)
+	// log.Println("Connected to broker: ", m.Broker)
+	return nil
 }
 
 // Subscribe to MQTT messages that follow specific topic patterns
 // wildcards '+' and '#' are supported.  Examples
-//
 // ss/<ethaddr>/<data>/tempf value
 // ss/<ethaddr>/<data>/humidity value
 func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) {
@@ -72,16 +72,16 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) {
 			log.Printf("subscribe token: %v", token)
 		}
 	}
-	log.Println(id, "subscribed to", path)
+	// log.Println(id, "subscribed to", path)
 }
 
 // Publish will publish a value to the given channel
 func (m MQTT) Publish(topic string, value interface{}) {
-	log.Printf("[I] MQTT Publishing %s -> %v", topic, value)
+	// log.Printf("[I] MQTT Publishing %s -> %v", topic, value)
 	var t gomqtt.Token
 
 	if t = m.Client.Publish(topic, byte(0), false, value); t == nil {
-		if true {
+		if false {
 			log.Printf("[I] MQTT Pub NULL token: %s - %v", topic, value)
 		}
 		return
@@ -96,7 +96,17 @@ func (m MQTT) Publish(topic string, value interface{}) {
 
 func (m *MQTT) Subscribe(topic string, s Sub) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
-		s.Callback(m.Topic(), m.Payload())
+
+		// MQTT Middleware here
+		msg, err := MsgFromMQTT(m.Topic(), m.Payload())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to parse mqtt message topic: %s message: %s",
+				topic, string(m.Payload()))
+		}
+		msg.Source = "mqtt"
+		fmt.Printf("MsgFromMQTT: %+v\n", msg)
+
+		s.Callback(msg)
 	}
 	m.Sub(topic, topic, mfunc)
 }
