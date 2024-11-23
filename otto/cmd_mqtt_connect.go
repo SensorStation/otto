@@ -31,10 +31,3 @@ func runMQTTConnect(cmd *cobra.Command, args []string) {
 		}
 	}
 }
-
-func mqtt_init() {
-	// Start MQTT
-	mqtt := otto.GetMQTT()
-	mqtt.Connect()
-	mqtt.Subscribe("ss/d/+/+", otto.GetSensorManager())
-}
