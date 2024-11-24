@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"sync"
+
 	"github.com/sensorstation/otto"
 	"github.com/spf13/cobra"
 )
@@ -12,13 +15,20 @@ var serveCmd = &cobra.Command{
 	Run:   serveRun,
 }
 
+var (
+	done chan bool
+	wg   sync.WaitGroup
+)
+
 func init() {
 	rootCmd.AddCommand(serveCmd)
 }
 
 func serveRun(cmd *cobra.Command, args []string) {
 
-	done := make(chan interface{})
+	done = make(chan bool)
+
+	wg.Add(1)
 
 	// Allocate and start the station manager
 	stations := otto.GetStationManager()
@@ -30,8 +40,15 @@ func serveRun(cmd *cobra.Command, args []string) {
 
 	// start web server / rest server
 	server := otto.GetServer()
-	server.Start()
 
-	// start websockets
-	<-done
+	go func() {
+		server.Start()
+		select {
+		case <-done:
+			fmt.Println("We are done")
+			wg.Done()
+		}
+		wg.Wait()
+	}()
+	fmt.Println("Exiting server start() go func")
 }

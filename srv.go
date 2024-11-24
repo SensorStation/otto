@@ -10,8 +10,9 @@ import (
 // It takes care of REST API, serving the web app if Appdir
 // does not equal nil and initial Websocket upgrade
 type Server struct {
-	Addr   string
 	Appdir string
+	*http.Server
+	*http.ServeMux
 }
 
 var (
@@ -19,27 +20,21 @@ var (
 )
 
 func NewServer() *Server {
-	return &Server{
-		Addr: ":8011",
+	s := &Server{
+		Server: &http.Server{
+			Addr: ":8011",
+		},
 	}
+	s.ServeMux = http.NewServeMux()
+	return s
 }
 
 // Register to handle HTTP requests for particular paths in the
 // URL or MQTT channel.
 func (s *Server) Register(p string, h http.Handler) {
 	log.Println("HTTP REST API Registered: ", p)
-	http.Handle(p, h)
+	s.Handle(p, h)
 }
-
-// // ServeHTTP provides a REST interface to the config structure
-// func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-Type", "application/json")
-
-// 	switch r.Method {
-// 	case "GET":
-// 		json.NewEncoder(w).Encode(Stations)
-// 	}
-// }
 
 // Start the HTTP server after registering REST API callbacks
 // and initializing the Web application directory
@@ -53,6 +48,6 @@ func (s *Server) Start() {
 	}
 	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
-	go http.ListenAndServe(s.Addr, nil)
+	go http.ListenAndServe(s.Addr, s.ServeMux)
 	return
 }

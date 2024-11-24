@@ -84,12 +84,15 @@ turning a relay on or off.
 */
 package otto
 
+import "log"
+
 // global variables and structures
 var (
 	mqtt     *MQTT
 	server   *Server
 	stations *StationManager
 	sensors  *SensorManager
+	l        *log.Logger
 )
 
 func GetMQTT() *MQTT {
@@ -118,6 +121,20 @@ func GetServer() *Server {
 		server = NewServer()
 	}
 	return server
+}
+
+func Cleanup() {
+	if mqtt != nil {
+		mqtt.Disconnect(1000)
+	}
+
+	if server != nil {
+		server.Close()
+	}
+
+	if l != nil {
+		// how to close the logfile
+	}
 }
 
 // import (

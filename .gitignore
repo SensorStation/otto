@@ -22,3 +22,4 @@ otto/otto
 mock/mock
 gpio/gpio
 station/station
+otto.log
