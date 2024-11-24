@@ -93,6 +93,9 @@ var (
 	stations *StationManager
 	sensors  *SensorManager
 	l        *log.Logger
+	blasters *MQTTBlasters
+
+	running bool
 )
 
 func GetMQTT() *MQTT {
@@ -123,7 +126,16 @@ func GetServer() *Server {
 	return server
 }
 
+func GetMQTTBlasters(count int) *MQTTBlasters {
+	blasters = NewMQTTBlasters(count)
+	return blasters
+}
+
 func Cleanup() {
+	if blasters != nil && blasters.Running {
+		blasters.Stop()
+	}
+
 	if mqtt != nil {
 		mqtt.Disconnect(1000)
 	}
@@ -135,6 +147,7 @@ func Cleanup() {
 	if l != nil {
 		// how to close the logfile
 	}
+
 }
 
 // import (

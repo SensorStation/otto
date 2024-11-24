@@ -13,9 +13,6 @@ type Station struct {
 	LastHeard  time.Time     `json:"last-heard"`
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
 
-	// Sensors map[string]float64 `json:"sensors"`
-	// Relays  map[string]bool    `json:"relays"`
-
 	ticker *time.Ticker `json:"-"`
 	quit   chan bool    `json:"-"`
 	mu     sync.Mutex   `json:"-"`
