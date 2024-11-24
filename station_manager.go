@@ -102,7 +102,6 @@ func (sm *StationManager) Add(st string) (station *Station, err error) {
 }
 
 func (sm *StationManager) Update(msg *Msg) (st *Station) {
-
 	// data := msg.Data
 	st.Update(msg)
 	return st

@@ -18,12 +18,16 @@ var cliCmd = &cobra.Command{
 }
 
 var (
-	rl *readline.Instance
+	rl          *readline.Instance
+	interactive bool
 )
 
 func init() {
 	rootCmd.AddCommand(cliCmd)
+}
 
+func init_readline() {
+	interactive = true
 	var completer = readline.NewPrefixCompleter()
 	for _, child := range rootCmd.Commands() {
 		pcFromCommands(completer, child)
@@ -48,6 +52,9 @@ func init() {
 }
 
 func cliRun(cmd *cobra.Command, args []string) {
+
+	init_readline()
+
 	defer rl.Close()
 	running := true
 	for running {

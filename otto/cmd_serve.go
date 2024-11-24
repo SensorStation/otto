@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/sensorstation/otto"
 	"github.com/spf13/cobra"
 )
@@ -13,11 +15,14 @@ var serveCmd = &cobra.Command{
 }
 
 var (
-	done chan bool
+	foreground bool
+	done       chan bool
 )
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
+
+	serveCmd.Flags().BoolVar(&foreground, "foreground", false, "Run the server command in the foreground")
 }
 
 func serveRun(cmd *cobra.Command, args []string) {
@@ -36,10 +41,15 @@ func serveRun(cmd *cobra.Command, args []string) {
 	server := otto.GetServer()
 	server.Start()
 
-	go func() {
-		select {
-		case <-done:
-			otto.Cleanup()
-		}
-	}()
+	fmt.Printf("INTERACTIVE: %t\n", interactive)
+	if interactive {
+		go cleanup()
+	} else {
+		cleanup()
+	}
+}
+
+func cleanup() {
+	<-done
+	otto.Cleanup()
 }
