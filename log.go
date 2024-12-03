@@ -8,9 +8,8 @@ import (
 func init() {
 	f, err := os.OpenFile("otto.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatalf("error opening file: %v", err)
+		log.Fatalf("error opening log file: %v", err)
 	}
 
-	log.SetOutput(f)
-	log.Println("This is a test log entry")
+	l = log.New(f, "otto: ", log.Ldate|log.Ltime|log.Lshortfile)
 }

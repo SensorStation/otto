@@ -27,6 +27,11 @@ func init() {
 
 func serveRun(cmd *cobra.Command, args []string) {
 
+	if done != nil {
+		// server has already been started
+		fmt.Println("Server has already been started")
+		return
+	}
 	done = make(chan bool)
 
 	// Allocate and start the station manager
@@ -35,13 +40,12 @@ func serveRun(cmd *cobra.Command, args []string) {
 
 	mqtt := otto.GetMQTT()
 	mqtt.Connect()
-	mqtt.Subscribe("ss/d/+/+", otto.GetSensorManager())
+	mqtt.Subscribe("ss/d/+/+", otto.GetDataManager())
 
 	// start web server / rest server
 	server := otto.GetServer()
-	server.Start()
+	go server.Start()
 
-	fmt.Printf("INTERACTIVE: %t\n", interactive)
 	if interactive {
 		go cleanup()
 	} else {
@@ -51,5 +55,5 @@ func serveRun(cmd *cobra.Command, args []string) {
 
 func cleanup() {
 	<-done
-	otto.Cleanup()
+	l.Println("Done, cleaning up()")
 }

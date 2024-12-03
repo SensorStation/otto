@@ -1,12 +1,19 @@
 package main
 
-import "github.com/sensorstation/otto"
+import (
+	"fmt"
+	"log"
 
-// all the global variables
+	"github.com/sensorstation/otto"
+)
+
 var (
-	mqtt *otto.MQTT
+	l *log.Logger
 )
 
 func main() {
+	l = otto.GetLogger()
+	fmt.Printf("logger: %+v\n", l)
+	l.Println("Test writting")
 	Execute()
 }

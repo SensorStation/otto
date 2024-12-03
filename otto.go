@@ -91,9 +91,9 @@ var (
 	mqtt     *MQTT
 	server   *Server
 	stations *StationManager
-	sensors  *SensorManager
-	l        *log.Logger
+	data     *DataManager
 	blasters *MQTTBlasters
+	l        *log.Logger
 
 	running bool
 )
@@ -105,11 +105,11 @@ func GetMQTT() *MQTT {
 	return mqtt
 }
 
-func GetSensorManager() *SensorManager {
-	if sensors == nil {
-		sensors = NewSensorManager()
+func GetDataManager() *DataManager {
+	if data == nil {
+		data = NewDataManager()
 	}
-	return sensors
+	return data
 }
 
 func GetStationManager() *StationManager {
@@ -131,6 +131,10 @@ func GetMQTTBlasters(count int) *MQTTBlasters {
 	return blasters
 }
 
+func GetLogger() *log.Logger {
+	return l
+}
+
 func Cleanup() {
 	if blasters != nil && blasters.Running {
 		blasters.Stop()
@@ -145,44 +149,5 @@ func Cleanup() {
 	}
 
 	if l != nil {
-		// how to close the logfile
 	}
-
 }
-
-// import (
-// 	"fmt"
-// 	"log"
-// 	"net/http"
-// 	"plugin"
-
-// 	gomqtt "github.com/eclipse/paho.mqtt.golang"
-// )
-
-// type OttO struct {
-// 	// *Dispatcher
-// 	// *MQTT
-// 	// *Server
-// 	// *Store
-
-// 	Plugins []string
-
-// 	Done chan bool
-// }
-
-// type controller interface {
-// 	Init() error
-// }
-
-// var (
-// 	O *OttO = nil
-// )
-
-// func NewOttO() *OttO {
-// 	O = &OttO{
-// 		MQTT:   &MQTT{},
-// 		Server: &Server{},
-// 		Store:  &Store{},
-// 	}
-// 	return O
-// }

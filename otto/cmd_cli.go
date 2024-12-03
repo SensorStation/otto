@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"strings"
 
 	"github.com/chzyer/readline"
+	"github.com/sensorstation/otto"
 	"github.com/spf13/cobra"
 )
 
@@ -35,10 +35,10 @@ func init_readline() {
 
 	var err error
 	rl, err = readline.NewEx(&readline.Config{
-		Prompt:            "otto\033[31m»\033[0m ",
-		HistoryFile:       "/tmp/readline.tmp",
-		AutoComplete:      completer,
-		InterruptPrompt:   "^C",
+		Prompt:       "otto\033[31m»\033[0m ",
+		HistoryFile:  "/tmp/readline.tmp",
+		AutoComplete: completer,
+		// InterruptPrompt:   "^C",
 		EOFPrompt:         "exit",
 		HistorySearchFold: true,
 		// FuncFilterInputRune: filterInput,
@@ -47,8 +47,7 @@ func init_readline() {
 		panic(err)
 	}
 	rl.CaptureExitSignal()
-	log.SetOutput(rl.Stderr())
-
+	l.SetOutput(rl.Stderr())
 }
 
 func cliRun(cmd *cobra.Command, args []string) {
@@ -63,6 +62,8 @@ func cliRun(cmd *cobra.Command, args []string) {
 			done <- true
 		}
 	}
+	fmt.Println("Exiting, cleanup")
+	otto.Cleanup()
 	fmt.Println("Good Bye!")
 }
 
@@ -89,6 +90,10 @@ func runLine() bool {
 	line = strings.TrimSpace(line)
 	if line == "exit" || line == "quit" {
 		return false
+	}
+
+	if len(line) == 0 {
+		return true
 	}
 
 	args := strings.Split(line, " ")

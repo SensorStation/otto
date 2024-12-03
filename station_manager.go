@@ -3,7 +3,6 @@ package otto
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -48,7 +47,7 @@ func (sm *StationManager) Start() {
 
 					// Do not timeout stations with a duration of 0
 					if st.Expiration == 0 {
-						log.Printf("Station %s expiration == 0 do not timeout", id)
+						l.Printf("Station %s expiration == 0 do not timeout", id)
 						continue
 					}
 
@@ -59,7 +58,7 @@ func (sm *StationManager) Start() {
 					expires := st.LastHeard.Add(st.Expiration)
 					if expires.Sub(time.Now()) < 0 {
 						sm.mu.Lock()
-						log.Printf("Station: %s has timed out\n", id)
+						l.Printf("Station: %s has timed out\n", id)
 						sm.Stale[id] = st
 						delete(sm.Stations, id)
 						sm.mu.Unlock()
@@ -68,10 +67,10 @@ func (sm *StationManager) Start() {
 				}
 
 			case ev := <-sm.EventQ:
-				log.Printf("Station Event: ! %+v\n", ev)
+				l.Printf("Station Event: ! %+v\n", ev)
 				st := sm.Get(ev.StationID)
 				if st == nil {
-					log.Printf("[W] Station Event could not find station: %s", ev.StationID)
+					l.Printf("[W] Station Event could not find station: %s", ev.StationID)
 					continue
 				}
 
@@ -102,6 +101,22 @@ func (sm *StationManager) Add(st string) (station *Station, err error) {
 }
 
 func (sm *StationManager) Update(msg *Msg) (st *Station) {
+
+	var err error
+
+	if len(msg.Path) < 3 {
+		fmt.Printf("Msg path does not include staionId: %q\n", msg.Path)
+		return nil
+	}
+	stid := msg.Path[2]
+	st = sm.Get(stid)
+	if st == nil {
+		if st, err = sm.Add(stid); err != nil {
+			fmt.Println("Station Manager failed to create new station: ", stid, err)
+			return nil
+		}
+	}
+
 	// data := msg.Data
 	st.Update(msg)
 	return st

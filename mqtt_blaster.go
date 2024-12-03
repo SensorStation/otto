@@ -5,14 +5,9 @@ import (
 	"time"
 )
 
-type MQTTMsg struct {
-	Topic   string
-	Message string
-}
-
 type MQTTBlaster struct {
 	*Station
-	MQTTMsg
+	Topic string
 }
 
 type MQTTBlasters struct {
@@ -26,21 +21,17 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 	mb := &MQTTBlasters{
 		Count:   count,
 		Running: true,
-		Wait:    500,
+		Wait:    2000,
 	}
 
 	mb.Blasters = make([]*MQTTBlaster, mb.Count)
 	for i := 0; i < mb.Count; i++ {
 		topic := fmt.Sprintf("ss/d/%d/temphum", i)
-		msg := `{ "tempc": 100, "humidty": 78 }`
 
 		id := fmt.Sprintf("station-%d", i)
 		mb.Blasters[i] = &MQTTBlaster{
+			Topic:   topic,
 			Station: NewStation(id),
-			MQTTMsg: MQTTMsg{
-				Topic:   topic,
-				Message: msg,
-			},
 		}
 	}
 	return mb
@@ -49,15 +40,22 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 func (mb *MQTTBlasters) Blast() error {
 
 	mqtt := GetMQTT()
+	msgMaker := &WeatherData{}
+
+	if !mqtt.IsConnected() {
+		return fmt.Errorf("MQTT Client is not connected to a broker")
+	}
 
 	// now start blasting
 	for mb.Running {
 		for i := 0; i < mb.Count; i++ {
 			b := mb.Blasters[i]
-			mqtt.Publish(b.Topic, b.Message)
+			msg := msgMaker.NewMsg()
+			mqtt.Publish(b.Topic, msg.Byte())
 		}
 		time.Sleep(time.Duration(mb.Wait) * time.Millisecond)
 	}
+	l.Println("MQTT Blaster has stopped")
 	return nil
 }
 

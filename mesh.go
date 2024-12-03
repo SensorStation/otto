@@ -3,7 +3,6 @@ package otto
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 	// mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -34,11 +33,11 @@ func (m *MeshNetwork) GetNode(nid string) (mn *MeshNode) {
 func (m *MeshNetwork) UpdateRoot(rootid string) {
 
 	// TODO create a fully configured node and schedule network topology updates.
-	// log.Printf("%s.%s %s[%.0f]: rootid: %s, self: %s, parent: %s\n",
+	// l.Printf("%s.%s %s[%.0f]: rootid: %s, self: %s, parent: %s\n",
 	//	addr, typ, msgtype, layer, rootid, self, parent);
 	if m.RootId != rootid {
 		// we have a change of roots
-		log.Println("Root Node has changed from ", m.RootId, " to ", rootid)
+		l.Println("Root Node has changed from ", m.RootId, " to ", rootid)
 		m.RootId = rootid
 	}
 }
@@ -91,24 +90,24 @@ func NewNode(d map[string]interface{}) *MeshNode {
 
 func (n *MeshNode) UpdateParent(p *MeshNode) {
 	if n.Parent != p.Id {
-		log.Printf("n.Parent has changed from %s -> %s\n", n.Parent, p.Id)
+		l.Printf("n.Parent has changed from %s -> %s\n", n.Parent, p.Id)
 	}
 	n.Parent = p.Id
 }
 
 func (n *MeshNode) UpdateChild(c *MeshNode) {
-	log.Print("Parent ", n.Id)
+	l.Print("Parent ", n.Id)
 	if n.Children == nil {
 		n.Children = make(map[string]string)
 	}
 
 	if _, e := n.Children[c.Id]; e {
-		log.Println(" update existing child ")
+		l.Println(" update existing child ")
 	} else {
-		log.Println(" ADDING NEW child ")
+		l.Println(" ADDING NEW child ")
 	}
 	n.Children[c.Id] = c.Id
-	log.Println(c.Id)
+	l.Println(c.Id)
 }
 
 func (n *MeshNode) String() string {
@@ -142,13 +141,13 @@ func (mn MeshNetwork) MsgRecv(topic string, payload []byte) {
 	// var m MeshMessage
 	// err := json.Unmarshal(payload, &m)
 	// if err != nil {
-	// 	log.Fatal("Failed to unmarshal payload")
+	// 	l.Fatal("Failed to unmarshal payload")
 	// }
 
 	// // unravel the json message and verify our current node information
 	// paths := strings.Split(topic, "/")
 	// if len(paths) != 3 {
-	// 	log.Fatal("Error unsupported path")
+	// 	l.Fatal("Error unsupported path")
 	// }
 
 	// rootid := paths[1]
@@ -164,7 +163,7 @@ func (mn MeshNetwork) MsgRecv(topic string, payload []byte) {
 	// 	mn.Update(rootid, self, parent, layer)
 
 	// default:
-	// 	log.Fatalln("Unknown message type: ", msgtype)
+	// 	l.Fatalln("Unknown message type: ", msgtype)
 	// }
 	return
 }
@@ -173,11 +172,11 @@ func (mn MeshNetwork) Update(rootid, id, parent string, layer int) {
 
 	var debug bool
 	if debug {
-		log.Println("[MESH] Update [id/parent/rootid/layer]: ", id, parent, rootid, layer)
+		l.Println("[MESH] Update [id/parent/rootid/layer]: ", id, parent, rootid, layer)
 	}
 
 	if mn.RootId != rootid {
-		log.Printf("[MESH] Root %s has changed to %s\n", mn.RootId, rootid)
+		l.Printf("[MESH] Root %s has changed to %s\n", mn.RootId, rootid)
 		mn.RootId = rootid
 	}
 
@@ -187,6 +186,6 @@ func (mn MeshNetwork) Update(rootid, id, parent string, layer int) {
 	}
 
 	if node.Layer != layer {
-		log.Printf("[MESH] Node %s layer has changed from %d to %d\n", node.Id, node.Layer, layer)
+		l.Printf("[MESH] Node %s layer has changed from %d to %d\n", node.Id, node.Layer, layer)
 	}
 }

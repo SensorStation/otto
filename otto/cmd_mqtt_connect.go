@@ -27,7 +27,7 @@ func runMQTTConnect(cmd *cobra.Command, args []string) {
 	if m.Client == nil || !m.IsConnected() {
 		err := m.Connect()
 		if err != nil {
-			fmt.Printf("Failed to connect to mqtt broker: %s: %s\n", mqtt.Broker, err)
+			fmt.Printf("Failed to connect to mqtt broker: %s: %s\n", m.Broker, err)
 		}
 	}
 }

@@ -2,7 +2,6 @@ package otto
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,15 +14,15 @@ func TestPing(t *testing.T) {
 
 	res, err := http.Get(ts.URL)
 	if err != nil {
-		log.Fatal(err)
+		l.Fatal(err)
 	}
 	pong, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		l.Fatal(err)
 	}
 
 	if string(pong) != "Pong\n" {
-		log.Fatal(err)
+		l.Fatal(err)
 	}
 }

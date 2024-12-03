@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -70,13 +69,13 @@ func (c *Configuration) SaveFile(fname string) error {
 
 	jbuf, err := json.Marshal(c)
 	if err != nil {
-		log.Printf("[ERROR]: JSON marshaling config: %+v", err)
+		l.Printf("[ERROR]: JSON marshaling config: %+v", err)
 		return err
 	}
 
 	err = ioutil.WriteFile(fname, jbuf, 0644)
 	if err != nil {
-		log.Printf("[ERROR]: FILE writing config: %+v", err)
+		l.Printf("[ERROR]: FILE writing config: %+v", err)
 		return err
 	}
 	return err
@@ -86,13 +85,13 @@ func (c *Configuration) SaveFile(fname string) error {
 func (c *Configuration) ReadFile(fname string) error {
 	buf, err := ioutil.ReadFile(fname)
 	if err != nil {
-		log.Printf("[ERROR]: failed to read file %s, %v", fname, err)
+		l.Printf("[ERROR]: failed to read file %s, %v", fname, err)
 		return err
 	}
 
 	err = json.Unmarshal(buf, c)
 	if err != nil {
-		log.Printf("[ERROR]: failed to read file %s, %v", fname, err)
+		l.Printf("[ERROR]: failed to read file %s, %v", fname, err)
 		return err
 	}
 

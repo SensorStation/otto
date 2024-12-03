@@ -1,9 +1,5 @@
 package otto
 
-import (
-	"log"
-)
-
 type Store struct {
 	Source map[string]map[string]float64
 	StoreQ chan *Msg
@@ -30,6 +26,6 @@ func NewStore() *Store {
 }
 
 func (s *Store) Store(msg *Msg) error {
-	log.Printf("Store: %+v\n", msg)
+	l.Printf("Store: %+v\n", msg)
 	return nil
 }

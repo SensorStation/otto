@@ -22,10 +22,10 @@ var (
 
 func init() {
 	mqttCmd.AddCommand(mqttBlastCmd)
-	mqttBlastCmd.PersistentFlags().IntVar(&count, "count", 10, "The number of blasters to start")
+	mqttBlastCmd.PersistentFlags().IntVar(&count, "count", 1, "The number of blasters to start")
 }
 
 func mqttBlastRun(cmd *cobra.Command, args []string) {
-	blasters := otto.GetMQTTBlasters(10)
-	blasters.Blast()
+	blasters := otto.GetMQTTBlasters(count)
+	go blasters.Blast()
 }

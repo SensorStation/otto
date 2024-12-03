@@ -1,7 +1,6 @@
 package otto
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -29,11 +28,11 @@ func (w *Websock) AddWebQ() chan *Station {
 }
 
 func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Println("[I] Connected with Websocket")
+	l.Println("[I] Connected with Websocket")
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("Websocket Upgrader err", err)
+		l.Println("Websocket Upgrader err", err)
 		return
 	}
 	defer conn.Close()
@@ -43,7 +42,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			var message StationEvent
 			err := conn.ReadJSON(&message)
 			if err != nil {
-				log.Printf("WS [I]: %+v - %+v", message, err)
+				l.Printf("WS [I]: %+v - %+v", message, err)
 				break
 			}
 
@@ -52,20 +51,18 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				// Stations.EventQ <- &message
 
 			default:
-				log.Printf("ERROR: unknown event type: %+v", message)
+				l.Printf("ERROR: unknown event type: %+v", message)
 			}
 
 		}
 	}()
 
 	wq := ws.AddWebQ()
-	// defer O.Dispatcher.FreeWebQ(wq)
-
 	for {
 		msg := <-wq
 		err = conn.WriteJSON(msg)
 		if err != nil {
-			log.Println("Failed to write web socket", err)
+			l.Println("Failed to write web socket", err)
 			return
 		}
 	}

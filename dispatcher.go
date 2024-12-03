@@ -32,7 +32,7 @@ package otto
 // 					}
 
 // 				default:
-// 					log.Println("Uknonwn message type: ", msg.Type)
+// 					l.Println("Uknonwn message type: ", msg.Type)
 // 				}
 // 			}
 // 		}
