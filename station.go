@@ -1,7 +1,6 @@
 package otto
 
 import (
-	"fmt"
 	"sync"
 	"time"
 )
@@ -55,8 +54,6 @@ func (s *Station) Insert(label string, val interface{}) {
 		Time:  time.Now(),
 		Value: val,
 	}
-
-	fmt.Printf("TS: %+v\n", s)
 
 	if s.Timeseries[label] == nil {
 		s.Timeseries[label] = NewTimeseries(label)
