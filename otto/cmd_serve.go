@@ -39,8 +39,12 @@ func serveRun(cmd *cobra.Command, args []string) {
 	stations.Start()
 
 	mqtt := otto.GetMQTT()
-	mqtt.Connect()
-	mqtt.Subscribe("ss/d/+/+", otto.GetDataManager())
+	err := mqtt.Connect()
+	if err != nil {
+		l.Println("MQTT Failed to connect to broker ", config.Broker)
+	} else {
+		mqtt.Subscribe("ss/d/+/+", otto.GetDataManager())		
+	}
 
 	// start web server / rest server
 	server := otto.GetServer()
