@@ -27,7 +27,7 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 	mb.Blasters = make([]*MQTTBlaster, mb.Count)
 	for i := 0; i < mb.Count; i++ {
 		id := fmt.Sprintf("station-%d", i)
-		topic := fmt.Sprintf("ss/d/%d/temphum", id)
+		topic := fmt.Sprintf("ss/d/%s/temphum", id)
 
 		mb.Blasters[i] = &MQTTBlaster{
 			Topic:   topic,

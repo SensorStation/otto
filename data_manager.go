@@ -17,7 +17,7 @@ func NewDataManager() (sm *DataManager) {
 
 func (dm *DataManager) Callback(msg *Msg) {
 	if len(msg.Path) < 3 {
-		l.Println("DataManager: Malformed MQTT path: %q\n", msg.Path)
+		l.Printf("DataManager: Malformed MQTT path: %q\n", msg.Path)
 		return
 	}
 

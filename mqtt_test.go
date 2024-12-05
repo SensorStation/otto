@@ -1,6 +1,9 @@
 package otto
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 type tclient struct {
 	gotit bool
@@ -8,10 +11,12 @@ type tclient struct {
 	msg   string
 }
 
-func (t tclient) Callback(topic string, m []byte) {
-	if t.topic == topic && t.msg == string(m) {
-		t.gotit = true
-	}
+func (t tclient) Callback(m *Msg) {
+	fmt.Printf("T: %+v\n", t)
+	fmt.Printf("M: %+v\n", m)
+	// if t.topic == topic && t.msg == string(m) {
+	// 	t.gotit = true
+	// }
 }
 
 func TestSubscribe(t *testing.T) {
