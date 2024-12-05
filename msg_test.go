@@ -20,6 +20,7 @@ func getMsg() (*Msg, time.Time) {
 func TestStationMsg(t *testing.T) {
 	topic := "ss/d/be:ef:ca:fe:01/station"
 	omsg, _ := getMsg()
+	omsg.Source = "be:ef:ca:fe:01"
 
 	j, err := json.Marshal(omsg)
 	if err != nil {
@@ -35,14 +36,6 @@ func TestStationMsg(t *testing.T) {
 	if msg == nil {
 		t.Error("msg topic expected but is nil")
 	}
-
-	// if string(msg.Station) != "be:ef:ca:fe:01" {
-	// 	t.Error("msg station expected (be:ef:ca:fe:01) got (%s)", msg.Station)
-	// }
-
-	// if msg.Type != "d" {
-	// 	t.Error("msg Type expected (d) got (%s)", msg.Type)
-	// }
 
 }
 
