@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
-	"os"
 
 	"github.com/sensorstation/otto"
 	"github.com/spf13/cobra"
@@ -28,8 +26,8 @@ func GetRootCmd() *cobra.Command {
 func Execute() {
 	l = otto.GetLogger()
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		l.Println(err)
+		return
 	}
 }
 

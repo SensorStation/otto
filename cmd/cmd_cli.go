@@ -47,7 +47,7 @@ func init_readline() {
 		panic(err)
 	}
 	rl.CaptureExitSignal()
-	l.SetOutput(rl.Stderr())
+	// l.SetOutput(rl.Stderr())
 }
 
 func cliRun(cmd *cobra.Command, args []string) {

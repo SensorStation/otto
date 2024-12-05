@@ -1,7 +1,6 @@
 package otto
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -31,7 +30,6 @@ func NewServer() *Server {
 // Register to handle HTTP requests for particular paths in the
 // URL or MQTT channel.
 func (s *Server) Register(p string, h http.Handler) {
-	fmt.Printf("srv logger: %+v\n", l)
 	l.Println("HTTP REST API Registered: ", p)
 	s.Handle(p, h)
 }

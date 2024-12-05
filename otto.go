@@ -84,7 +84,9 @@ turning a relay on or off.
 */
 package otto
 
-import "log"
+import (
+	"log"
+)
 
 // global variables and structures
 var (

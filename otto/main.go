@@ -29,7 +29,6 @@ func init() {
 	r.AddCommand(fooCmd)
 }
 
-
 func fooRun(cmd *cobra.Command, args []string) {
 	fmt.Println("Rock the foobar")
 }
