@@ -1,5 +1,6 @@
 PLUGINS := $(wildcard plugins/*)
 SUBDIRS = $(PLUGINS) otto
+PIENV	= env GOOS=linux GOARCH=arm GOARM=7
 
 all: test $(SUBDIRS)
 
