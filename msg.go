@@ -2,9 +2,12 @@ package otto
 
 import (
 	"fmt"
-	"strings"
 	"time"
 )
+
+type Message interface {
+	GetMsg() *Msg
+}
 
 // Msg holds a value and some type of meta data to be pass around in
 // the system.
@@ -32,19 +35,6 @@ func NewMsg() *Msg {
 		ID: getMsgID(),
 	}
 	return msg
-}
-
-// MsgFromMQTT will parse the topic and pass the payload
-// to the correct station for the given value.
-func MsgFromMQTT(topic string, payload []byte) (*Msg, error) {
-
-	m := NewMsg()
-
-	// extract the station from the topic
-	m.Path = strings.Split(topic, "/")
-	m.Message = payload
-	m.Time = time.Now()
-	return m, nil
 }
 
 func (msg *Msg) Byte() []byte {

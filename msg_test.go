@@ -28,10 +28,8 @@ func TestStationMsg(t *testing.T) {
 		return
 	}
 
-	msg, err := MsgFromMQTT(topic, j)
-	if err != nil {
-		t.Errorf("Extracting message from MQTT %+v", err)
-	}
+	dm := GetDataManager()
+	msg := dm.GetMsg(topic, j)
 
 	if msg == nil {
 		t.Error("msg topic expected but is nil")

@@ -10,12 +10,8 @@ type tclient struct {
 	msg   string
 }
 
-func (t tclient) Callback(m *Msg) {
-	// fmt.Printf("T: %+v\n", t)
-	// fmt.Printf("M: %+v\n", m)
-	// if t.topic == topic && t.msg == string(m) {
-	// 	t.gotit = true
-	// }
+func (t tclient) SubCallback(topic string, data []byte) {
+	// Todo something
 }
 
 func TestSubscribe(t *testing.T) {

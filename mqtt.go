@@ -7,7 +7,7 @@ import (
 )
 
 type Sub interface {
-	Callback(msg *Msg)
+	SubCallback(topic string, data []byte)
 }
 
 // MQTT is a wrapper around the Paho MQTT Go package
@@ -34,7 +34,6 @@ func (m *MQTT) IsConnected() bool {
 	if m.Client == nil {
 		return false
 	}
-
 	return m.Client.IsConnected()
 }
 
@@ -65,23 +64,27 @@ func (m *MQTT) Connect() error {
 // wildcards '+' and '#' are supported.  Examples
 // ss/<ethaddr>/<data>/tempf value
 // ss/<ethaddr>/<data>/humidity value
-func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) {
+func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
 	sub := &Subscriber{id, path, f}
 	m.Subscribers[id] = sub
 
 	if m.Client == nil {
 		l.Println("MQTT Client is not connected to a broker")
-		return
+		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
 	}
 
 	qos := 0
 	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+
+		// TODO: add routing that automatically subscribes subscribers when a
+		// connection has been made
+		return token.Error()
 	} else {
 		if m.Debug {
 			l.Printf("subscribe token: %v", token)
 		}
 	}
+	return nil
 }
 
 // Publish will publish a value to the given channel
@@ -110,16 +113,7 @@ func (m MQTT) Publish(topic string, value interface{}) {
 
 func (m *MQTT) Subscribe(topic string, s Sub) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
-
-		// MQTT Middleware here
-		msg, err := MsgFromMQTT(m.Topic(), m.Payload())
-		if err != nil {
-			l.Printf("Failed to parse mqtt message topic: %s message: %s - err %s\n",
-				topic, string(m.Payload()), err)
-			return
-		}
-		msg.Source = "mqtt"
-		s.Callback(msg)
+		s.SubCallback(m.Topic(), m.Payload())
 	}
 	m.Sub(topic, topic, mfunc)
 }
@@ -141,6 +135,6 @@ func (sub *Subscriber) String() string {
 type MQTTPrinter struct {
 }
 
-func (mp *MQTTPrinter) Callback(msg *Msg) {
-	fmt.Println(msg.String())
+func (mp *MQTTPrinter) SubCallback(topic string, data []byte) {
+	fmt.Println(topic, " ", string(data))
 }
