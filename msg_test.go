@@ -27,7 +27,6 @@ func TestStationMsg(t *testing.T) {
 		return
 	}
 
-	// t.Logf("j: %s\n", string(j))
 	msg, err := MsgFromMQTT(topic, j)
 	if err != nil {
 		t.Errorf("Extracting message from MQTT %+v", err)

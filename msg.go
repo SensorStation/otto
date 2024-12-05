@@ -38,14 +38,13 @@ func NewMsg() *Msg {
 // to the correct station for the given value.
 func MsgFromMQTT(topic string, payload []byte) (*Msg, error) {
 
-	var m Msg = Msg{}
-	m.ID = getMsgID()
+	m := NewMsg()
 
 	// extract the station from the topic
 	m.Path = strings.Split(topic, "/")
 	m.Message = payload
 	m.Time = time.Now()
-	return &m, nil
+	return m, nil
 }
 
 func (msg *Msg) Byte() []byte {
