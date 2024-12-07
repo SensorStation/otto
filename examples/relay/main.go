@@ -48,7 +48,6 @@ func main() {
 
 func (r *relay) SubCallback(topic string, data []byte) {
 	msg := otto.NewMsg(topic, data)
-
 	switch msg.String() {
 	case "on":
 		r.On()
