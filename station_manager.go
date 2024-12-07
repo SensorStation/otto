@@ -47,7 +47,7 @@ func (sm *StationManager) Start() {
 
 					// Do not timeout stations with a duration of 0
 					if st.Expiration == 0 {
-						l.Printf("Station %s expiration == 0 do not timeout", id)
+						l.Info("Station %s expiration == 0 do not timeout", "id", id)
 						continue
 					}
 
@@ -58,7 +58,7 @@ func (sm *StationManager) Start() {
 					expires := st.LastHeard.Add(st.Expiration)
 					if expires.Sub(time.Now()) < 0 {
 						sm.mu.Lock()
-						l.Printf("Station: %s has timed out\n", id)
+						l.Info("Station has timed out", "station", id)
 						sm.Stale[id] = st
 						delete(sm.Stations, id)
 						sm.mu.Unlock()
@@ -67,10 +67,10 @@ func (sm *StationManager) Start() {
 				}
 
 			case ev := <-sm.EventQ:
-				l.Printf("Station Event: ! %+v\n", ev)
+				l.Info("Station Event", "event", ev)
 				st := sm.Get(ev.StationID)
 				if st == nil {
-					l.Printf("[W] Station Event could not find station: %s", ev.StationID)
+					l.Warn("Station Event could not find station", "station", ev.StationID)
 					continue
 				}
 

@@ -26,6 +26,6 @@ func NewStore() *Store {
 }
 
 func (s *Store) Store(msg *Msg) error {
-	l.Printf("Store: %+v\n", msg)
+	l.Info("Store: ", "message", msg)
 	return nil
 }

@@ -28,11 +28,11 @@ func (w *Websock) AddWebQ() chan *Station {
 }
 
 func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	l.Println("[I] Connected with Websocket")
+	l.Info("[I] Connected with Websocket")
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		l.Println("Websocket Upgrader err", err)
+		l.Error("Websocket Upgrader err", "error", err)
 		return
 	}
 	defer conn.Close()
@@ -42,7 +42,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			var message StationEvent
 			err := conn.ReadJSON(&message)
 			if err != nil {
-				l.Printf("WS [I]: %+v - %+v", message, err)
+				l.Error("Websocket ", "message", message, "error", err)
 				break
 			}
 
@@ -51,7 +51,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				// Stations.EventQ <- &message
 
 			default:
-				l.Printf("ERROR: unknown event type: %+v", message)
+				l.Error("unknown event type", "message", message)
 			}
 
 		}
@@ -62,7 +62,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		msg := <-wq
 		err = conn.WriteJSON(msg)
 		if err != nil {
-			l.Println("Failed to write web socket", err)
+			l.Error("Failed to write web socket", "error", err)
 			return
 		}
 	}

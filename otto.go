@@ -84,10 +84,6 @@ turning a relay on or off.
 */
 package otto
 
-import (
-	"log"
-)
-
 // global variables and structures
 var (
 	mqtt     *MQTT
@@ -95,7 +91,7 @@ var (
 	stations *StationManager
 	data     *DataManager
 	blasters *MQTTBlasters
-	l        *log.Logger
+	l        *Logger
 
 	running bool
 )
@@ -133,7 +129,7 @@ func GetMQTTBlasters(count int) *MQTTBlasters {
 	return blasters
 }
 
-func GetLogger() *log.Logger {
+func GetLogger() *Logger {
 	return l
 }
 

@@ -1,15 +1,18 @@
 package otto
 
 import (
-	"log"
+	"log/slog"
 	"os"
 )
+
+type Logger struct {
+	*slog.Logger
+}
 
 func init() {
 	f, err := os.OpenFile("otto.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatalf("error opening log file: %v", err)
+		slog.Error("error opening log ", "err", err)
 	}
-
-	l = log.New(f, "otto: ", log.Ldate|log.Ltime|log.Lshortfile)
+	l = &Logger{slog.New(slog.NewTextHandler(f, &slog.HandlerOptions{Level: slog.LevelDebug}))}
 }

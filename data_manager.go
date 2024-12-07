@@ -1,9 +1,6 @@
 package otto
 
 import (
-	"strings"
-	"time"
-
 	"encoding/json"
 )
 
@@ -18,24 +15,12 @@ func NewDataManager() (sm *DataManager) {
 	return sm
 }
 
-func (dm *DataManager) GetMsg(topic string, data []byte) *Msg {
-
-	m := NewMsg()
-
-	// extract the station from the topic
-	m.Path = strings.Split(topic, "/")
-	m.Message = data
-	m.Time = time.Now()
-	return m
-
-}
-
 func (dm *DataManager) SubCallback(topic string, message []byte) {
 
 	// convert the topic and data into a *Msg
-	msg := dm.GetMsg(topic, message)
+	msg := NewMsg(topic, message)
 	if len(msg.Path) < 3 {
-		l.Printf("DataManager: Malformed MQTT path: %q\n", msg.Path)
+		l.Error("DataManager: Malformed MQTT ", "path", msg.Path)
 		return
 	}
 
@@ -45,7 +30,7 @@ func (dm *DataManager) SubCallback(topic string, message []byte) {
 	var m map[string]interface{}
 	err := json.Unmarshal(msg.Message, &m)
 	if err != nil {
-		l.Println("Failed to unmarshal message ", err)
+		l.Error("Failed to unmarshal message ", "error", err)
 		return
 	}
 	for k, v := range m {

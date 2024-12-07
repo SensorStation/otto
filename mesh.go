@@ -37,7 +37,7 @@ func (m *MeshNetwork) UpdateRoot(rootid string) {
 	//	addr, typ, msgtype, layer, rootid, self, parent);
 	if m.RootId != rootid {
 		// we have a change of roots
-		l.Println("Root Node has changed from ", m.RootId, " to ", rootid)
+		l.Info("Root Node has changed", "from", m.RootId, "to", rootid)
 		m.RootId = rootid
 	}
 }
@@ -90,24 +90,24 @@ func NewNode(d map[string]interface{}) *MeshNode {
 
 func (n *MeshNode) UpdateParent(p *MeshNode) {
 	if n.Parent != p.Id {
-		l.Printf("n.Parent has changed from %s -> %s\n", n.Parent, p.Id)
+		l.Info("n.Parent has changed", "from", n.Parent, "to", p.Id)
 	}
 	n.Parent = p.Id
 }
 
 func (n *MeshNode) UpdateChild(c *MeshNode) {
-	l.Print("Parent ", n.Id)
+	l.Info("Update child", "Parent ", n.Id)
 	if n.Children == nil {
 		n.Children = make(map[string]string)
 	}
 
 	if _, e := n.Children[c.Id]; e {
-		l.Println(" update existing child ")
+		l.Info("update existing child ")
 	} else {
-		l.Println(" ADDING NEW child ")
+		l.Info(" ADDING NEW child ")
 	}
 	n.Children[c.Id] = c.Id
-	l.Println(c.Id)
+	l.Info(c.Id)
 }
 
 func (n *MeshNode) String() string {
@@ -170,13 +170,9 @@ func (mn MeshNetwork) MsgRecv(topic string, payload []byte) {
 
 func (mn MeshNetwork) Update(rootid, id, parent string, layer int) {
 
-	var debug bool
-	if debug {
-		l.Println("[MESH] Update [id/parent/rootid/layer]: ", id, parent, rootid, layer)
-	}
-
+	l.Debug("[MESH] Update [id/parent/rootid/layer]: ", id, parent, rootid, layer)
 	if mn.RootId != rootid {
-		l.Printf("[MESH] Root %s has changed to %s\n", mn.RootId, rootid)
+		l.Info("[MESH] Root %s has changed to %s\n", mn.RootId, rootid)
 		mn.RootId = rootid
 	}
 
@@ -186,6 +182,6 @@ func (mn MeshNetwork) Update(rootid, id, parent string, layer int) {
 	}
 
 	if node.Layer != layer {
-		l.Printf("[MESH] Node %s layer has changed from %d to %d\n", node.Id, node.Layer, layer)
+		l.Info("[MESH] Node %s layer has changed from %d to %d\n", node.Id, node.Layer, layer)
 	}
 }

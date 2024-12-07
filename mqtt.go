@@ -2,6 +2,7 @@ package otto
 
 import (
 	"fmt"
+	"log"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -40,9 +41,10 @@ func (m *MQTT) IsConnected() bool {
 // Connect to the MQTT broker after setting some MQTT options
 // then connecting to the MQTT broker
 func (m *MQTT) Connect() error {
+
 	if m.Debug {
-		gomqtt.DEBUG = l
-		gomqtt.ERROR = l
+		gomqtt.DEBUG = log.Default()
+		gomqtt.ERROR = log.Default()
 	}
 
 	m.Broker = "tcp://" + m.Broker + ":1883"
@@ -54,7 +56,7 @@ func (m *MQTT) Connect() error {
 	opts.SetCleanSession(true)
 	m.Client = gomqtt.NewClient(opts)
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
-		l.Println("MQTT Connect: ", token.Error())
+		l.Error("MQTT Connect: ", "error", token.Error())
 		return fmt.Errorf("Failed to connect to MQTT broker %s", token.Error())
 	}
 	return nil
@@ -69,7 +71,7 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
 	m.Subscribers[id] = sub
 
 	if m.Client == nil {
-		l.Println("MQTT Client is not connected to a broker")
+		l.Error("MQTT Client is not connected to a broker")
 		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
 	}
 
@@ -80,9 +82,7 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
 		// connection has been made
 		return token.Error()
 	} else {
-		if m.Debug {
-			l.Printf("subscribe token: %v", token)
-		}
+		l.Debug("subscribe ", "token", token)
 	}
 	return nil
 }
@@ -93,20 +93,20 @@ func (m MQTT) Publish(topic string, value interface{}) {
 	var t gomqtt.Token
 
 	if m.Client == nil {
-		l.Println("MQTT Client is not connected to a broker")
+		l.Warn("MQTT Client is not connected to a broker")
 		return
 	}
 
 	if t = m.Client.Publish(topic, byte(0), false, value); t == nil {
 		if false {
-			l.Printf("[I] MQTT Pub NULL token: %s - %v", topic, value)
+			l.Info("MQTT Pub NULL token: ", "topic", topic, "value", value)
 		}
 		return
 	}
 
 	t.Wait()
 	if t.Error() != nil {
-		l.Println("MQTT Publish token: ", t.Error())
+		l.Error("MQTT Publish token: ", "error", t.Error())
 	}
 
 }

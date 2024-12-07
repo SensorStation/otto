@@ -30,26 +30,25 @@ func NewServer() *Server {
 // Register to handle HTTP requests for particular paths in the
 // URL or MQTT channel.
 func (s *Server) Register(p string, h http.Handler) {
-	l.Println("HTTP REST API Registered: ", p)
+	l.Info("HTTP REST API Registered: ", p)
 	s.Handle(p, h)
 }
 
 // Start the HTTP server after registering REST API callbacks
 // and initializing the Web application directory
 func (s *Server) Start() {
-	l.Println("Starting hub Web and REST server on ", s.Addr)
+	l.Info("Starting hub Web and REST server on ", "addr", s.Addr)
 
 	if s.Appdir != "" {
-		l.Println("Server: webapp dir", s.Appdir)
+		l.Info("Server: webapp dir", "dir", s.Appdir)
 		fs := http.FileServer(http.Dir(s.Appdir))
 		s.Register("/", fs)
 	}
 	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
 
-	l.Println("Starting HTTP server ", s.Addr)
+	l.Info("Starting HTTP server ", "addr", s.Addr)
 
-	// err := s.ListenAndServe() // does not work
 	http.ListenAndServe(s.Addr, s.ServeMux)
 	return
 }

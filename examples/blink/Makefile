@@ -1,10 +1,8 @@
-CMD	= otto
-
 all: 
-	go build -v -o $(CMD)
+	go build -v
 
 pi:
-	env GOOS=linux GOARCH=arm GOARM=7 go build -o $(CMD)
+	env GOOS=linux GOARCH=arm GOARM=7 go build -v
 
 clean:
 	rm -f $(CMD) *.log

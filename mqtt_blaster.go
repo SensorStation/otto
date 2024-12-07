@@ -55,7 +55,7 @@ func (mb *MQTTBlasters) Blast() error {
 		}
 		time.Sleep(time.Duration(mb.Wait) * time.Millisecond)
 	}
-	l.Println("MQTT Blaster has stopped")
+	l.Info("MQTT Blaster has stopped")
 	return nil
 }
 

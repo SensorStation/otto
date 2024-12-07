@@ -1,26 +1,28 @@
+/*
+Blink sets up pin 6 for an LED and goes into an endless
+toggle mode.
+*/
+
 package main
 
 import (
+	"time"
+
 	"github.com/sensorstation/otto/gpio"
 )
 
-var (
-	led = LED(6)
-)
-
 func main() {
-	m := otto.GetMQTT()
-	m.Start(broker)
-	m.Subscribe("ss/c/localhost/led", led)
-}
 
-type LED struct {
-	pin	int
-}
+	// Get the GPIO driver
+	g := gpio.GetGPIO()
+	defer func() {
+		g.Shutdown()
+	}()
 
-func LED(pin int) {
-	return &LED{
-		pin: pin,
+	led := g.Pin("led", 6, gpio.Output(0))
+
+	for {
+		led.Toggle()
+		time.Sleep(1 * time.Second)
 	}
 }
-

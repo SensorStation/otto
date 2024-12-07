@@ -2,6 +2,7 @@ package otto
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -30,10 +31,14 @@ func getMsgID() int64 {
 	return msgid
 }
 
-func NewMsg() *Msg {
+func NewMsg(topic string, data []byte) *Msg {
 	msg := &Msg{
-		ID: getMsgID(),
+		ID:      getMsgID(),
+		Path:    strings.Split(topic, "/"),
+		Message: data,
+		Time:    time.Now(),
 	}
+
 	return msg
 }
 
@@ -42,6 +47,10 @@ func (msg *Msg) Byte() []byte {
 }
 
 func (msg *Msg) String() string {
+	return string(msg.Message)
+}
+
+func (msg *Msg) Dump() string {
 	str := fmt.Sprintf("  ID: %d\n", msg.ID)
 	str += fmt.Sprintf("Path: %q\n", msg.Path)
 	str += fmt.Sprintf("Args: %q\n", msg.Args)

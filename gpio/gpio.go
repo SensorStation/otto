@@ -2,8 +2,8 @@ package gpio
 
 import (
 	"fmt"
-	"log"
 
+	"github.com/sensorstation/otto"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -25,6 +25,10 @@ type Pin struct {
 
 	*gpiocdev.Line
 }
+
+var (
+	gpio *GPIO
+)
 
 func (pin *Pin) String() string {
 	str := fmt.Sprintf("%s - pin %4d", pin.Name, pin.Offset)
@@ -57,7 +61,7 @@ func (pin *Pin) Toggle() error {
 	return pin.Set(val)
 }
 
-func (pin Pin) Callback(t string, payload []byte) {
+func (pin Pin) SubCallback(t string, payload []byte) {
 	val := string(payload)
 	switch val {
 	case "on":
@@ -89,7 +93,7 @@ type GPIO struct {
 func GetGPIO() *GPIO {
 	if gpio == nil {
 		gpio = &GPIO{
-			chipname: "gpiochip4",
+			chipname: "gpiochip4", // raspberry pi
 		}
 		gpio.Pins = make(map[int]*Pin)
 	}
@@ -97,36 +101,22 @@ func GetGPIO() *GPIO {
 }
 
 func (gpio *GPIO) Pin(name string, offset int, mode Mode) (p *Pin) {
+	l := otto.GetLogger()
 
-	fmt.Printf("GPIO: %v\n", gpio)
-
-	l, err := gpiocdev.RequestLine(gpio.chipname, offset, gpiocdev.AsOutput(0))
+	// Put this into emulation mode if it fails
+	line, err := gpiocdev.RequestLine(gpio.chipname, offset, gpiocdev.AsOutput(0))
 	if err != nil {
-		panic(err)
+		l.Error("Failed to get gpio line", "error", err)
+		return nil
 	}
 
 	p = &Pin{
 		Name:   name,
 		Offset: offset,
-		Line:   l,
+		Line:   line,
 	}
 
 	gpio.Pins[offset] = p
-
-	if mqtt != nil {
-		log.Printf("mode: %d\n", mode)
-
-		switch mode {
-		case ModeInput:
-			log.Println("mode input")
-
-		case ModeOutput:
-			log.Println("mode output")
-			mqtt.Subscribe("ss/station/dev/"+p.Name, p)
-
-		}
-	}
-
 	return p
 }
 
@@ -144,17 +134,3 @@ func (gpio *GPIO) String() string {
 	}
 	return str
 }
-
-// func (gpio *GPIO) Find(offset int) (p *Pin) {
-// 	l, err := gpiocdev.RequestLine(gpio.chipname, offset, gpiocdev.AsInput)
-// 	if err != nil {
-// 		fmt.Printf("Finding line %s returned error: %s\n", gpio.chipname, err)
-// 		os.Exit(1)
-// 	}
-
-// 	p = &Pin{
-// 		Line:   l,
-// 		Offset: offset,
-// 	}
-// 	return p
-// }
