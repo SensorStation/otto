@@ -13,23 +13,13 @@ import (
 )
 
 var (
-	config *Configuration
 	mqtt   *otto.MQTT
 	gpio   *GPIO
 
 	e Echo
 )
 
-// DHT22		- GPIO 16 DHT22
-// Green LED	- GPIO 6
-func init() {
-	config = &Configuration{}
-	flag.StringVar(&config.Broker, "broker", "localhost", "MQTT Broker")
-}
-
 func main() {
-	flag.Parse()
-
 	mqtt = &otto.MQTT{
 		Broker: config.Broker,
 	}
