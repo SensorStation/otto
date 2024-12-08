@@ -6,6 +6,7 @@ toggle mode.
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/sensorstation/otto/gpio"
@@ -20,7 +21,11 @@ func main() {
 	}()
 
 	led := g.Pin("led", 6, gpio.Output(0))
-
+	j, err := g.JSON()
+	if err != nil {
+		fmt.Printf("Failed to JSONify GPIO: %v\n", err)
+	}
+	fmt.Printf("GPIO: %s", j)
 	for {
 		led.Toggle()
 		time.Sleep(1 * time.Second)

@@ -57,7 +57,7 @@ func cliRun(cmd *cobra.Command, args []string) {
 	defer rl.Close()
 	running := true
 	for running {
-		running = runLine()
+		running = cliLine()
 		if !running && done != nil {
 			done <- true
 		}
@@ -75,7 +75,7 @@ func pcFromCommands(parent readline.PrefixCompleterInterface, c *cobra.Command) 
 	}
 }
 
-func runLine() bool {
+func cliLine() bool {
 	line, err := rl.Readline()
 	if err == readline.ErrInterrupt {
 		if len(line) == 0 {
@@ -87,6 +87,10 @@ func runLine() bool {
 		return false
 	}
 
+	return runLine(line)
+}
+
+func runLine(line string) bool {
 	line = strings.TrimSpace(line)
 	if line == "exit" || line == "quit" {
 		return false

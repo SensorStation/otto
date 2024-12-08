@@ -53,9 +53,9 @@ func mqttRun(cmd *cobra.Command, args []string) {
 	fmt.Printf("   Broker: %s\n", m.Broker)
 	fmt.Printf("Connected: %t\n", connected)
 	fmt.Printf("    Debug: %t\n", m.Debug)
-	fmt.Println("Subscribers")
+	fmt.Println("\nSubscriptions")
 
-	for _, s := range m.Subscribers {
+	for s := range m.Subscribers {
 		fmt.Println("\t", s)
 	}
 }
