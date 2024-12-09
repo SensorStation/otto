@@ -182,6 +182,6 @@ func (mn MeshNetwork) Update(rootid, id, parent string, layer int) {
 	}
 
 	if node.Layer != layer {
-		l.Info("[MESH] Node %s layer has changed from %d to %d\n", node.Id, node.Layer, layer)
+		l.Info("[MESH] Node %s layer has changed from %d to %d\n", node.Id, node.Layer, "layer", layer)
 	}
 }

@@ -16,7 +16,7 @@ type Msg struct {
 	ID      int64    `json:"id"`
 	Path    []string `json:"path"`
 	Args    []string `json:"args"`
-	Message []byte   `json:"msg"`
+	Message []byte	 `json:"msg"`
 	Source  string   `json:"source"`
 
 	time.Time `json:"time"`
