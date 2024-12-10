@@ -92,7 +92,6 @@ var (
 	server   *Server
 	stations *StationManager
 	data     *DataManager
-	blasters *MQTTBlasters
 	config   *Configuration
 	l        *Logger
 
@@ -116,10 +115,6 @@ func GetMQTT() *MQTT {
 		mqtt = NewMQTT()
 	}
 	return mqtt
-}
-
-func GetMQTTBlasters() *MQTTBlasters {
-	return blasters
 }
 
 func GetDataManager() *DataManager {
@@ -151,10 +146,6 @@ func Cleanup() {
 
 	<-Done
 	l.Info("Done, cleaning up()")
-
-	if blasters != nil && blasters.Running {
-		blasters.Stop()
-	}
 
 	if mqtt != nil {
 		mqtt.Disconnect(1000)

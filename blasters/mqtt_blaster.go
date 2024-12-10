@@ -1,12 +1,14 @@
-package otto
+package blasters
 
 import (
 	"fmt"
 	"time"
+
+	"github.com/sensorstation/otto"
 )
 
 type MQTTBlaster struct {
-	*Station
+	*otto.Station
 	Topic string
 }
 
@@ -31,7 +33,7 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 
 		mb.Blasters[i] = &MQTTBlaster{
 			Topic:   topic,
-			Station: NewStation(id),
+			Station: otto.NewStation(id),
 		}
 	}
 	return mb
@@ -39,8 +41,8 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 
 func (mb *MQTTBlasters) Blast() error {
 
-	mqtt := GetMQTT()
-	msgMaker := &WeatherData{}
+	mqtt := otto.GetMQTT()
+	msgMaker := &otto.WeatherData{}
 
 	if !mqtt.IsConnected() {
 		return fmt.Errorf("MQTT Client is not connected to a broker")
@@ -55,7 +57,7 @@ func (mb *MQTTBlasters) Blast() error {
 		}
 		time.Sleep(time.Duration(mb.Wait) * time.Millisecond)
 	}
-	l.Info("MQTT Blaster has stopped")
+	otto.GetLogger().Info("MQTT Blaster has stopped")
 	return nil
 }
 

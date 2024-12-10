@@ -7,7 +7,7 @@ import (
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type Sub interface {
+type Subscriber interface {
 	SubCallback(topic string, data []byte)
 }
 
@@ -18,7 +18,7 @@ type MQTT struct {
 	Broker string
 	Debug  bool
 
-	Subscribers map[string]*Subscriber
+	Subscribers map[string]*Sub
 	gomqtt.Client
 }
 
@@ -27,7 +27,7 @@ func NewMQTT() *MQTT {
 		ID:     "otto",
 		Broker: "localhost",
 	}
-	mqtt.Subscribers = make(map[string]*Subscriber)
+	mqtt.Subscribers = make(map[string]*Sub)
 	return mqtt
 }
 
@@ -62,31 +62,6 @@ func (m *MQTT) Connect() error {
 	return nil
 }
 
-// Subscribe to MQTT messages that follow specific topic patterns
-// wildcards '+' and '#' are supported.  Examples
-// ss/<ethaddr>/<data>/tempf value
-// ss/<ethaddr>/<data>/humidity value
-func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
-	sub := &Subscriber{id, path, f}
-	m.Subscribers[id] = sub
-
-	if m.Client == nil {
-		l.Error("MQTT Client is not connected to a broker")
-		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
-	}
-
-	qos := 0
-	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
-
-		// TODO: add routing that automatically subscribes subscribers when a
-		// connection has been made
-		return token.Error()
-	} else {
-		l.Debug("subscribe ", "token", token)
-	}
-	return nil
-}
-
 // Publish will publish a value to the given channel
 func (m MQTT) Publish(topic string, value interface{}) {
 	// l.Printf("[I] MQTT Publishing %s -> %v", topic, value)
@@ -111,16 +86,41 @@ func (m MQTT) Publish(topic string, value interface{}) {
 
 }
 
-func (m *MQTT) Subscribe(topic string, s Sub) {
+// Subscribe to MQTT messages that follow specific topic patterns
+// wildcards '+' and '#' are supported.  Examples
+// ss/<ethaddr>/<data>/tempf value
+// ss/<ethaddr>/<data>/humidity value
+func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
+	sub := &Sub{id, path, f}
+	m.Subscribers[id] = sub
+
+	if m.Client == nil {
+		l.Error("MQTT Client is not connected to a broker")
+		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
+	}
+
+	qos := 0
+	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
+
+		// TODO: add routing that automatically subscribes subscribers when a
+		// connection has been made
+		return token.Error()
+	} else {
+		l.Debug("subscribe ", "token", token)
+	}
+	return nil
+}
+
+func (m *MQTT) Subscribe(topic string, s Subscriber) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
 		s.SubCallback(m.Topic(), m.Payload())
 	}
 	m.Sub(topic, topic, mfunc)
 }
 
-// Subscriber contains a Subscriber ID, a topic Path and a
-// Message Handler for messages to the corresponding topic path
-type Subscriber struct {
+// Sub contains a Subscriber ID, a topic Path and a Message Handler
+// for messages to the corresponding topic path
+type Sub struct {
 	ID   string
 	Path string
 	gomqtt.MessageHandler
@@ -128,7 +128,7 @@ type Subscriber struct {
 
 // String returns a string representation of the Subscriber and
 // Subscriber ID
-func (sub *Subscriber) String() string {
+func (sub *Sub) String() string {
 	return sub.ID + " " + sub.Path
 }
 
