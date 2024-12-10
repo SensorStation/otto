@@ -6,6 +6,7 @@ broker waiting for instructions to turn on or off the relay.
 package main
 
 import (
+	"embed"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,16 +15,20 @@ import (
 	"github.com/sensorstation/otto/gpio"
 )
 
-var (
-	l *otto.Logger
-)
+//go:embed app
+var content embed.FS
 
 type relay struct {
 	*gpio.Pin
 }
 
 func main() {
-	l = otto.GetLogger()
+	l := otto.GetLogger()
+
+	var data interface{}
+	s := otto.GetServer()
+	s.EmbedTempl("/", data, content)
+	go s.Start()
 
 	// Get the GPIO driver
 	g := gpio.GetGPIO()

@@ -26,6 +26,6 @@ func init() {
 }
 
 func mqttBlastRun(cmd *cobra.Command, args []string) {
-	blasters := otto.GetMQTTBlasters(count)
+	blasters := otto.NewMQTTBlasters(count)
 	go blasters.Blast()
 }
