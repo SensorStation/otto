@@ -1,6 +1,8 @@
 package otto
 
 import (
+	"embed"
+	"html/template"
 	"net/http"
 )
 
@@ -8,7 +10,6 @@ import (
 // It takes care of REST API, serving the web app if Appdir
 // does not equal nil and initial Websocket upgrade
 type Server struct {
-	Appdir string
 	*http.Server
 	*http.ServeMux
 }
@@ -24,6 +25,7 @@ func NewServer() *Server {
 		},
 	}
 	s.ServeMux = http.NewServeMux()
+
 	return s
 }
 
@@ -39,16 +41,24 @@ func (s *Server) Register(p string, h http.Handler) {
 func (s *Server) Start() {
 	l.Info("Starting hub Web and REST server on ", "addr", s.Addr)
 
-	if s.Appdir != "" {
-		l.Info("Server: webapp dir", "dir", s.Appdir)
-		fs := http.FileServer(http.Dir(s.Appdir))
-		s.Register("/", fs)
-	}
 	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
-
 	l.Info("Starting HTTP server ", "addr", s.Addr)
-
 	http.ListenAndServe(s.Addr, s.ServeMux)
 	return
+}
+
+func (s *Server) Appdir(path, file string) {
+	s.Register(path, http.FileServer(http.Dir(file)))
+}
+
+func (s *Server) EmbedTempl(path string, data interface{}, content embed.FS) {
+	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFS(content, "app/*.html")
+		if err != nil {
+			l.Error("Failed to parse web template: ", "error", err.Error())
+		}
+
+		tmpl.Execute(w, data)
+	})
 }

@@ -84,6 +84,8 @@ turning a relay on or off.
 */
 package otto
 
+import "fmt"
+
 // global variables and structures
 var (
 	mqtt     *MQTT
@@ -91,16 +93,33 @@ var (
 	stations *StationManager
 	data     *DataManager
 	blasters *MQTTBlasters
+	config   *Configuration
 	l        *Logger
 
-	running bool
+	Done chan bool
 )
+
+func init() {
+	config = &Configuration{
+		Addr:        ":8011",
+		Broker:      "localhost",
+		Interactive: true,
+	}
+}
+
+func GetConfig() *Configuration {
+	return config
+}
 
 func GetMQTT() *MQTT {
 	if mqtt == nil {
 		mqtt = NewMQTT()
 	}
 	return mqtt
+}
+
+func GetMQTTBlasters() *MQTTBlasters {
+	return blasters
 }
 
 func GetDataManager() *DataManager {
@@ -124,16 +143,15 @@ func GetServer() *Server {
 	return server
 }
 
-func GetMQTTBlasters(count int) *MQTTBlasters {
-	blasters = NewMQTTBlasters(count)
-	return blasters
-}
-
 func GetLogger() *Logger {
 	return l
 }
 
 func Cleanup() {
+
+	<-Done
+	l.Info("Done, cleaning up()")
+
 	if blasters != nil && blasters.Running {
 		blasters.Stop()
 	}
@@ -147,5 +165,36 @@ func Cleanup() {
 	}
 
 	if l != nil {
+	}
+}
+
+func OttO() {
+	if Done != nil {
+		// server has already been started
+		fmt.Println("Server has already been started")
+		return
+	}
+	Done = make(chan bool)
+
+	// Allocate and start the station manager
+	stations := GetStationManager()
+	stations.Start()
+
+	mqtt := GetMQTT()
+	err := mqtt.Connect()
+	if err != nil {
+		l.Error("MQTT Failed to connect to broker ", "broker", config.Broker)
+	} else {
+		mqtt.Subscribe("ss/d/+/+", GetDataManager())
+	}
+
+	// start web server / rest server
+	server := GetServer()
+	go server.Start()
+	if config.Interactive {
+		println("go cleanup")
+		go Cleanup()
+	} else {
+		Cleanup()
 	}
 }

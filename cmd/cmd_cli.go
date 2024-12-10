@@ -18,8 +18,7 @@ var cliCmd = &cobra.Command{
 }
 
 var (
-	rl          *readline.Instance
-	interactive bool
+	rl *readline.Instance
 )
 
 func init() {
@@ -27,7 +26,6 @@ func init() {
 }
 
 func init_readline() {
-	interactive = true
 	var completer = readline.NewPrefixCompleter()
 	for _, child := range rootCmd.Commands() {
 		pcFromCommands(completer, child)
@@ -58,12 +56,12 @@ func cliRun(cmd *cobra.Command, args []string) {
 	running := true
 	for running {
 		running = cliLine()
-		if !running && done != nil {
-			done <- true
+		if !running && otto.Done != nil {
+			otto.Done <- true
 		}
 	}
 	fmt.Println("Exiting, cleanup")
-	otto.Cleanup()
+	// otto.Cleanup()
 	fmt.Println("Good Bye!")
 }
 
@@ -87,10 +85,10 @@ func cliLine() bool {
 		return false
 	}
 
-	return runLine(line)
+	return RunLine(line)
 }
 
-func runLine(line string) bool {
+func RunLine(line string) bool {
 	line = strings.TrimSpace(line)
 	if line == "exit" || line == "quit" {
 		return false

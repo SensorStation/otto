@@ -17,6 +17,11 @@ var rootCmd = &cobra.Command{
 	Run: ottoRun,
 }
 
+func init() {
+	c := otto.GetConfig()
+	rootCmd.PersistentFlags().StringVar(&c.Appdir, "appdir", "embed", "root of the web app")
+}
+
 func GetRootCmd() *cobra.Command {
 	return rootCmd
 }

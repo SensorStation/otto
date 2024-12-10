@@ -21,8 +21,7 @@ func init() {
 
 func fileRun(cmd *cobra.Command, args []string) {
 	l = otto.GetLogger()
-
-	interactive = true
+	otto.GetConfig().Interactive = true
 	fname := args[0]
 	file, err := os.Open(fname)
 	if err != nil {
@@ -33,7 +32,7 @@ func fileRun(cmd *cobra.Command, args []string) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		runLine(line)
+		RunLine(line)
 	}
 	if err := scanner.Err(); err != nil {
 		l.Error(err.Error())
