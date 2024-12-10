@@ -7,6 +7,8 @@ import (
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+// Subscriber is an interface that defines a struct needs to have the
+// SubCallback(topic string, data []byte) function defined.
 type Subscriber interface {
 	SubCallback(topic string, data []byte)
 }
@@ -22,6 +24,7 @@ type MQTT struct {
 	gomqtt.Client
 }
 
+// NewMQTT creates a new instance of the MQTT client type.
 func NewMQTT() *MQTT {
 	mqtt := &MQTT{
 		ID:     "otto",
@@ -31,6 +34,8 @@ func NewMQTT() *MQTT {
 	return mqtt
 }
 
+// IsConnected will tell you if the MQTT client is connected to
+// the specified broker
 func (m *MQTT) IsConnected() bool {
 	if m.Client == nil {
 		return false
@@ -111,6 +116,8 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
 	return nil
 }
 
+// Subscribe causes the MQTT client to subscribe to the given topic with
+// the connected broker
 func (m *MQTT) Subscribe(topic string, s Subscriber) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
 		s.SubCallback(m.Topic(), m.Payload())
@@ -132,9 +139,13 @@ func (sub *Sub) String() string {
 	return sub.ID + " " + sub.Path
 }
 
+// MQTTPrinter defines the struct that simply prints what ever
+// message is sent to a given topic
 type MQTTPrinter struct {
 }
 
+// SubCallback will print out all messages sent to the given topic
+// from the MQTTPrinter
 func (mp *MQTTPrinter) SubCallback(topic string, data []byte) {
 	fmt.Println(topic, " ", string(data))
 }
