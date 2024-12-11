@@ -1,6 +1,7 @@
 package otto
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -37,22 +38,35 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
+	if ws.webQ == nil {
+		ws.webQ = make(map[chan *Station]chan *Station)
+	}
+
 	go func() {
 		for {
-			var message StationEvent
-			err := conn.ReadJSON(&message)
+
+			println("reading a message")
+			// var message StationEvent
+			mt, message, err := conn.ReadMessage()
 			if err != nil {
-				l.Error("Websocket ", "message", message, "error", err)
+				println("read error")
+				l.Error("websocket read:", "error", err)
 				break
 			}
+			println("read a message")
+			fmt.Printf("%v - %v - %s\n", mt, message, err)
+			// if err != nil {
+			// 	l.Error("Websocket ", "message", message, "error", err)
+			// 	break
+			// }
 
-			switch message.Type {
-			case "relay":
-				// Stations.EventQ <- &message
+			// switch message.Type {
+			// case "relay":
+			// 	// Stations.EventQ <- &message
 
-			default:
-				l.Error("unknown event type", "message", message)
-			}
+			// default:
+			// 	l.Error("unknown event type", "message", message)
+			// }
 
 		}
 	}()

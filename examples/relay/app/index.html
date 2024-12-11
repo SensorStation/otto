@@ -1,4 +1,3 @@
-<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -19,6 +18,57 @@
         </div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
   </body>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+   const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
+   const host = 'ws://localhost:8080/'
+   const options = {
+     keepalive: 60,
+     clientId: clientId,
+     protocolId: 'MQTT',
+     protocolVersion: 4,
+     clean: true,
+     reconnectPeriod: 1000,
+     connectTimeout: 30 * 1000,
+     will: {
+       topic: 'WillMsg',
+       payload: 'Connection Closed abnormally..!',
+       qos: 0,
+       retain: false
+     },
+   }
+   console.log('Connecting mqtt client')
+   const client = mqtt.connect(host, options)
+   client.on('error', (err) => {
+     console.log('Connection error: ', err)
+     client.end()
+   })
+   client.on('reconnect', () => {
+     console.log('Reconnecting...')
+   })
+
+   client.on('connect', () => {
+     console.log(`Client connected: ${clientId}`)
+     // Subscribe
+     client.subscribe('testtopic', { qos: 0 })
+   })
+   // Unsubscribe
+   client.unubscribe('testtopic', () => {
+     console.log('Unsubscribed');
+   })
+
+   // Publish
+   client.publish('testtopic', 'ws connection demo...!', { qos: 0, retain: false })
+   // Receive
+   client.on('message', (topic, message, packet) => {
+     console.log(`Received Message: ${message.toString()} On topic: ${topic}`)
+   })
+
+
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 </html>

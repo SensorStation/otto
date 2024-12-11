@@ -15,7 +15,7 @@ func (t tclient) SubCallback(topic string, data []byte) {
 }
 
 func TestSubscribe(t *testing.T) {
-	m := GetMQTT()
+	m := GetMQTT()s
 	err := m.Connect()
 	if err != nil {
 		t.Error("Failed to connect to MQTT broker: ", err)
