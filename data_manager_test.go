@@ -19,11 +19,9 @@ func TestDataManagerSubCallback(t *testing.T) {
 	dm := NewDataManager()
 	dm.SubCallback(path, data)
 
-	sm := NewStationManager()
-
+	sm := GetStationManager()
 	st := sm.Get("station1")
-	// if st.DataManager.DataMap() != 1 {
-	// 	t.Errorf("failed to get count == 1 data from station1")
-	// }
-	fmt.Printf("ST: %+v\n", st)
+	if len(st.DataManager.DataMap) != 1 {
+		t.Errorf("failed to get count == 1 data from station1")
+	}
 }

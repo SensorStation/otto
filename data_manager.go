@@ -34,6 +34,7 @@ func (dm *DataManager) SubCallback(topic string, message []byte) {
 	}
 
 	// Change this to a map[string]string or map[string]interface{}
+	stations := GetStationManager()
 	st := stations.Update(msg)
 
 	var m map[string]interface{}
