@@ -42,17 +42,18 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 func (mb *MQTTBlasters) Blast() error {
 
 	mqtt := otto.GetMQTT()
-	msgMaker := &otto.WeatherData{}
-
 	if !mqtt.IsConnected() {
 		return fmt.Errorf("MQTT Client is not connected to a broker")
 	}
+
+	wd := &WeatherData{}
 
 	// now start blasting
 	for mb.Running {
 		for i := 0; i < mb.Count; i++ {
 			b := mb.Blasters[i]
-			msg := msgMaker.NewMsg()
+
+			msg := wd.NewMsg()
 			mqtt.Publish(b.Topic, msg.Byte())
 		}
 		time.Sleep(time.Duration(mb.Wait) * time.Millisecond)

@@ -16,7 +16,7 @@ type Msg struct {
 	ID      int64    `json:"id"`
 	Path    []string `json:"path"`
 	Args    []string `json:"args"`
-	Message []byte	 `json:"msg"`
+	Message []byte   `json:"msg"`
 	Source  string   `json:"source"`
 
 	time.Time `json:"time"`
@@ -31,12 +31,13 @@ func getMsgID() int64 {
 	return msgid
 }
 
-func NewMsg(topic string, data []byte) *Msg {
+func NewMsg(topic string, data []byte, source string) *Msg {
 	msg := &Msg{
 		ID:      getMsgID(),
 		Path:    strings.Split(topic, "/"),
 		Message: data,
 		Time:    time.Now(),
+		Source:  source,
 	}
 
 	return msg

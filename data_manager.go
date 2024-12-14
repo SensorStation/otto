@@ -18,7 +18,7 @@ func NewDataManager() (sm *DataManager) {
 func (dm *DataManager) SubCallback(topic string, message []byte) {
 
 	// convert the topic and data into a *Msg
-	msg := NewMsg(topic, message)
+	msg := NewMsg(topic, message, "mqtt-data")
 	if len(msg.Path) < 3 {
 		l.Error("DataManager: Malformed MQTT ", "path", msg.Path)
 		return

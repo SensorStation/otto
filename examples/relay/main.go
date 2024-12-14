@@ -25,9 +25,10 @@ type relay struct {
 func main() {
 	l := otto.GetLogger()
 
-	var data interface{}
+	// var data any
 	s := otto.GetServer()
-	s.EmbedTempl("/", data, content)
+	// s.EmbedTempl("/", data, content)
+	s.Appdir("/", "app")
 	go s.Start()
 
 	// Get the GPIO driver
@@ -44,7 +45,7 @@ func main() {
 	r := g.Pin("relay", 6, gpio.Output(0))
 	m := otto.GetMQTT()
 	m.Connect()
-	m.Subscribe("/ss/d/station/relay", r)
+	m.Subscribe("ss/c/station/relay", r)
 
 	<-quit
 	g.Shutdown()

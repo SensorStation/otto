@@ -23,7 +23,7 @@ func (w *WeatherData) NewMsg() *otto.Msg {
 
 	path := strings.Join([]string{"ss", "d", "station", "weather"}, "/")
 	data := []byte("MM")
-	msg := otto.NewMsg(path, data)
+	msg := otto.NewMsg(path, data, "weather-data")
 
 	j, err := json.Marshal(w)
 	if err != nil {

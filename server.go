@@ -2,8 +2,10 @@ package otto
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"net/http"
+	"path/filepath"
 )
 
 // Server serves up HTTP on Addr (default 0.0.0.0:8011)
@@ -52,13 +54,25 @@ func (s *Server) Appdir(path, file string) {
 	s.Register(path, http.FileServer(http.Dir(file)))
 }
 
-func (s *Server) EmbedTempl(path string, data interface{}, content embed.FS) {
+func (s *Server) EmbedTempl(path string, data any, content embed.FS) {
+	fmt.Println("PATH: ", path)
+
 	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.ParseFS(content, "app/*.html")
-		if err != nil {
-			l.Error("Failed to parse web template: ", "error", err.Error())
+		if path == "/" || filepath.Ext(path) == ".html" {
+
+			fmt.Println("here we are foo bar ", r.URL.String())
+			tmpl, err := template.ParseFS(content, "app/*.html")
+			if err != nil {
+				l.Error("Failed to parse web template: ", "error", err.Error())
+			}
+
+			tmpl.Execute(w, data)
+
+		} else {
+			s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+				fmt.Println("there we go ", r.URL.String())
+			})
 		}
 
-		tmpl.Execute(w, data)
 	})
 }
