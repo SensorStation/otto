@@ -21,6 +21,9 @@ const (
 	ModeAnalog
 )
 
+type Line interface {
+}
+
 // Pin represents a single GPIO Pin
 type Pin struct {
 	Name   string `json:"name"`

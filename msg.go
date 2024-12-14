@@ -14,6 +14,7 @@ type Message interface {
 // the system.
 type Msg struct {
 	ID      int64    `json:"id"`
+	Topic   string   `json:"topic"`
 	Path    []string `json:"path"`
 	Args    []string `json:"args"`
 	Message []byte   `json:"msg"`
@@ -34,6 +35,7 @@ func getMsgID() int64 {
 func NewMsg(topic string, data []byte, source string) *Msg {
 	msg := &Msg{
 		ID:      getMsgID(),
+		Topic:   topic,
 		Path:    strings.Split(topic, "/"),
 		Message: data,
 		Time:    time.Now(),

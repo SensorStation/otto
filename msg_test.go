@@ -3,6 +3,7 @@ package otto
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 )
@@ -31,11 +32,34 @@ func TestStationMsg(t *testing.T) {
 	}
 
 	msg := NewMsg(topic, j, "test")
-
 	if msg == nil {
 		t.Error("msg topic expected but is nil")
 	}
 
+	if msg.Topic != topic {
+		t.Errorf("msg topic expected (%s) got (%s)", topic, msg.Topic)
+	}
+
+	path := strings.Split(topic, "/")
+	if len(path) != len(msg.Path) {
+		t.Errorf("msg path len expected (%d) got (%d)", len(path), len(msg.Path))
+	}
+
+	for i := 0; i < len(path); i++ {
+		if path[i] != msg.Path[i] {
+			t.Errorf("msg path[%d] expected (%s) got (%s)", i, path[i], msg.Path[i])
+		}
+	}
+
+	if msg.Source != "test" {
+		t.Errorf("msg source expected (test) got (%s)", msg.Source)
+	}
+
+	for i := 0; i < len(j); i++ {
+		if msg.Message[i] != j[i] {
+			t.Errorf("msg data[%d] expected (% x) got (% x)", i, j[i], msg.Message[i])
+		}
+	}
 }
 
 func TestJSON(t *testing.T) {
