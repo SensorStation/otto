@@ -59,7 +59,13 @@ func (m *MQTT) Connect() error {
 	opts.AddBroker(m.Broker)
 	opts.SetClientID(m.ID)
 	opts.SetCleanSession(true)
-	m.Client = gomqtt.NewClient(opts)
+
+	// If we are testing m.Client will point to the mock client otherwise
+	// in real life a new real client will be created
+	if m.Client == nil {
+		m.Client = gomqtt.NewClient(opts)
+	}
+
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
 		l.Error("MQTT Connect: ", "error", token.Error())
 		return fmt.Errorf("Failed to connect to MQTT broker %s", token.Error())
@@ -106,7 +112,6 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
 
 	qos := 0
 	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
-
 		// TODO: add routing that automatically subscribes subscribers when a
 		// connection has been made
 		return token.Error()
