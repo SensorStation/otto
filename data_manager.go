@@ -4,27 +4,37 @@ import (
 	"encoding/json"
 )
 
+// DataManager is a map of Timeseries data that belongs to
+// a specific station. The timeseries for each station are
+// differentiated by the timeseries labels.
 type DataManager struct {
-	Timeseries map[string][]*Data
+	DataMap map[string]*Timeseries
 }
 
-func NewDataManager() (sm *DataManager) {
-	sm = &DataManager{
-		Timeseries: make(map[string][]*Data),
+// NewDataManager creates a new DataManager typically called
+// by NewStation()
+func NewDataManager() (dm *DataManager) {
+	dm = &DataManager{
+		DataMap: make(map[string]*Timeseries),
 	}
-	return sm
+	return dm
 }
 
+// SubCallback is the callback used by the DataManager to receive
+// MQTT messages. TODO: move this call back to the stations because
+// the stations will have a better understanding of the data they
+// are subscribing to.
 func (dm *DataManager) SubCallback(topic string, message []byte) {
 
 	// convert the topic and data into a *Msg
-	msg := NewMsg(topic, message)
+	msg := NewMsg(topic, message, "mqtt-data")
 	if len(msg.Path) < 3 {
 		l.Error("DataManager: Malformed MQTT ", "path", msg.Path)
 		return
 	}
 
 	// Change this to a map[string]string or map[string]interface{}
+	stations := GetStationManager()
 	st := stations.Update(msg)
 
 	var m map[string]interface{}

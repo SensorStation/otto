@@ -31,12 +31,13 @@ func getMsgID() int64 {
 	return msgid
 }
 
-func NewMsg(topic string, data []byte) *Msg {
+func NewMsg(topic string, data []byte, source string) *Msg {
 	msg := &Msg{
 		ID:      getMsgID(),
 		Path:    strings.Split(topic, "/"),
 		Message: data,
 		Time:    time.Now(),
+		Source:  source,
 	}
 
 	return msg

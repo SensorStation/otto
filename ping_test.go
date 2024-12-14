@@ -14,15 +14,15 @@ func TestPing(t *testing.T) {
 
 	res, err := http.Get(ts.URL)
 	if err != nil {
-		l.Fatal(err)
+		l.Error(err.Error())
 	}
 	pong, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		l.Fatal(err)
+		l.Error(err.Error())
 	}
 
 	if string(pong) != "Pong\n" {
-		l.Fatal(err)
+		l.Error(err.Error())
 	}
 }

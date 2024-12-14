@@ -2,17 +2,19 @@ package otto
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 )
 
 func getMsg() (*Msg, time.Time) {
 	now := time.Now()
-	m := NewMsg()
+	path := "ss/d/%s/test"
+
+	b := fmt.Sprintf("%d", 4)
+	m := NewMsg(path, []byte(b), "test")
 	m.Source = "be:ef:ca:fe:01"
 	m.Time = now
-	// s.Timeseries["tempf"].Data = append(s.Timeseries["tempf"].Data, 97.8)
-	// s.Timesereis["humidity"].Data = append(s.Timeseries["humidity"].Data, 99.3)
 
 	return m, now
 }
@@ -28,8 +30,7 @@ func TestStationMsg(t *testing.T) {
 		return
 	}
 
-	dm := GetDataManager()
-	msg := dm.GetMsg(topic, j)
+	msg := NewMsg(topic, j, "test")
 
 	if msg == nil {
 		t.Error("msg topic expected but is nil")

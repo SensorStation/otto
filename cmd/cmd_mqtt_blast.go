@@ -4,7 +4,8 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/blasters"
+
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +27,6 @@ func init() {
 }
 
 func mqttBlastRun(cmd *cobra.Command, args []string) {
-	blasters := otto.NewMQTTBlasters(count)
+	blasters := blasters.NewMQTTBlasters(count)
 	go blasters.Blast()
 }

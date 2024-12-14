@@ -92,7 +92,10 @@ func (pin *Pin) Toggle() error {
 // SubCallback is the default callback for pins if they are
 // registered with the MQTT.Subscribe() function
 func (pin Pin) SubCallback(t string, d []byte) {
-	msg := otto.NewMsg(t, d)
+	msg := otto.NewMsg(t, d, "mqtt-pin-"+pin.Name)
+
+	fmt.Printf("mqtt msg: %+v", msg)
+
 	switch msg.String() {
 	case "on":
 		pin.On()

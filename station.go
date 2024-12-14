@@ -12,7 +12,7 @@ type Station struct {
 	LastHeard  time.Time     `json:"last-heard"`
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
 
-	Timeseries map[string]*Timeseries
+	*DataManager 
 
 	ticker *time.Ticker `json:"-"`
 	quit   chan bool    `json:"-"`
@@ -26,7 +26,7 @@ func NewStation(id string) (st *Station) {
 		ID:         id,
 		Expiration: 30 * time.Second,
 	}
-	st.Timeseries = make(map[string]*Timeseries)
+	st.DataManager = NewDataManager()
 	return st
 }
 
@@ -49,9 +49,9 @@ func (s *Station) Insert(label string, val interface{}) {
 		Value: val,
 	}
 
-	if s.Timeseries[label] == nil {
-		s.Timeseries[label] = NewTimeseries(label)
+	if s.DataManager.DataMap[label] == nil {
+		s.DataManager.DataMap[label] = NewTimeseries(label)
 	}
 
-	s.Timeseries[label].Data = append(s.Timeseries[label].Data, d)
+	s.DataManager.DataMap[label].Data = append(s.DataMap[label].Data, d)
 }

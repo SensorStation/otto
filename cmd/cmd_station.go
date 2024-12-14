@@ -24,7 +24,7 @@ func stationRun(cmd *cobra.Command, args []string) {
 	for _, st := range stations.Stations {
 		fmt.Printf("station: %s: %s/%v\n",
 			st.ID, st.LastHeard.Format(time.RFC3339), st.Expiration)
-		for l, ts := range st.Timeseries {
+		for l, ts := range st.DataManager.DataMap {
 			fmt.Printf("%20s => %d\n", l, len(ts.Data))
 		}
 	}

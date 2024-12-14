@@ -7,7 +7,9 @@ import (
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type Sub interface {
+// Subscriber is an interface that defines a struct needs to have the
+// SubCallback(topic string, data []byte) function defined.
+type Subscriber interface {
 	SubCallback(topic string, data []byte)
 }
 
@@ -18,19 +20,22 @@ type MQTT struct {
 	Broker string
 	Debug  bool
 
-	Subscribers map[string]*Subscriber
+	Subscribers map[string]*Sub
 	gomqtt.Client
 }
 
+// NewMQTT creates a new instance of the MQTT client type.
 func NewMQTT() *MQTT {
 	mqtt := &MQTT{
 		ID:     "otto",
 		Broker: "localhost",
 	}
-	mqtt.Subscribers = make(map[string]*Subscriber)
+	mqtt.Subscribers = make(map[string]*Sub)
 	return mqtt
 }
 
+// IsConnected will tell you if the MQTT client is connected to
+// the specified broker
 func (m *MQTT) IsConnected() bool {
 	if m.Client == nil {
 		return false
@@ -62,31 +67,6 @@ func (m *MQTT) Connect() error {
 	return nil
 }
 
-// Subscribe to MQTT messages that follow specific topic patterns
-// wildcards '+' and '#' are supported.  Examples
-// ss/<ethaddr>/<data>/tempf value
-// ss/<ethaddr>/<data>/humidity value
-func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
-	sub := &Subscriber{id, path, f}
-	m.Subscribers[id] = sub
-
-	if m.Client == nil {
-		l.Error("MQTT Client is not connected to a broker")
-		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
-	}
-
-	qos := 0
-	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
-
-		// TODO: add routing that automatically subscribes subscribers when a
-		// connection has been made
-		return token.Error()
-	} else {
-		l.Debug("subscribe ", "token", token)
-	}
-	return nil
-}
-
 // Publish will publish a value to the given channel
 func (m MQTT) Publish(topic string, value interface{}) {
 	// l.Printf("[I] MQTT Publishing %s -> %v", topic, value)
@@ -111,16 +91,43 @@ func (m MQTT) Publish(topic string, value interface{}) {
 
 }
 
-func (m *MQTT) Subscribe(topic string, s Sub) {
+// Subscribe to MQTT messages that follow specific topic patterns
+// wildcards '+' and '#' are supported.  Examples
+// ss/<ethaddr>/<data>/tempf value
+// ss/<ethaddr>/<data>/humidity value
+func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
+	sub := &Sub{id, path, f}
+	m.Subscribers[id] = sub
+
+	if m.Client == nil {
+		l.Error("MQTT Client is not connected to a broker")
+		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
+	}
+
+	qos := 0
+	if token := m.Client.Subscribe(path, byte(qos), f); token.Wait() && token.Error() != nil {
+
+		// TODO: add routing that automatically subscribes subscribers when a
+		// connection has been made
+		return token.Error()
+	} else {
+		l.Debug("subscribe ", "token", token)
+	}
+	return nil
+}
+
+// Subscribe causes the MQTT client to subscribe to the given topic with
+// the connected broker
+func (m *MQTT) Subscribe(topic string, s Subscriber) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
 		s.SubCallback(m.Topic(), m.Payload())
 	}
 	m.Sub(topic, topic, mfunc)
 }
 
-// Subscriber contains a Subscriber ID, a topic Path and a
-// Message Handler for messages to the corresponding topic path
-type Subscriber struct {
+// Sub contains a Subscriber ID, a topic Path and a Message Handler
+// for messages to the corresponding topic path
+type Sub struct {
 	ID   string
 	Path string
 	gomqtt.MessageHandler
@@ -128,13 +135,17 @@ type Subscriber struct {
 
 // String returns a string representation of the Subscriber and
 // Subscriber ID
-func (sub *Subscriber) String() string {
+func (sub *Sub) String() string {
 	return sub.ID + " " + sub.Path
 }
 
+// MQTTPrinter defines the struct that simply prints what ever
+// message is sent to a given topic
 type MQTTPrinter struct {
 }
 
+// SubCallback will print out all messages sent to the given topic
+// from the MQTTPrinter
 func (mp *MQTTPrinter) SubCallback(topic string, data []byte) {
 	fmt.Println(topic, " ", string(data))
 }
