@@ -47,16 +47,26 @@ client.on('connect', () => {
  * })
  */
 
-var val = "on"
-console.log(val)
-var toggle = function() {
-    console.log("val: ", val);     
-    client.publish('ss/c/station/relay', val, { qos: 0, retain: false })
-
-    if (val == "on") {
-        val = "off"
-    } else {
-        val = "on"
-    }
+function On() {
+    console.log("on")
+    client.publish('ss/c/station/relay', "on", { qos: 0, retain: false })    
 }
-var id = window.setInterval(toggle, 2000);
+
+function Off() {
+    console.log("off")
+    client.publish('ss/c/station/relay', "off", { qos: 0, retain: false })    
+}
+
+// var val = "on"
+// console.log(val)
+// var toggle = function() {
+//     console.log("val: ", val);     
+//     client.publish('ss/c/station/relay', val, { qos: 0, retain: false })
+
+//     if (val == "on") {
+//         val = "off"
+//     } else {
+//         val = "on"
+//     }
+// }
+// var id = window.setInterval(toggle, 2000);

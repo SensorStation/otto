@@ -67,12 +67,18 @@ func Output(val int) Mode {
 // Get returns the value of the pin, an error is returned if
 // the GPIO value fails
 func (pin *Pin) Get() (int, error) {
+	if pin.Line == nil {
+		return 0, fmt.Errorf("GPIO not active")
+	}
 	return pin.Line.Value()
 }
 
 // Set the value of the pin
 func (pin *Pin) Set(v int) error {
 	pin.Value = v
+	if pin.Line == nil {
+		return fmt.Errorf("GPIO not active")
+	}
 	return pin.Line.SetValue(v)
 }
 
