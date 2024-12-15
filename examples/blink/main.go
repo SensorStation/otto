@@ -21,13 +21,9 @@ func main() {
 	}()
 
 	led := g.Pin("led", 6, gpio.Output(0))
-	j, err := g.JSON()
-	if err != nil {
-		fmt.Printf("Failed to JSONify GPIO: %v\n", err)
-	}
-	fmt.Printf("GPIO: %s", j)
 	for {
 		led.Toggle()
+		fmt.Printf(g.String())
 		time.Sleep(1 * time.Second)
 	}
 }
