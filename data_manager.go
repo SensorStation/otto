@@ -8,7 +8,7 @@ import (
 // a specific station. The timeseries for each station are
 // differentiated by the timeseries labels.
 type DataManager struct {
-	DataMap map[string]*Timeseries
+	DataMap map[string]*Timeseries `json:"datamap"`
 }
 
 // NewDataManager creates a new DataManager typically called

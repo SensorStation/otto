@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto/gpio"
+	"github.com/warthog618/go-gpiocdev"
 )
 
 func main() {
@@ -20,7 +21,7 @@ func main() {
 		g.Shutdown()
 	}()
 
-	led := g.Pin("led", 6, gpio.Output(0))
+	led := g.Pin("led", 6, gpiocdev.AsOutput(0))
 	for {
 		led.Toggle()
 		fmt.Printf(g.String())

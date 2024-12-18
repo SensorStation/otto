@@ -10,16 +10,17 @@ import (
 
 // MeshNetwork represents a network of devices that have meshed up.
 type MeshNetwork struct {
-	ID   string
-	Pass string
-	MeshRouter
+	ID         string `json:"id"`
+	Pass       string `json:"passwd"`
+	MeshRouter `json:"router"`
 
-	RootId string // Id of the root node
-	Nodes  map[string]*MeshNode
+	RootId string               `json:"rootid"`
+	Nodes  map[string]*MeshNode `json:nodes`
 }
 
 var mn MeshNetwork
 
+// GetNode will return the node associated with the given ID
 func (m *MeshNetwork) GetNode(nid string) (mn *MeshNode) {
 	var e bool
 
@@ -30,6 +31,7 @@ func (m *MeshNetwork) GetNode(nid string) (mn *MeshNode) {
 	return mn
 }
 
+// UpdateRoot will reroot the mesh network with the new root id
 func (m *MeshNetwork) UpdateRoot(rootid string) {
 
 	// TODO create a fully configured node and schedule network topology updates.
@@ -59,21 +61,22 @@ func (m MeshNetwork) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // MeshRouter is the optional IP router for the mesh network
 type MeshRouter struct {
-	SSID string
-	Pass string
-	Host string
+	SSID string `json:"ssid"`
+	Pass string `json:"passwd"`
+	Host string `json:"host"`
 }
 
 // MeshNode represents a single node in the ESP-MESH network, this allows us
 // to keep track of our inventory fleet.
 type MeshNode struct {
-	Id       string
-	Parent   string
-	Layer    int
-	Children map[string]string
-	Updated  time.Time
+	Id       string            `json:"id"`
+	Parent   string            `json:"parend"`
+	Layer    int               `json:"layer"`
+	Children map[string]string `json:"children"`
+	Updated  time.Time         `json:"time"`
 }
 
+// NewNode will create a new network node
 func NewNode(d map[string]interface{}) *MeshNode {
 	self := d["self"].(string)
 	parent := d["parent"].(string)
@@ -88,6 +91,7 @@ func NewNode(d map[string]interface{}) *MeshNode {
 	return mn
 }
 
+// UpdateParent will reestablish the the given parent node
 func (n *MeshNode) UpdateParent(p *MeshNode) {
 	if n.Parent != p.Id {
 		l.Info("n.Parent has changed", "from", n.Parent, "to", p.Id)
@@ -95,6 +99,7 @@ func (n *MeshNode) UpdateParent(p *MeshNode) {
 	n.Parent = p.Id
 }
 
+// UpdateChild will re-establish the given child node
 func (n *MeshNode) UpdateChild(c *MeshNode) {
 	l.Info("Update child", "Parent ", n.Id)
 	if n.Children == nil {
@@ -110,6 +115,7 @@ func (n *MeshNode) UpdateChild(c *MeshNode) {
 	l.Info(c.Id)
 }
 
+// String representation of this meshnode
 func (n *MeshNode) String() string {
 	str := fmt.Sprintf("NODE self - %s :=: parent - %s :=: layer - %d last update: %q\n",
 		n.Id, n.Parent, n.Layer, n.Updated)
@@ -123,12 +129,15 @@ func (n *MeshNode) String() string {
 	return str
 }
 
+// MeshMessage is what is passed around amoung mesh nodes
 type MeshMessage struct {
 	Addr string `json:"addr"`
 	Typ  string `json:"type"`
 	Data []byte `json:"data"`
 }
 
+// MeshHeartBeat is a periodic message that advertises the liveness of the
+// given mesh node
 type MeshHeartBeat struct {
 	Typ    string `json:"type"`   // heartbeat
 	Id     string `json:"self"`   // macaddr of advertising node
@@ -136,38 +145,43 @@ type MeshHeartBeat struct {
 	Layer  int    `json:"layer"`  // node layer
 }
 
+// MsgRecv reads a meshnode message and handles the payload
 func (mn MeshNetwork) MsgRecv(topic string, payload []byte) {
+	/*
+		var m MeshMessage
+		err := json.Unmarshal(payload, &m)
+		if err != nil {
+			l.Error("Failed to unmarshal payload")
+			return
+		}
 
-	// var m MeshMessage
-	// err := json.Unmarshal(payload, &m)
-	// if err != nil {
-	// 	l.Fatal("Failed to unmarshal payload")
-	// }
+		// unravel the json message and verify our current node information
+		paths := strings.Split(topic, "/")
+		if len(paths) != 3 {
+			l.Error("Error unsupported path len", "pathlen", len(paths))
+			return
+		}
 
-	// // unravel the json message and verify our current node information
-	// paths := strings.Split(topic, "/")
-	// if len(paths) != 3 {
-	// 	l.Fatal("Error unsupported path")
-	// }
+		rootid := paths[1]
+		data := m.Data
+		msgtype := m.data["type"]
 
-	// rootid := paths[1]
-	// data := m.Data
-	// msgtype := data["type"]
+		switch msgtype {
+		case "heartbeat":
 
-	// switch msgtype {
-	// case "heartbeat":
+			self, _ := data["self"].(string)
+			parent, _ := data["parent"].(string)
+			layer, _ := data["layer"].(int)
+			mn.Update(rootid, self, parent, layer)
 
-	// 	self, _ := data["self"].(string)
-	// 	parent, _ := data["parent"].(string)
-	// 	layer, _ := data["layer"].(int)
-	// 	mn.Update(rootid, self, parent, layer)
-
-	// default:
-	// 	l.Fatalln("Unknown message type: ", msgtype)
-	// }
+		default:
+			l.Fatalln("Unknown message type: ", msgtype)
+		}
+	*/
 	return
 }
 
+// Update a mesh network with the given information
 func (mn MeshNetwork) Update(rootid, id, parent string, layer int) {
 
 	l.Debug("[MESH] Update [id/parent/rootid/layer]: ", id, parent, rootid, layer)

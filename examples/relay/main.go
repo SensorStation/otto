@@ -13,6 +13,7 @@ import (
 
 	"github.com/sensorstation/otto"
 	"github.com/sensorstation/otto/gpio"
+	"github.com/warthog618/go-gpiocdev"
 )
 
 //go:embed app
@@ -42,7 +43,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(quit)
 
-	r := g.Pin("relay", 6, gpio.Output(0))
+	r := g.Pin("relay", 6, gpiocdev.AsOutput(0))
 	m := otto.GetMQTT()
 	m.Connect()
 	m.Subscribe("ss/c/station/relay", r)

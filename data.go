@@ -4,8 +4,8 @@ import "time"
 
 // Timeseries represents a single source of data over a time period
 type Timeseries struct {
-	Label string
-	Data  []*Data
+	Label string  `json:"Label"`
+	Data  []*Data `json:"Data"`
 }
 
 // NewTimeseries will start a new data timeseries with the given label
@@ -30,8 +30,8 @@ func (ts *Timeseries) Len() int {
 // Data is an array of timestamps and values representing the same
 // source of data over a period of time
 type Data struct {
-	Value any
-	time.Time
+	Value     any `json:"value"`
+	time.Time `json:"time"`
 }
 
 // NewData create a new peice data point with the current time
