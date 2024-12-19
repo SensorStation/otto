@@ -65,7 +65,6 @@ func startSwitchHandler(g *gpio.GPIO, done chan bool) {
 
 			case gpiocdev.LineEventRisingEdge:
 				l.Info("GPIO raising edge", "pin", sw.Name)
-
 				v, err := sw.Get()
 				if err != nil {
 					otto.GetLogger().Error("Error getting input value: ", "error", err.Error())

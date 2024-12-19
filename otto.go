@@ -96,6 +96,8 @@ var (
 	l        *Logger
 
 	Done chan bool
+
+	Version string
 )
 
 func init() {
@@ -104,6 +106,8 @@ func init() {
 		Broker:      "localhost",
 		Interactive: true,
 	}
+
+	Version = "0.1.2"
 }
 
 func GetConfig() *Configuration {
