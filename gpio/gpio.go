@@ -53,7 +53,6 @@ func (p *Pin) Init() error {
 	gpio := GetGPIO()
 
 	line, err := gpiocdev.RequestLine(gpio.Chipname, p.offset, p.Opts...)
-
 	if err != nil {
 		line := MockLine{}
 		p.Line = line
