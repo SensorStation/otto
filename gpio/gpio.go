@@ -11,10 +11,12 @@ import (
 // Line interface is used to emulate a GPIO pin as
 // implemented by the go-gpiocdev package
 type Line interface {
-	Value() (int, error)
+	Close() error	
+	Offset() int
 	SetValue(int) error
 	Reconfigure(...gpiocdev.LineConfigOption) error
-	Close() error
+	Value() (int, error)
+
 }
 
 // Line interface is used by Mode causes the Pin to be configured as Input, Output,
@@ -26,6 +28,7 @@ const (
 	ModeNone Mode = iota
 	ModeOutput
 	ModeInput
+	ModeEventHandler
 	ModePWM
 	ModeAnalog
 )
@@ -33,27 +36,23 @@ const (
 // Pin represents a single GPIO Pin
 type Pin struct {
 	Name   string `json:"name"`
-	Offset int    `json:"offset"`
-	Value  int    `json:"value"`
-	Mode   `json:"mode"`
-
 	Opts []gpiocdev.LineReqOption
 	Line
+
+	offset int
+	val	   int
 }
 
 var (
 	gpio *GPIO
 )
 
-func eventHandler(evt gpiocdev.LineEvent) {
-}
-
 // Init the pin from the offset and mode
 func (p *Pin) Init() error {
 
 	gpio := GetGPIO()
 
-	line, err := gpiocdev.RequestLine(gpio.Chipname, p.Offset, p.Opts...)
+	line, err := gpiocdev.RequestLine(gpio.Chipname, p.offset, p.Opts...)
 
 	if err != nil {
 		line := MockLine{}
@@ -66,7 +65,7 @@ func (p *Pin) Init() error {
 
 // String returns a string representation of the GPIO pin
 func (pin *Pin) String() string {
-	str := fmt.Sprintf("%10s[%d] mode: %d => %d\n", pin.Name, pin.Offset, pin.Mode, pin.Value)
+	str := fmt.Sprintf("%10s[%d] mode: %d => %d\n", pin.Name, pin.offset, pin.Value)
 	return str
 }
 
@@ -86,10 +85,10 @@ func (pin *Pin) Get() (int, error) {
 
 // Set the value of the pin
 func (pin *Pin) Set(v int) error {
-	pin.Value = v
 	if pin.Line == nil {
 		return fmt.Errorf("GPIO not active")
 	}
+	pin.val = v
 	return pin.Line.SetValue(v)
 }
 
@@ -105,7 +104,7 @@ func (pin *Pin) Off() error {
 
 // Toggle with flip the value of the pin from 1 to 0 or 0 to 1
 func (pin *Pin) Toggle() error {
-	val := ^pin.Value
+	val := ^pin.val
 	return pin.Set(val)
 }
 
@@ -113,9 +112,6 @@ func (pin *Pin) Toggle() error {
 // registered with the MQTT.Subscribe() function
 func (pin Pin) SubCallback(t string, d []byte) {
 	msg := otto.NewMsg(t, d, "mqtt-pin-"+pin.Name)
-
-	fmt.Printf("mqtt msg: %+v", msg)
-
 	switch msg.String() {
 	case "on":
 		pin.On()
@@ -124,7 +120,7 @@ func (pin Pin) SubCallback(t string, d []byte) {
 		pin.Off()
 
 	case "toggle":
-		pin.Toggle()
+	 	pin.Toggle()
 
 	}
 }
@@ -149,7 +145,7 @@ type GPIO struct {
 func GetGPIO() *GPIO {
 	if gpio == nil {
 		gpio = &GPIO{
-			Chipname: "gpiochip4", // raspberry pi
+			Chipname: "gpiochip4", // raspberry pi-5
 		}
 		gpio.Pins = make(map[int]*Pin)
 	}
@@ -161,7 +157,7 @@ func (gpio *GPIO) Init() error {
 	l := otto.GetLogger()
 	for _, pin := range gpio.Pins {
 		if err := pin.Init(); err != nil {
-			l.Error("Error initializing pin ", "name", pin.Name, "offset", pin.Offset)
+			l.Error("Error initializing pin ", "name", pin.Name, "offset", pin.offset)
 		}
 	}
 	return nil
@@ -173,7 +169,8 @@ func (gpio *GPIO) Pin(name string, offset int, opts ...gpiocdev.LineReqOption) (
 
 	p = &Pin{
 		Name:   name,
-		Offset: offset,
+		offset: offset,
+		Opts: opts,
 	}
 
 	gpio.Pins[offset] = p

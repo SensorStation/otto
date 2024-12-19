@@ -20,7 +20,7 @@ func main() {
 
 	on := false
 
-	sw := g.Pin("switch", 23, gpiocdev.AsOutput(0))
+	sw := g.Pin("switch", 23, gpiocdev.AsOutput(1))
 	in = g.Pin("in", 24, gpiocdev.WithPullUp, gpiocdev.WithBothEdges, gpiocdev.WithEventHandler(eventHandler))
 	for {
 		if on {
