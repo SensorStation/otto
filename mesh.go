@@ -15,7 +15,7 @@ type MeshNetwork struct {
 	MeshRouter `json:"router"`
 
 	RootId string               `json:"rootid"`
-	Nodes  map[string]*MeshNode `json:nodes`
+	Nodes  map[string]*MeshNode `json:"nodes"`
 }
 
 var mn MeshNetwork

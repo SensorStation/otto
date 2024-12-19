@@ -64,7 +64,11 @@ func (p *Pin) Init() error {
 
 // String returns a string representation of the GPIO pin
 func (pin *Pin) String() string {
-	str := fmt.Sprintf("%10s[%d] mode: %d => %d\n", pin.Name, pin.offset, pin.Value)
+	v, err := pin.Value()
+	if err != nil {
+		otto.GetLogger().Error("Failed getting the value of ", "pin", pin.Name, "error", err)
+	}
+	str := fmt.Sprintf("%10s[%d]: %d\n", pin.Name, pin.offset, v)
 	return str
 }
 

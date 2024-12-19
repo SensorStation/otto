@@ -92,7 +92,8 @@ func (m MockLine) MockHWInput(v int) {
 	}
 
 	mqtt := otto.GetMQTT()
-	mqtt.Subscribe("ss/c/+/" + string(m.offset), m)
+	topic := fmt.Sprintf("ss/c/+/%d", m.offset)
+	mqtt.Subscribe(topic, m)
 }
 
 func (m MockLine) SubCallback(topic string, message []byte) {
