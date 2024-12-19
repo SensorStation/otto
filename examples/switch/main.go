@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/sensorstation/otto"
@@ -9,15 +10,16 @@ import (
 )
 
 var (
-	l *otto.Logger
+	l    *otto.Logger
+	mqtt *otto.MQTT
 )
 
 func main() {
 
 	l = otto.GetLogger()
 
-	m := otto.GetMQTT()
-	m.Connect()
+	mqtt = otto.GetMQTT()
+	mqtt.Connect()
 
 	// Get the GPIO driver
 	g := gpio.GetGPIO()
@@ -26,28 +28,30 @@ func main() {
 	}()
 
 	done := make(chan bool, 0)
-	startEventHandler(g, done)
-	startButtonToggler(g, done)
+	go startSwitchHandler(g, done)
+	go startSwitchToggler(g, done)
+
+	<-done
 }
 
-func startButtonToggler(g *gpio.GPIO, done chan bool) {
+func startSwitchToggler(g *gpio.GPIO, done chan bool) {
 	on := false
-	sw := g.Pin("switch", 23, gpiocdev.AsOutput(1))
+	r := g.Pin("reader", 23, gpiocdev.AsOutput(1))
 	for {
 		if on {
-			sw.On()
+			r.On()
 			on = false
 		} else {
-			sw.Off()
+			r.Off()
 			on = true
 		}
 		time.Sleep(1 * time.Second)
 	}
 }
 
-func startEventHandler(g *gpio.GPIO, done chan bool) {
+func startSwitchHandler(g *gpio.GPIO, done chan bool) {
 	evtQ := make(chan gpiocdev.LineEvent)
-	in := g.Pin("in", 24, gpiocdev.WithPullUp, gpiocdev.WithBothEdges, gpiocdev.WithEventHandler(func (evt gpiocdev.LineEvent) {
+	sw := g.Pin("switch", 24, gpiocdev.WithPullUp, gpiocdev.WithBothEdges, gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
 		evtQ <- evt
 	}))
 
@@ -56,19 +60,19 @@ func startEventHandler(g *gpio.GPIO, done chan bool) {
 		case evt := <-evtQ:
 			switch evt.Type {
 			case gpiocdev.LineEventFallingEdge:
-				l.Info("GPIO failing edge", "pin", in.Name)
+				l.Info("GPIO failing edge", "pin", sw.Name)
 				fallthrough
 
 			case gpiocdev.LineEventRisingEdge:
-				l.Info("GPIO raising edge", "pin", in.Name)
+				l.Info("GPIO raising edge", "pin", sw.Name)
 
-				v, err := in.Get()
+				v, err := sw.Get()
 				if err != nil {
 					otto.GetLogger().Error("Error getting input value: ", "error", err.Error())
 					continue
 				}
-				mqtt := otto.GetMQTT()
-				mqtt.Publish("ss/c/station/" + in.Name, v)
+				val := strconv.Itoa(v)
+				mqtt.Publish("ss/d/station/"+sw.Name, val)
 
 			default:
 				l.Warn("Unknown event type ", "type", evt.Type)
@@ -79,29 +83,3 @@ func startEventHandler(g *gpio.GPIO, done chan bool) {
 		}
 	}
 }
-
-
-// func eventHandler(evt gpiocdev.LineEvent) {
-// 	t := time.Now()
-// 	edge := "rising"
-// 	if evt.Type == gpiocdev.LineEventFallingEdge {
-// 		edge = "falling"
-// 	}
-// 	if evt.Seqno != 0 {
-// 		// only uAPI v2 populates the sequence numbers
-// 		fmt.Printf("event: #%d(%d)%3d %-7s %s (%s)\n",
-// 			evt.Seqno,
-// 			evt.LineSeqno,
-// 			evt.Offset,
-// 			edge,
-// 			t.Format(time.RFC3339Nano),
-// 			evt.Timestamp)
-// 	} else {
-// 		fmt.Printf("event:%3d %-7s %s (%s)\n",
-// 			evt.Offset,
-// 			edge,
-// 			t.Format(time.RFC3339Nano),
-// 			evt.Timestamp)
-// 	}
-// 	v, err := in.Get()
-// }
