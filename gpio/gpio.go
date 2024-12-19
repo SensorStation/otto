@@ -64,7 +64,7 @@ func (p *Pin) Init() error {
 
 // String returns a string representation of the GPIO pin
 func (pin *Pin) String() string {
-	str := fmt.Sprintf("%10s[%d] mode: %d => %d\n", pin.Name, pin.offset, pin.Value)
+	str := fmt.Sprintf("%10s[%d] %d\n", pin.Name, pin.offset, pin.Value)
 	return str
 }
 
