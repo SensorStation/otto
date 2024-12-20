@@ -1,3 +1,0 @@
-[submodule "i2c/bme280"]
-	path = i2c/bme280
-	url = https://github.com/maciej/bme280

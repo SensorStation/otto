@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/sensorstation/otto/i2c/bme280"
+	"github.com/maciej/bme280"
 	"golang.org/x/exp/io/i2c"
 )
 

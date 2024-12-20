@@ -8,6 +8,7 @@ require (
 	github.com/chzyer/readline v1.5.1
 	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/gorilla/websocket v1.5.1
+	github.com/maciej/bme280 v0.2.0
 	github.com/spf13/cobra v1.8.1
 	github.com/warthog618/go-gpiocdev v0.9.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
