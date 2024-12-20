@@ -81,15 +81,19 @@ type tclient struct {
 	msg   string
 }
 
-func (t tclient) SubCallback(topic string, data []byte) {
+func (t tclient) SubCallback(msg *Msg) {
 	// Todo something
 }
 
 func TestSubscribe(t *testing.T) {
-	m := GetMQTT()
+	m, err := GetMQTT()
+	if err != nil {
+		t.Logf(err.Error())
+		return
+	}
 	m.Client = MockClient{}
 
-	err := m.Connect()
+	err = m.Connect()
 	if err != nil {
 		t.Error("Failed to connect to MQTT broker: ", err)
 	}

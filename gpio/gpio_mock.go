@@ -5,23 +5,23 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto"
-	"github.com/warthog618/go-gpiocdev"	
+	"github.com/warthog618/go-gpiocdev"
 )
 
 // MockGPIO fakes the Line interface on computers that don't
 // actually have GPIO pins mostly for mocking tests
 type MockLine struct {
-	offset  int				`json:"offset"`
-	Val		int				`json:"val"`
-	gpiocdev.EventHandler   `json:"event-handler"`
-	start	time.Time 
+	offset                int `json:"offset"`
+	Val                   int `json:"val"`
+	gpiocdev.EventHandler `json:"event-handler"`
+	start                 time.Time
 }
 
 func GetMockLine(offset int, opts ...gpiocdev.LineReqOption) *MockLine {
 	l := otto.GetLogger()
 	m := &MockLine{
 		offset: offset,
-		start: time.Now(),
+		start:  time.Now(),
 	}
 	for _, opt := range opts {
 		fmt.Printf("OPT Type: %T\n", opt)
@@ -81,30 +81,26 @@ func (m MockLine) MockHWInput(v int) {
 	seq := getSeqno()
 	if m.EventHandler != nil {
 		evt := gpiocdev.LineEvent{
-			Offset: m.Offset(),
+			Offset:    m.Offset(),
 			Timestamp: time.Since(m.start),
-			Type: t,
-			Seqno: seq,
+			Type:      t,
+			Seqno:     seq,
 			LineSeqno: seq,
 		}
 
 		m.EventHandler(evt)
 	}
 
-	mqtt := otto.GetMQTT()
+	mqtt, err := otto.GetMQTT()
+	if err != nil {
+		otto.GetLogger().Error("Failed to connect mqtt", "error", err)
+	}
 	topic := fmt.Sprintf("ss/c/+/%d", m.offset)
 	mqtt.Subscribe(topic, m)
 }
 
-func (m MockLine) SubCallback(topic string, message []byte) {
+func (m MockLine) SubCallback(msg *otto.Msg) {
 	l := otto.GetLogger()
-
-	// convert the topic and data into a *Msg
-	msg := otto.NewMsg(topic, message, "mock-gpio")
-	if len(msg.Path) < 3 {
-		l.Error("DataManager: Malformed MQTT ", "path", msg.Path)
-		return
-	}
 
 	// Change this to a map[string]string or map[string]interface{}
 	fmt.Printf("MSG: %+v\n", msg)

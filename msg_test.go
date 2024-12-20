@@ -70,16 +70,3 @@ func TestJSON(t *testing.T) {
 		t.Errorf("Failed to marshal message %+v", m)
 	}
 }
-
-func TestDataString(t *testing.T) {
-	// m, now := getMsg()
-
-	// formatted := fmt.Sprintf("ID: %d, Time: %s, Type: %s, Station: %s, tempf: %f, humidity: %f, ",
-	// 	m.ID, now.Format(time.RFC3339), m.Type, m.Data.ID, m.Data.Sensors["tempf"], m.Data.Sensors["humidity"],
-	// )
-
-	// str := m.String()
-	// if str != formatted {
-	// 	t.Errorf("Data Formatted expected (%s) got (%s)", formatted, str)
-	// }
-}

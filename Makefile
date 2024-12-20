@@ -3,6 +3,9 @@ PIENV	= env GOOS=linux GOARCH=arm GOARM=7
 
 all: test $(SUBDIRS)
 
+init:
+	git update --init 
+
 test:
 	go test -cover ./...
 

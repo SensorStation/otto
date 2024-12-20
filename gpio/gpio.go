@@ -11,12 +11,11 @@ import (
 // Line interface is used to emulate a GPIO pin as
 // implemented by the go-gpiocdev package
 type Line interface {
-	Close() error	
+	Close() error
 	Offset() int
 	SetValue(int) error
 	Reconfigure(...gpiocdev.LineConfigOption) error
 	Value() (int, error)
-
 }
 
 // Line interface is used by Mode causes the Pin to be configured as Input, Output,
@@ -35,12 +34,12 @@ const (
 
 // Pin represents a single GPIO Pin
 type Pin struct {
-	Name   string `json:"name"`
+	Name string `json:"name"`
 	Opts []gpiocdev.LineReqOption
 	Line
 
 	offset int
-	val	   int
+	val    int
 }
 
 var (
@@ -113,8 +112,7 @@ func (pin *Pin) Toggle() error {
 
 // SubCallback is the default callback for pins if they are
 // registered with the MQTT.Subscribe() function
-func (pin Pin) SubCallback(t string, d []byte) {
-	msg := otto.NewMsg(t, d, "mqtt-pin-"+pin.Name)
+func (pin Pin) SubCallback(msg *otto.Msg) {
 	switch msg.String() {
 	case "on":
 		pin.On()
@@ -123,7 +121,7 @@ func (pin Pin) SubCallback(t string, d []byte) {
 		pin.Off()
 
 	case "toggle":
-	 	pin.Toggle()
+		pin.Toggle()
 
 	}
 }
@@ -173,7 +171,7 @@ func (gpio *GPIO) Pin(name string, offset int, opts ...gpiocdev.LineReqOption) (
 	p = &Pin{
 		Name:   name,
 		offset: offset,
-		Opts: opts,
+		Opts:   opts,
 	}
 
 	gpio.Pins[offset] = p

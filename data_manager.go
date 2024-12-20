@@ -2,6 +2,7 @@ package otto
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 // DataManager is a map of Timeseries data that belongs to
@@ -24,15 +25,7 @@ func NewDataManager() (dm *DataManager) {
 // MQTT messages. TODO: move this call back to the stations because
 // the stations will have a better understanding of the data they
 // are subscribing to.
-func (dm *DataManager) SubCallback(topic string, message []byte) {
-
-	// convert the topic and data into a *Msg
-	msg := NewMsg(topic, message, "mqtt-data")
-	if len(msg.Path) < 3 {
-		l.Error("DataManager: Malformed MQTT ", "path", msg.Path)
-		return
-	}
-
+func (dm *DataManager) SubCallback(msg *Msg) {
 	// Change this to a map[string]string or map[string]interface{}
 	stations := GetStationManager()
 	st := stations.Update(msg)
@@ -46,4 +39,5 @@ func (dm *DataManager) SubCallback(topic string, message []byte) {
 	for k, v := range m {
 		st.Insert(k, v)
 	}
+	fmt.Printf("ST: %+v\n", st.DataManager)
 }

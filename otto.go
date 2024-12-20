@@ -93,6 +93,7 @@ var (
 	stations *StationManager
 	data     *DataManager
 	config   *Configuration
+	store    *Store
 	l        *Logger
 
 	Done chan bool
@@ -114,11 +115,16 @@ func GetConfig() *Configuration {
 	return config
 }
 
-func GetMQTT() *MQTT {
+func GetMQTT() (*MQTT, error) {
 	if mqtt == nil {
 		mqtt = NewMQTT()
 	}
-	return mqtt
+
+	var err error
+	if !mqtt.IsConnected() {
+		err = mqtt.Connect()
+	}
+	return mqtt, err
 }
 
 func GetDataManager() *DataManager {
@@ -140,6 +146,13 @@ func GetServer() *Server {
 		server = NewServer()
 	}
 	return server
+}
+
+func GetStore() *Store {
+	if store == nil {
+		store = NewStore()
+	}
+	return store
 }
 
 func GetLogger() *Logger {
@@ -175,8 +188,7 @@ func OttO() {
 	stations := GetStationManager()
 	stations.Start()
 
-	mqtt := GetMQTT()
-	err := mqtt.Connect()
+	mqtt, err := GetMQTT()
 	if err != nil {
 		l.Error("MQTT Failed to connect to broker ", "broker", config.Broker)
 	} else {

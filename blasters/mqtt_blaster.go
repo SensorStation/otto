@@ -41,7 +41,10 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 
 func (mb *MQTTBlasters) Blast() error {
 
-	mqtt := otto.GetMQTT()
+	mqtt, err := otto.GetMQTT()
+	if err != nil {
+		return err
+	}
 	if !mqtt.IsConnected() {
 		return fmt.Errorf("MQTT Client is not connected to a broker")
 	}
