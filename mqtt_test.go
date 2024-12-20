@@ -7,8 +7,49 @@ import (
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+type MockMessage struct {
+	topic   string
+	payload []byte
+}
+
+func (m *MockMessage) Duplicate() bool {
+	return false
+}
+
+func (m *MockMessage) Qos() byte {
+	return 0
+}
+
+func (m *MockMessage) Retained() bool {
+	return false
+}
+
+func (m *MockMessage) Topic() string {
+	return m.topic
+}
+
+func (m *MockMessage) MessageID() uint16 {
+	return 10
+}
+
+func (m *MockMessage) Payload() []byte {
+	return m.payload
+}
+
+func (m *MockMessage) Ack() {
+}
+
 type MockClient struct {
 	connected bool
+	mqtt      *MQTT
+}
+
+func GetMockMQTT() (*MQTT, error) {
+	mqtt := NewMQTT()
+	mqtt.Client = MockClient{
+		mqtt: mqtt,
+	}
+	return mqtt, nil
 }
 
 func (m MockClient) IsConnected() bool {
@@ -28,6 +69,13 @@ func (m MockClient) Disconnect(quiecense uint) {
 }
 
 func (m MockClient) Publish(topic string, qos byte, retained bool, payload interface{}) gomqtt.Token {
+	if sub, ex := m.mqtt.Subscribers[topic]; ex {
+		mes := &MockMessage{
+			topic:   topic,
+			payload: []byte(payload.(string)),
+		}
+		sub.MessageHandler(m, mes)
+	}
 	var t MockToken
 	return t
 }
@@ -81,17 +129,25 @@ type tclient struct {
 	msg   string
 }
 
-func (t tclient) SubCallback(msg *Msg) {
-	// Todo something
+func (t *tclient) SubCallback(msg *Msg) {
+	println(msg.Path)
+	if msg.Path[0] != "t" || msg.Path[1] != "test" {
+		return
+	}
+
+	println(msg.Message)
+	if string(msg.Message) != "message" {
+		return
+	}
+	t.gotit = true
 }
 
 func TestSubscribe(t *testing.T) {
-	m, err := GetMQTT()
+	m, err := GetMockMQTT()
 	if err != nil {
 		t.Logf(err.Error())
 		return
 	}
-	m.Client = MockClient{}
 
 	err = m.Connect()
 	if err != nil {
@@ -99,7 +155,7 @@ func TestSubscribe(t *testing.T) {
 	}
 
 	tc := &tclient{
-		gotit: true,
+		gotit: false,
 		topic: "t/test",
 		msg:   "message",
 	}

@@ -104,7 +104,7 @@ func (m MQTT) Publish(topic string, value interface{}) {
 // ss/<ethaddr>/<data>/humidity value
 func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
 	sub := &Sub{id, path, f}
-	m.Subscribers[id] = sub
+	m.Subscribers[path] = sub
 
 	if m.Client == nil {
 		l.Error("MQTT Client is not connected to a broker")
