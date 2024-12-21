@@ -3,6 +3,8 @@ package otto
 import (
 	"sync"
 	"time"
+
+	"github.com/sensorstation/otto/message"
 )
 
 // Station is the primary structure that holds an array of
@@ -12,7 +14,7 @@ type Station struct {
 	LastHeard  time.Time     `json:"last-heard"`
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
 
-	*DataManager 
+	*DataManager
 
 	ticker *time.Ticker `json:"-"`
 	quit   chan bool    `json:"-"`
@@ -32,7 +34,7 @@ func NewStation(id string) (st *Station) {
 
 // Update() will append a new data value to the series
 // of data points.
-func (s *Station) Update(msg *Msg) {
+func (s *Station) Update(msg *message.Msg) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.LastHeard = time.Now()

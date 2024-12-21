@@ -1,4 +1,4 @@
-package otto
+package message
 
 import (
 	"fmt"
@@ -7,18 +7,18 @@ import (
 )
 
 type Message interface {
-	GetMsg() *Msg
+	// GetMsg() *Msg
 }
 
 // Msg holds a value and some type of meta data to be pass around in
 // the system.
 type Msg struct {
-	ID      int64    `json:"id"`
-	Topic   string   `json:"topic"`
-	Path    []string `json:"path"`
-	Args    []string `json:"args"`
-	Message []byte   `json:"msg"`
-	Source  string   `json:"source"`
+	ID     int64    `json:"id"`
+	Topic  string   `json:"topic"`
+	Path   []string `json:"path"`
+	Args   []string `json:"args"`
+	Data   []byte   `json:"msg"`
+	Source string   `json:"source"`
 
 	time.Time `json:"time"`
 }
@@ -34,30 +34,30 @@ func getMsgID() int64 {
 
 func NewMsg(topic string, data []byte, source string) *Msg {
 	msg := &Msg{
-		ID:      getMsgID(),
-		Topic:   topic,
-		Path:    strings.Split(topic, "/"),
-		Message: data,
-		Time:    time.Now(),
-		Source:  source,
+		ID:     getMsgID(),
+		Topic:  topic,
+		Path:   strings.Split(topic, "/"),
+		Data:   data,
+		Time:   time.Now(),
+		Source: source,
 	}
 
 	return msg
 }
 
 func (msg *Msg) Byte() []byte {
-	return msg.Message
+	return msg.Data
 }
 
 func (msg *Msg) String() string {
-	return string(msg.Message)
+	return string(msg.Data)
 }
 
 func (msg *Msg) Dump() string {
 	str := fmt.Sprintf("  ID: %d\n", msg.ID)
 	str += fmt.Sprintf("Path: %q\n", msg.Path)
 	str += fmt.Sprintf("Args: %q\n", msg.Args)
-	str += fmt.Sprintf(" Msg: %s\n", string(msg.Message))
+	str += fmt.Sprintf(" Msg: %s\n", string(msg.Data))
 	str += fmt.Sprintf(" Src: %s\n", msg.Source)
 	str += fmt.Sprintf("Time: %s\n", msg.Time)
 	return str

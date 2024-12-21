@@ -3,27 +3,27 @@ package blasters
 import (
 	"encoding/json"
 	"math/rand/v2"
-	"strings"
 
 	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/message"
 )
 
+// MsgMaker creates messages to be used by the mqtt blaster
+// for smoke testing the messaging subsystem
 type MsgMaker interface {
-	NewMsg() *otto.Msg
+	NewMsg() *message.Msg
 }
 
+// WeatherData is the content contained in the message used by the blaster
 type WeatherData struct {
 	Tempc    float32 `json:"tempc"`
 	Humidity float32 `json:"humidity"`
 }
 
-func (w *WeatherData) NewMsg() *otto.Msg {
+// NewMsg will create a new message for testing
+func (w *WeatherData) NewMsg() *message.Msg {
 	w.Tempc = rand.Float32()
 	w.Humidity = rand.Float32()
-
-	path := strings.Join([]string{"ss", "d", "station", "weather"}, "/")
-	data := []byte("MM")
-	msg := otto.NewMsg(path, data, "weather-data")
 
 	j, err := json.Marshal(w)
 	if err != nil {
@@ -31,6 +31,7 @@ func (w *WeatherData) NewMsg() *otto.Msg {
 		return nil
 	}
 
-	msg.Message = j
+	path := "ss/d/station/weather"
+	msg := message.NewMsg(path, j, "weather-data")
 	return msg
 }

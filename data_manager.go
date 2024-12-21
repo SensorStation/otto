@@ -2,6 +2,9 @@ package otto
 
 import (
 	"encoding/json"
+	"fmt"
+
+	"github.com/sensorstation/otto/message"
 )
 
 // DataManager is a map of Timeseries data that belongs to
@@ -24,21 +27,13 @@ func NewDataManager() (dm *DataManager) {
 // MQTT messages. TODO: move this call back to the stations because
 // the stations will have a better understanding of the data they
 // are subscribing to.
-func (dm *DataManager) SubCallback(topic string, message []byte) {
-
-	// convert the topic and data into a *Msg
-	msg := NewMsg(topic, message, "mqtt-data")
-	if len(msg.Path) < 3 {
-		l.Error("DataManager: Malformed MQTT ", "path", msg.Path)
-		return
-	}
-
+func (dm *DataManager) SubCallback(msg *message.Msg) {
 	// Change this to a map[string]string or map[string]interface{}
 	stations := GetStationManager()
 	st := stations.Update(msg)
 
 	var m map[string]interface{}
-	err := json.Unmarshal(msg.Message, &m)
+	err := json.Unmarshal(msg.Data, &m)
 	if err != nil {
 		l.Error("Failed to unmarshal message ", "error", err)
 		return
@@ -46,4 +41,5 @@ func (dm *DataManager) SubCallback(topic string, message []byte) {
 	for k, v := range m {
 		st.Insert(k, v)
 	}
+	fmt.Printf("ST: %+v\n", st.DataManager)
 }

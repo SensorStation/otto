@@ -23,11 +23,17 @@ func init() {
 }
 
 func runMQTTSub(cmd *cobra.Command, args []string) {
-	m := otto.GetMQTT()
+	m, err := otto.GetMQTT()
+	if err != nil {
+		fmt.Printf("Failed to connect to mqtt broker: %s: %s\n", m.Broker, err)
+		return
+	}
+
 	if m.Client == nil || !m.IsConnected() {
 		err := m.Connect()
 		if err != nil {
 			fmt.Printf("Failed to connect to mqtt broker: %s: %s\n", m.Broker, err)
+			return
 		}
 	}
 

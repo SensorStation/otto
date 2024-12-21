@@ -33,7 +33,11 @@ func init() {
 }
 
 func mqttRun(cmd *cobra.Command, args []string) {
-	m := otto.GetMQTT()
+	m, err := otto.GetMQTT()
+	if err != nil {
+		fmt.Println("MQTT can not connect to ", m.Broker)
+		return
+	}
 	if m == nil {
 		fmt.Println("MQTT has not been initialized")
 		return

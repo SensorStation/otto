@@ -1,4 +1,4 @@
-package otto
+package message
 
 import (
 	"encoding/json"
@@ -56,8 +56,8 @@ func TestStationMsg(t *testing.T) {
 	}
 
 	for i := 0; i < len(j); i++ {
-		if msg.Message[i] != j[i] {
-			t.Errorf("msg data[%d] expected (% x) got (% x)", i, j[i], msg.Message[i])
+		if msg.Data[i] != j[i] {
+			t.Errorf("msg data[%d] expected (% x) got (% x)", i, j[i], msg.Data[i])
 		}
 	}
 }
@@ -69,17 +69,4 @@ func TestJSON(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to marshal message %+v", m)
 	}
-}
-
-func TestDataString(t *testing.T) {
-	// m, now := getMsg()
-
-	// formatted := fmt.Sprintf("ID: %d, Time: %s, Type: %s, Station: %s, tempf: %f, humidity: %f, ",
-	// 	m.ID, now.Format(time.RFC3339), m.Type, m.Data.ID, m.Data.Sensors["tempf"], m.Data.Sensors["humidity"],
-	// )
-
-	// str := m.String()
-	// if str != formatted {
-	// 	t.Errorf("Data Formatted expected (%s) got (%s)", formatted, str)
-	// }
 }

@@ -1,9 +1,10 @@
-
-# Sensor Station
+# OttO the Sensor Station
 
 Sensor Station gathers data via MQTT from any number of _publishers_,
 which are typically battery powered, wireless sensors spread around a
-certain location.
+certain location. It also managers control inputs and actuators that
+allow things like buttons and switches to be used to control attached
+devices. 
 
 # Overview
 

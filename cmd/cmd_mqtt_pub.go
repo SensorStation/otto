@@ -23,8 +23,8 @@ func init() {
 }
 
 func runMQTTPub(cmd *cobra.Command, args []string) {
-	m := otto.GetMQTT()
-	if m.Client == nil || !m.IsConnected() {
+	m, err := otto.GetMQTT()
+	if err != nil {
 		fmt.Println("MQTT Is not connected to a broker")
 		return
 	}
