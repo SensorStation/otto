@@ -1,4 +1,4 @@
-package otto
+package message
 
 import (
 	"encoding/json"
@@ -56,8 +56,8 @@ func TestStationMsg(t *testing.T) {
 	}
 
 	for i := 0; i < len(j); i++ {
-		if msg.Message[i] != j[i] {
-			t.Errorf("msg data[%d] expected (% x) got (% x)", i, j[i], msg.Message[i])
+		if msg.Data[i] != j[i] {
+			t.Errorf("msg data[%d] expected (% x) got (% x)", i, j[i], msg.Data[i])
 		}
 	}
 }

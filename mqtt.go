@@ -5,13 +5,14 @@ import (
 	"log"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/sensorstation/otto/message"
 )
 
 // Subscriber is an interface that defines a struct needs to have the
 // SubCallback(topic string, data []byte) function defined.
 type Subscriber interface {
 	// SubCallback(topic string, data []byte)
-	SubCallback(msg *Msg)
+	SubCallback(msg *message.Msg)
 }
 
 // MQTT is a wrapper around the Paho MQTT Go package
@@ -126,8 +127,7 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
 // the connected broker
 func (m *MQTT) Subscribe(topic string, s Subscriber) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
-		// s.SubCallback(m.Topic(), m.Payload())
-		msg := NewMsg(m.Topic(), m.Payload(), "mqtt-sub")
+		msg := message.NewMsg(m.Topic(), m.Payload(), "mqtt-sub")
 		s.SubCallback(msg)
 	}
 	m.Sub(topic, topic, mfunc)
@@ -154,6 +154,6 @@ type MQTTPrinter struct {
 
 // SubCallback will print out all messages sent to the given topic
 // from the MQTTPrinter
-func (mp *MQTTPrinter) SubCallback(msg *Msg) {
+func (mp *MQTTPrinter) SubCallback(msg *message.Msg) {
 	fmt.Printf("%+v\n", msg)
 }

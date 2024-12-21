@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/message"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -112,7 +113,7 @@ func (pin *Pin) Toggle() error {
 
 // SubCallback is the default callback for pins if they are
 // registered with the MQTT.Subscribe() function
-func (pin Pin) SubCallback(msg *otto.Msg) {
+func (pin Pin) SubCallback(msg *message.Msg) {
 	switch msg.String() {
 	case "on":
 		pin.On()

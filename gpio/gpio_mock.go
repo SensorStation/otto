@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/message"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -99,7 +100,7 @@ func (m MockLine) MockHWInput(v int) {
 	mqtt.Subscribe(topic, m)
 }
 
-func (m MockLine) SubCallback(msg *otto.Msg) {
+func (m MockLine) SubCallback(msg *message.Msg) {
 	l := otto.GetLogger()
 
 	// Change this to a map[string]string or map[string]interface{}

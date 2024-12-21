@@ -84,7 +84,11 @@ turning a relay on or off.
 */
 package otto
 
-import "fmt"
+import (
+	"fmt"
+
+	gomqtt "github.com/eclipse/paho.mqtt.golang"
+)
 
 // global variables and structures
 var (
@@ -113,6 +117,12 @@ func init() {
 
 func GetConfig() *Configuration {
 	return config
+}
+
+func GetMQTTClient(c gomqtt.Client) *MQTT {
+	mqtt = NewMQTT()
+	mqtt.Client = c
+	return mqtt
 }
 
 func GetMQTT() (*MQTT, error) {

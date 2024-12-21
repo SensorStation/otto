@@ -20,7 +20,7 @@ func TestMsgMaker(t *testing.T) {
 	}
 
 	var j WeatherData
-	err := json.Unmarshal(msg.Message, &j)
+	err := json.Unmarshal(msg.Byte(), &j)
 	if err != nil {
 		t.Errorf("failed to unmarshal message %s", err)
 	}

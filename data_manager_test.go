@@ -3,6 +3,8 @@ package otto
 import (
 	"fmt"
 	"testing"
+
+	"github.com/sensorstation/otto/message"
 )
 
 func TestNewDataManager(t *testing.T) {
@@ -17,7 +19,7 @@ func TestDataManagerSubCallback(t *testing.T) {
 	path := "ss/d/station1/test"
 
 	dm := NewDataManager()
-	msg := NewMsg(path, data, "data-manager-test")
+	msg := message.NewMsg(path, data, "data-manager-test")
 	dm.SubCallback(msg)
 
 	sm := GetStationManager()

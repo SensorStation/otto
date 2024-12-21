@@ -3,6 +3,10 @@ package blasters
 import (
 	"fmt"
 	"testing"
+	"time"
+
+	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/mocks"
 )
 
 func TestBlasters(t *testing.T) {
@@ -31,4 +35,25 @@ func TestBlasters(t *testing.T) {
 			t.Errorf("expected topic (%s) got (%s)", topic, b.Topic)
 		}
 	}
+}
+
+func TestBlasting(t *testing.T) {
+	c := mocks.GetMockClient()
+	m := otto.GetMQTTClient(c)
+	m.Connect()
+
+	blasters := NewMQTTBlasters(5)
+	for _, bl := range blasters.Blasters {
+		m.Subscribe(bl.Topic, bl.Station.DataManager)
+	}
+
+	go blasters.Blast()
+	time.Sleep(2 * time.Second)
+
+	for _, bl := range blasters.Blasters {
+		fmt.Printf("bl: %+v\n", bl)
+		fmt.Printf("\tst: %+v\n", bl.Station.DataManager)
+	}
+
+	blasters.Stop()
 }
