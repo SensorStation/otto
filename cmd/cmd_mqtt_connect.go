@@ -4,8 +4,6 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/sensorstation/otto"
 	"github.com/spf13/cobra"
 )
@@ -23,8 +21,5 @@ func init() {
 }
 
 func runMQTTConnect(cmd *cobra.Command, args []string) {
-	m, err := otto.GetMQTT()
-	if err != nil {
-		fmt.Printf("Failed to connect to mqtt broker: %s: %s\n", m.Broker, err)
-	}
+	otto.GetMQTT()
 }

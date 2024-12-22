@@ -27,10 +27,7 @@ func main() {
 
 	// Get mqtt ready to start publishing the results
 	// from the bme via mqtt
-	mqtt, err := otto.GetMQTT()
-	if err != nil {
-		panic(err)
-	}
+	mqtt := otto.GetMQTT()
 
 	// Before we start reading temp, etc. let's subscribe to
 	// the messages we are going to publish.
