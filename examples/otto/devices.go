@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -15,6 +16,27 @@ type Device struct {
 
 	Subs []string
 	Pubs []string
+}
+
+func (d *Device) On() {
+	d.Set(1)
+}
+
+func (d *Device) Off() {
+	d.Set(0)
+}
+
+func (d *Device) Set(v int) {
+	d.Pin.Set(v)
+	val := "off"
+	if v > 0 {
+		val = "on"
+	}
+
+	m := otto.GetMQTT()
+	for _, p := range d.Pubs {
+		m.Publish(p, val)
+	}
 }
 
 type DeviceManager struct {
@@ -39,6 +61,15 @@ func (dm *DeviceManager) Add(d *Device) {
 	dm.devices[d.Name] = d
 }
 
+func (dm *DeviceManager) Get(name string) *Device {
+	d, ex := dm.devices[name]
+	if !ex {
+		l.Error("device does not exist", "device", name)
+		return nil
+	}
+	return d
+}
+
 func (dm *DeviceManager) FindPin(offset int) *Device {
 	for _, d := range dm.devices {
 		if d.Offset() == offset {
@@ -48,21 +79,6 @@ func (dm *DeviceManager) FindPin(offset int) *Device {
 	return nil
 }
 
-func (d *Device) Callback(msg *message.Msg) {
-	cmd := string(msg.Data)
-
-	switch cmd {
-	case "on":
-		d.On()
-
-	case "off":
-		d.Off()
-
-	default:
-		otto.GetLogger().Warn("GPIO callback unknown command", "command", cmd)
-	}
-}
-
 func GPIOOut(name string, pin int) *Device {
 	g := gpio.GetGPIO()
 	d := &Device{
@@ -70,88 +86,13 @@ func GPIOOut(name string, pin int) *Device {
 	}
 
 	topic := "ss/c/" + stationName + "/" + name
-	d.Subs = append(d.Subs, "ss/c/"+stationName+"/led")
+	d.Subs = append(d.Subs, topic)
 
 	m := otto.GetMQTT()
 	m.Subscribe(topic, d)
 
+	d.Pubs = append(d.Pubs, "ss/d/"+stationName+"/"+name)
 	return d
-}
-
-func GPIOIn(name string, pin int) *Device {
-	g := gpio.GetGPIO()
-	d := &Device{
-		Pin: g.Pin(name, pin,
-			gpiocdev.WithPullUp,
-			gpiocdev.WithBothEdges,
-			gpiocdev.WithDebounce(10*time.Millisecond),
-			gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
-				evtQ <- evt
-			})),
-	}
-	d.Pubs = append(d.Pubs, "ss/c/"+stationName+"/"+name)
-	return d
-}
-
-func DeviceEventHandler() {
-	for {
-		select {
-		case evt := <-evtQ:
-			dev := devices.FindPin(evt.Offset)
-			if dev == nil {
-				// something went terribly wrong
-				l.Error("Failed to find device for pin", "offset", evt.Offset)
-				return
-			}
-
-			evtype := "falling"
-			switch evt.Type {
-			case gpiocdev.LineEventFallingEdge:
-				evtype = "falling"
-
-			case gpiocdev.LineEventRisingEdge:
-				evtype = "raising"
-
-			default:
-				l.Warn("Unknown event type ", "type", evt.Type)
-				continue
-			}
-
-			l.Info("GPIO edge", "device", dev.Name, "direction", evtype,
-				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
-			v, err := dev.Get()
-			if err != nil {
-				otto.GetLogger().Error("Error getting input value: ", "error", err.Error())
-				continue
-			}
-			val := strconv.Itoa(v)
-			for _, t := range dev.Pubs {
-				otto.GetMQTT().Publish(t, val)
-			}
-
-		case <-done:
-			return
-		}
-	}
-}
-
-func (dm *DeviceManager) initDevices(done chan bool) {
-	led := GPIOOut("led", 6)
-	relay := GPIOOut("relay", 22)
-	button := GPIOIn("button", 23)
-	devices.Add(led)
-	devices.Add(relay)
-	devices.Add(button)
-
-	// Subscribe to the button if it is pushed we want to know
-	// about it and turn on and off the LED and Relay simultaneously
-	for _, pub := range button.Pubs {
-		m := otto.GetMQTT()
-		m.Subscribe(pub, dm)
-	}
-
-	go DeviceEventHandler()
-
 }
 
 func (dm *DeviceManager) SubCallback(msg *message.Msg) {
@@ -160,7 +101,6 @@ func (dm *DeviceManager) SubCallback(msg *message.Msg) {
 		l.Error("callback from unwanted device", "device", msg.Path[4])
 		return
 	}
-
 	led, ex := dm.devices["led"]
 	if !ex {
 		l.Error("failed to find led")
@@ -188,4 +128,94 @@ func (dm *DeviceManager) SubCallback(msg *message.Msg) {
 	default:
 		l.Error("Dont know what to do with", "value", val)
 	}
+}
+
+func GPIOIn(name string, pin int) *Device {
+	g := gpio.GetGPIO()
+	d := &Device{
+		Pin: g.Pin(name, pin,
+			// gpiocdev.WithPullUp,
+			gpiocdev.WithFallingEdge,
+			gpiocdev.WithDebounce(10*time.Millisecond),
+			gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
+				evtQ <- evt
+			})),
+	}
+	d.Pubs = append(d.Pubs, "ss/c/"+stationName+"/"+name)
+	return d
+}
+
+func ButtonHandler() {
+	for {
+		select {
+		case evt := <-evtQ:
+			dev := devices.FindPin(evt.Offset)
+			if dev == nil {
+				// something went terribly wrong
+				l.Error("Failed to find device for pin", "offset", evt.Offset)
+				return
+			}
+
+			evtype := "falling"
+			switch evt.Type {
+			case gpiocdev.LineEventFallingEdge:
+				evtype = "falling"
+
+			case gpiocdev.LineEventRisingEdge:
+				evtype = "raising"
+
+			default:
+				l.Warn("Unknown event type ", "type", evt.Type)
+				continue
+			}
+
+			l.Info("GPIO edge", "device", dev.Name, "direction", evtype,
+				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
+
+			// Get the value of the relay then toggle it, that is the value we will send
+			relay := devices.Get("relay")
+			if relay == nil {
+				continue
+			}
+
+			v, err := relay.Get()
+			if err != nil {
+				otto.GetLogger().Error("Error getting input value: ", "error", err.Error())
+				continue
+			}
+
+			if v == 0 {
+				v = 1
+			} else {
+				v = 0
+			}
+			fmt.Printf("v: %+v\n", v)
+			val := strconv.Itoa(v)
+			for _, t := range dev.Pubs {
+				otto.GetMQTT().Publish(t, val)
+			}
+
+		case <-done:
+			return
+		}
+	}
+}
+
+func (dm *DeviceManager) initDevices(done chan bool) {
+	led := GPIOOut("led", 6)
+	relay := GPIOOut("relay", 22)
+	button := GPIOIn("button", 23)
+	devices.Add(led)
+	devices.Add(relay)
+	devices.Add(button)
+
+	// Subscribe to the button if it is pushed we want to know
+	// about it and turn on and off the LED and Relay simultaneously
+	for _, pub := range button.Pubs {
+		m := otto.GetMQTT()
+		m.Subscribe(pub, dm)
+	}
+
+	go ButtonHandler()
+
 }
