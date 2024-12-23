@@ -18,11 +18,7 @@ func main() {
 
 	l = otto.GetLogger()
 
-	var err error
-	mqtt, err = otto.GetMQTT()
-	if err != nil {
-		panic(err)
-	}
+	mqtt = otto.GetMQTT()
 
 	// Get the GPIO driver
 	g := gpio.GetGPIO()

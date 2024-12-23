@@ -92,10 +92,7 @@ func (m MockLine) MockHWInput(v int) {
 		m.EventHandler(evt)
 	}
 
-	mqtt, err := otto.GetMQTT()
-	if err != nil {
-		otto.GetLogger().Error("Failed to connect mqtt", "error", err)
-	}
+	mqtt := otto.GetMQTT()
 	topic := fmt.Sprintf("ss/c/+/%d", m.offset)
 	mqtt.Subscribe(topic, m)
 }

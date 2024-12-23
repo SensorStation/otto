@@ -93,10 +93,10 @@ import (
 // global variables and structures
 var (
 	mqtt     *MQTT
+	config   *Configuration
+	data     *DataManager
 	server   *Server
 	stations *StationManager
-	data     *DataManager
-	config   *Configuration
 	store    *Store
 	l        *Logger
 
@@ -119,29 +119,31 @@ func GetConfig() *Configuration {
 	return config
 }
 
+func GetDataManager() *DataManager {
+	if data == nil {
+		data = NewDataManager()
+	}
+	return data
+}
+
+func GetLogger() *Logger {
+	return l
+}
+
 func GetMQTTClient(c gomqtt.Client) *MQTT {
 	mqtt = NewMQTT()
 	mqtt.Client = c
 	return mqtt
 }
 
-func GetMQTT() (*MQTT, error) {
+func GetMQTT() *MQTT {
 	if mqtt == nil {
 		mqtt = NewMQTT()
 	}
-
-	var err error
 	if !mqtt.IsConnected() {
-		err = mqtt.Connect()
+		mqtt.Connect()
 	}
-	return mqtt, err
-}
-
-func GetDataManager() *DataManager {
-	if data == nil {
-		data = NewDataManager()
-	}
-	return data
+	return mqtt
 }
 
 func GetStationManager() *StationManager {
@@ -165,10 +167,6 @@ func GetStore() *Store {
 	return store
 }
 
-func GetLogger() *Logger {
-	return l
-}
-
 func Cleanup() {
 
 	<-Done
@@ -186,6 +184,8 @@ func Cleanup() {
 	}
 }
 
+// OttO is a convinience function starting the MQTT and HTTP servers,
+// the station manager and other stuff.
 func OttO() {
 	if Done != nil {
 		// server has already been started
@@ -198,12 +198,8 @@ func OttO() {
 	stations := GetStationManager()
 	stations.Start()
 
-	mqtt, err := GetMQTT()
-	if err != nil {
-		l.Error("MQTT Failed to connect to broker ", "broker", config.Broker)
-	} else {
-		mqtt.Subscribe("ss/d/+/+", GetDataManager())
-	}
+	mqtt := GetMQTT()
+	mqtt.Subscribe("ss/d/+/+", GetDataManager())
 
 	// start web server / rest server
 	server := GetServer()

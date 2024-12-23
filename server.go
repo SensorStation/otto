@@ -51,14 +51,15 @@ func (s *Server) Start() {
 }
 
 func (s *Server) Appdir(path, file string) {
+	l.Info("appdir", "path", path)
 	s.Register(path, http.FileServer(http.Dir(file)))
 }
 
 func (s *Server) EmbedTempl(path string, data any, content embed.FS) {
-	fmt.Println("PATH: ", path)
+	l.Info("embedTempl", "path", path)
 
 	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		if path == "/" || filepath.Ext(path) == ".html" {
+		if path == "/emb" || filepath.Ext(path) == ".html" {
 
 			fmt.Println("here we are foo bar ", r.URL.String())
 			tmpl, err := template.ParseFS(content, "app/*.html")

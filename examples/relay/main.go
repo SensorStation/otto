@@ -44,14 +44,10 @@ func main() {
 	defer signal.Stop(quit)
 
 	r := g.Pin("relay", 6, gpiocdev.AsOutput(0))
-	m, err := otto.GetMQTT()
-	if err != nil {
-		panic(err)
-	}
+	m := otto.GetMQTT()
 	m.Connect()
 	m.Subscribe("ss/c/station/relay", r)
 
 	<-quit
-	g.Shutdown()
 	l.Info("Exiting relay")
 }
