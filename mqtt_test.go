@@ -13,13 +13,11 @@ type tclient struct {
 	msg   string
 }
 
-func (t *tclient) SubCallback(msg *message.Msg) {
-	println(msg.Path)
+func (t *tclient) Callback(msg *message.Msg) {
 	if msg.Path[0] != "t" || msg.Path[1] != "test" {
 		return
 	}
 
-	println(msg.Data)
 	if string(msg.Data) != "message" {
 		return
 	}

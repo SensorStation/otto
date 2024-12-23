@@ -97,7 +97,7 @@ func (m MockLine) MockHWInput(v int) {
 	mqtt.Subscribe(topic, m)
 }
 
-func (m MockLine) SubCallback(msg *message.Msg) {
+func (m MockLine) Callback(msg *message.Msg) {
 	l := otto.GetLogger()
 
 	// Change this to a map[string]string or map[string]interface{}

@@ -14,13 +14,13 @@ func TestNewDataManager(t *testing.T) {
 	}
 }
 
-func TestDataManagerSubCallback(t *testing.T) {
+func TestDataManagerCallback(t *testing.T) {
 	data := []byte(fmt.Sprintf(`{ "int": 10 }`))
 	path := "ss/d/station1/test"
 
 	dm := NewDataManager()
 	msg := message.NewMsg(path, data, "data-manager-test")
-	dm.SubCallback(msg)
+	dm.Callback(msg)
 
 	sm := GetStationManager()
 	st := sm.Get("station1")

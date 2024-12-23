@@ -2,7 +2,6 @@ package otto
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/sensorstation/otto/message"
 )
@@ -23,11 +22,11 @@ func NewDataManager() (dm *DataManager) {
 	return dm
 }
 
-// SubCallback is the callback used by the DataManager to receive
+// Callback is the callback used by the DataManager to receive
 // MQTT messages. TODO: move this call back to the stations because
 // the stations will have a better understanding of the data they
 // are subscribing to.
-func (dm *DataManager) SubCallback(msg *message.Msg) {
+func (dm *DataManager) Callback(msg *message.Msg) {
 	// Change this to a map[string]string or map[string]interface{}
 	stations := GetStationManager()
 	st := stations.Update(msg)
@@ -41,5 +40,4 @@ func (dm *DataManager) SubCallback(msg *message.Msg) {
 	for k, v := range m {
 		st.Insert(k, v)
 	}
-	fmt.Printf("ST: %+v\n", st.DataManager)
 }

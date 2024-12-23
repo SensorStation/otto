@@ -111,9 +111,9 @@ func (pin *Pin) Toggle() error {
 	return pin.Set(val)
 }
 
-// SubCallback is the default callback for pins if they are
+// Callback is the default callback for pins if they are
 // registered with the MQTT.Subscribe() function
-func (pin Pin) SubCallback(msg *message.Msg) {
+func (pin Pin) Callback(msg *message.Msg) {
 	switch msg.String() {
 	case "on":
 		pin.On()

@@ -51,8 +51,12 @@ func TestBlasting(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	for _, bl := range blasters.Blasters {
-		fmt.Printf("bl: %+v\n", bl)
-		fmt.Printf("\tst: %+v\n", bl.Station.DataManager)
+		if bl == nil {
+			t.Error("Explected a blaster got (nil)")
+		}
+		// Todo add tests
+		// fmt.Printf("bl: %+v\n", bl)
+		// fmt.Printf("\tst: %+v\n", bl.Station.DataManager)
 	}
 
 	blasters.Stop()

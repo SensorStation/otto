@@ -2,7 +2,6 @@ package mocks
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
@@ -77,10 +76,10 @@ func (m MockClient) Disconnect(quiecense uint) {
 }
 
 func (m MockClient) MessageHandler(c gomqtt.Client, mm gomqtt.Message) {
-	t := mm.Topic()
-	p := mm.Payload()
+	// t := mm.Topic()
+	// p := mm.Payload()
 
-	fmt.Printf("%s -> %+v\n", t, p)
+	// fmt.Printf("%s -> %+v\n", t, p)
 }
 
 func (m MockClient) Publish(topic string, qos byte, retained bool, payload interface{}) gomqtt.Token {

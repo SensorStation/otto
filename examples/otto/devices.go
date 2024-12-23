@@ -95,7 +95,7 @@ func GPIOOut(name string, pin int) *Device {
 	return d
 }
 
-func (dm *DeviceManager) SubCallback(msg *message.Msg) {
+func (dm *DeviceManager) Callback(msg *message.Msg) {
 
 	if len(msg.Path) < 4 || msg.Path[3] != "button" {
 		l.Error("callback from unwanted device", "device", msg.Path[4])
