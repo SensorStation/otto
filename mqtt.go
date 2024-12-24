@@ -15,7 +15,7 @@ type MQTT struct {
 	Broker string
 	Debug  bool
 
-	Subscribers map[string]*Sub
+	Subscribers map[string][]*Sub
 	gomqtt.Client
 }
 
@@ -25,7 +25,7 @@ func NewMQTT() *MQTT {
 		ID:     "otto",
 		Broker: "localhost",
 	}
-	mqtt.Subscribers = make(map[string]*Sub)
+	mqtt.Subscribers = make(map[string][]*Sub)
 	return mqtt
 }
 
@@ -95,9 +95,9 @@ func (m MQTT) Publish(topic string, value interface{}) {
 // wildcards '+' and '#' are supported.  Examples
 // ss/<ethaddr>/<data>/tempf value
 // ss/<ethaddr>/<data>/humidity value
-func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
-	sub := &Sub{id, path, f}
-	m.Subscribers[path] = sub
+func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler, cb Subscriber) error {
+	sub := &Sub{id, path, f, cb}
+	m.Subscribers[path] = append(m.Subscribers[path], sub)
 
 	if m.Client == nil {
 		l.Error("MQTT Client is not connected to a broker")
@@ -117,12 +117,14 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler) error {
 
 // Subscribe causes the MQTT client to subscribe to the given topic with
 // the connected broker
-func (m *MQTT) Subscribe(topic string, s Subscriber) {
+func (mqtt *MQTT) Subscribe(topic string, s Subscriber) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
 		msg := message.NewMsg(m.Topic(), m.Payload(), "mqtt-sub")
-		s.Callback(msg)
+		for _, sub := range mqtt.Subscribers[m.Topic()] {
+			sub.Subscriber.Callback(msg)
+		}
 	}
-	m.Sub(topic, topic, mfunc)
+	mqtt.Sub(topic, topic, mfunc, s)
 }
 
 // Sub contains a Subscriber ID, a topic Path and a Message Handler
@@ -131,6 +133,7 @@ type Sub struct {
 	ID   string
 	Path string
 	gomqtt.MessageHandler
+	Subscriber
 }
 
 // String returns a string representation of the Subscriber and

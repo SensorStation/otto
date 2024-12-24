@@ -41,6 +41,7 @@ type Pin struct {
 
 	offset int
 	val    int
+	mock   bool
 }
 
 var (
@@ -54,7 +55,8 @@ func (p *Pin) Init() error {
 
 	line, err := gpiocdev.RequestLine(gpio.Chipname, p.offset, p.Opts...)
 	if err != nil {
-		line := MockLine{}
+		line := GetMockLine(p.offset, p.Opts...)
+		p.mock = true
 		p.Line = line
 		return nil
 	}
@@ -141,6 +143,7 @@ func (p *Pin) Output(v int) error {
 type GPIO struct {
 	Chipname string       `json:"chipname"`
 	Pins     map[int]*Pin `json:"pins"`
+	Mock     bool         `json:"mock"`
 }
 
 // GetGPIO returns the GPIO singleton for the Raspberry PI

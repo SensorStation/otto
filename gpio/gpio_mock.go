@@ -25,14 +25,15 @@ func GetMockLine(offset int, opts ...gpiocdev.LineReqOption) *MockLine {
 		start:  time.Now(),
 	}
 	for _, opt := range opts {
-		fmt.Printf("OPT Type: %T\n", opt)
 		switch v := opt.(type) {
 		case gpiocdev.OutputOption:
 			m.Val = v[0]
-			fmt.Printf("OO: %+v\n", v[0])
 
 		case gpiocdev.EventHandler:
 			m.EventHandler = opt.(gpiocdev.EventHandler)
+			mqtt := otto.GetMQTT()
+			topic := fmt.Sprintf("ss/c/+/%d", m.offset)
+			mqtt.Subscribe(topic, m)
 
 		default:
 			l.Info("MockLine does not record", "optType", v)
@@ -91,27 +92,23 @@ func (m MockLine) MockHWInput(v int) {
 
 		m.EventHandler(evt)
 	}
-
-	mqtt := otto.GetMQTT()
-	topic := fmt.Sprintf("ss/c/+/%d", m.offset)
-	mqtt.Subscribe(topic, m)
 }
 
 func (m MockLine) Callback(msg *message.Msg) {
 	l := otto.GetLogger()
 
 	// Change this to a map[string]string or map[string]interface{}
-	fmt.Printf("MSG: %+v\n", msg)
 	str := msg.String()
 	switch str {
 	case "on":
+	case "1":
 		m.MockHWInput(1)
 
 	case "off":
+	case "0":
 		m.MockHWInput(0)
 
 	default:
 		l.Warn("bad hw mock value", "value", str)
-
 	}
 }

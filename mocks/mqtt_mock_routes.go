@@ -71,6 +71,7 @@ func (n *node) lookup(topic string) *node {
 }
 
 func (n *node) pub(c gomqtt.Client, m gomqtt.Message) {
+	println("PUB")
 	for _, h := range n.handlers {
 		h(c, m)
 	}
