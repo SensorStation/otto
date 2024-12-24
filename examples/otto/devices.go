@@ -97,10 +97,13 @@ func (dm *DeviceManager) initDevices(done chan bool) {
 
 	offButton := NewButton("off", 27)
 	devices.Add(offButton)
-
-	bme := NewBME280("bme", "/dev/i2c-1", 0x77)
-	devices.Add(bme)
-
 	go onButton.ButtonLoop(done)
 	go offButton.ButtonLoop(done)
+
+	bme := NewBME280("bme", "/dev/i2c-1", 0x76)
+	bme.Pubs = append(bme.Pubs, "ss/d/"+stationName+"/bme280")
+	bme.Init()
+	devices.Add(bme)
+	go bme.Loop(done)
+
 }
