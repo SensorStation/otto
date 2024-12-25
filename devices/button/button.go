@@ -1,31 +1,32 @@
-package main
+package button
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/devices"
 	"github.com/warthog618/go-gpiocdev"
 )
 
 type Button struct {
-	*GPIODevice
+	*devices.GPIODevice
 }
 
-func NewButton(name string, pin int) *Button {
+func New(name string, pin int) *Button {
 	b := &Button{
-		GPIODevice: GPIOIn(name, pin),
+		GPIODevice: devices.GPIOIn(name, pin),
 	}
-	b.pubs = append(b.pubs, "ss/c/"+stationName+"/"+name)
+	b.AddPub("ss/c/" + otto.StationName + "/" + name)
 	return b
 }
 
-func (b *Button) ButtonLoop(done chan bool) {
+func (b *Button) EventLoop(done chan bool) {
+	l := otto.GetLogger()
+
 	running := true
 	for running {
-		fmt.Printf("Button[%s:%d] waiting for eventQ %p\n", b.Name(), b.Offset(), b.evtQ)
 		select {
-		case evt := <-b.evtQ:
+		case evt := <-b.EvtQ:
 			evtype := "falling"
 			switch evt.Type {
 			case gpiocdev.LineEventFallingEdge:
@@ -49,7 +50,7 @@ func (b *Button) ButtonLoop(done chan bool) {
 			}
 
 			val := strconv.Itoa(v)
-			for _, t := range b.pubs {
+			for _, t := range b.Pubs() {
 				otto.GetMQTT().Publish(t, val)
 			}
 

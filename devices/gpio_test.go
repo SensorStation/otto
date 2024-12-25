@@ -1,4 +1,4 @@
-package gpio
+package devices
 
 import (
 	"encoding/json"

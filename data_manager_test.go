@@ -19,7 +19,7 @@ func TestDataManagerCallback(t *testing.T) {
 	path := "ss/d/station1/test"
 
 	dm := NewDataManager()
-	msg := message.NewMsg(path, data, "data-manager-test")
+	msg := message.New(path, data, "data-manager-test")
 	dm.Callback(msg)
 
 	sm := GetStationManager()

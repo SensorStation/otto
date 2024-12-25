@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto"
-	"github.com/sensorstation/otto/gpio"
+	"github.com/sensorstation/otto/devices"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -21,7 +21,7 @@ func main() {
 	mqtt = otto.GetMQTT()
 
 	// Get the GPIO driver
-	g := gpio.GetGPIO()
+	g := devices.GetGPIO()
 	defer func() {
 		g.Shutdown()
 	}()
@@ -33,7 +33,7 @@ func main() {
 	<-done
 }
 
-func startSwitchToggler(g *gpio.GPIO, done chan bool) {
+func startSwitchToggler(g *devices.GPIO, done chan bool) {
 	on := false
 	r := g.Pin("reader", 23, gpiocdev.AsOutput(1))
 	for {
@@ -48,7 +48,7 @@ func startSwitchToggler(g *gpio.GPIO, done chan bool) {
 	}
 }
 
-func startSwitchHandler(g *gpio.GPIO, done chan bool) {
+func startSwitchHandler(g *devices.GPIO, done chan bool) {
 	evtQ := make(chan gpiocdev.LineEvent)
 	sw := g.Pin("switch", 24, gpiocdev.WithPullUp, gpiocdev.WithBothEdges, gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
 		evtQ <- evt
@@ -59,18 +59,18 @@ func startSwitchHandler(g *gpio.GPIO, done chan bool) {
 		case evt := <-evtQ:
 			switch evt.Type {
 			case gpiocdev.LineEventFallingEdge:
-				l.Info("GPIO failing edge", "pin", sw.Name)
+				l.Info("GPIO failing edge", "pin", sw.Offset())
 				fallthrough
 
 			case gpiocdev.LineEventRisingEdge:
-				l.Info("GPIO raising edge", "pin", sw.Name)
+				l.Info("GPIO raising edge", "pin", sw.Offset())
 				v, err := sw.Get()
 				if err != nil {
 					otto.GetLogger().Error("Error getting input value: ", "error", err.Error())
 					continue
 				}
 				val := strconv.Itoa(v)
-				mqtt.Publish("ss/d/station/"+sw.Name, val)
+				mqtt.Publish("ss/d/station/switch", val)
 
 			default:
 				l.Warn("Unknown event type ", "type", evt.Type)

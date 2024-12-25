@@ -36,7 +36,10 @@ func (n *node) insert(topic string, mh gomqtt.MessageHandler) {
 			nn = newNode(idx)
 			pn.nodes[idx] = nn
 			pn = nn
+		} else {
+			pn = nn
 		}
+
 	}
 	// The last node push the callback on the callback list
 	pn.handlers = append(pn.handlers, mh)
@@ -46,10 +49,15 @@ func (n *node) lookup(topic string) *node {
 	indexes := strings.Split(topic, "/")
 	pn := n
 	for _, idx := range indexes {
-		nn, ex := pn.nodes["#"]
+
+		nn, ex := pn.nodes[idx]
 		if ex {
-			// found the wildcard. XXX this will be a bug if it is not
-			// the last node on the  topic
+			pn = nn
+			continue
+		}
+
+		nn, ex = pn.nodes["#"]
+		if ex {
 			return nn
 		}
 
@@ -60,18 +68,12 @@ func (n *node) lookup(topic string) *node {
 			pn = nn
 			continue
 		}
-
-		nn, ex = pn.nodes[idx]
-		if !ex {
-			return nil
-		}
-		pn = nn
+		return nil
 	}
 	return pn
 }
 
 func (n *node) pub(c gomqtt.Client, m gomqtt.Message) {
-	println("PUB")
 	for _, h := range n.handlers {
 		h(c, m)
 	}

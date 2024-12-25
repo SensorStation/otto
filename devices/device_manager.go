@@ -1,4 +1,4 @@
-package main
+package devices
 
 type DeviceManager struct {
 	devices map[string]Device
@@ -6,11 +6,20 @@ type DeviceManager struct {
 
 var (
 	stationName string = "station"
-	devices     DeviceManager
+	devices     *DeviceManager
 )
 
 func init() {
-	devices.devices = make(map[string]Device)
+
+}
+
+func GetDeviceManager() *DeviceManager {
+	if devices == nil {
+		devices = &DeviceManager{
+			devices: make(map[string]Device),
+		}
+	}
+	return devices
 }
 
 func (dm *DeviceManager) Add(d Device) {
@@ -23,7 +32,6 @@ func (dm *DeviceManager) Add(d Device) {
 func (dm *DeviceManager) Get(name string) Device {
 	d, ex := dm.devices[name]
 	if !ex {
-		l.Error("device does not exist", "device", name)
 		return nil
 	}
 	return d

@@ -8,6 +8,10 @@ import (
 	"github.com/sensorstation/otto/message"
 )
 
+var (
+	mqtt *MQTT
+)
+
 // MQTT is a wrapper around the Paho MQTT Go package
 // Wraps the Broker, ID and Debug variables.
 type MQTT struct {
@@ -26,6 +30,22 @@ func NewMQTT() *MQTT {
 		Broker: "localhost",
 	}
 	mqtt.Subscribers = make(map[string][]*Sub)
+	return mqtt
+}
+
+func GetMQTTClient(c gomqtt.Client) *MQTT {
+	mqtt = NewMQTT()
+	mqtt.Client = c
+	return mqtt
+}
+
+func GetMQTT() *MQTT {
+	if mqtt == nil {
+		mqtt = NewMQTT()
+	}
+	if !mqtt.IsConnected() {
+		mqtt.Connect()
+	}
 	return mqtt
 }
 
@@ -119,7 +139,7 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler, cb Subscribe
 // the connected broker
 func (mqtt *MQTT) Subscribe(topic string, s Subscriber) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
-		msg := message.NewMsg(m.Topic(), m.Payload(), "mqtt-sub")
+		msg := message.New(m.Topic(), m.Payload(), "mqtt-sub")
 		for _, sub := range mqtt.Subscribers[m.Topic()] {
 			sub.Subscriber.Callback(msg)
 		}

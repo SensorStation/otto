@@ -1,31 +1,24 @@
-package main
+package bme280
 
 import (
-	"fmt"
 	"encoding/json"
 	"time"
 
 	"github.com/maciej/bme280"
 	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/devices"
 	"golang.org/x/exp/io/i2c"
 )
 
 // BME280 is an i2c device that gathers air temp, humidity and pressure
 type BME280 struct {
-	Addr   int
-	Bus    string
+	devices.I2CDevice
 	driver *bme280.Driver
-	name   string
-	Period time.Duration
-	Pubs   []string
 }
 
-func NewBME280(name, bus string, addr int) *BME280 {
+func New(name, bus string, addr int) *BME280 {
 	b := &BME280{
-		name:   name,
-		Addr:   addr,
-		Bus:    bus,
-		Period: 10 * time.Second,
+		I2CDevice: devices.NewI2CDevice(name, bus, addr),
 	}
 	return b
 }
@@ -33,7 +26,7 @@ func NewBME280(name, bus string, addr int) *BME280 {
 // Init opens the i2c bus at the specified address and gets the device
 // read for reading
 func (b *BME280) Init() error {
-	device, err := i2c.Open(&i2c.Devfs{Dev: "/dev/i2c-1"}, b.Addr)
+	device, err := i2c.Open(&i2c.Devfs{Dev: b.Bus}, b.Addr)
 	if err != nil {
 		return err
 	}
@@ -52,13 +45,7 @@ func (b *BME280) Init() error {
 	return nil
 }
 
-func (b *BME280) Name() string {
-	return b.name
-}
-
 func (b *BME280) Read() (*bme280.Response, error) {
-
-	fmt.Printf("driver: %+v\n", b.driver)
 	response, err := b.driver.Read()
 	if err != nil {
 		return nil, err
@@ -75,7 +62,7 @@ func (b *BME280) Loop(done chan bool) {
 		case <-timer.C:
 			vals, err := b.Read()
 			if err != nil {
-				l.Error("Failed to read bme280", "error", err)
+				otto.GetLogger().Error("Failed to read bme280", "error", err)
 				continue
 			}
 
@@ -86,7 +73,7 @@ func (b *BME280) Loop(done chan bool) {
 				break
 			}
 			mqtt := otto.GetMQTT()
-			for _, t := range b.Pubs {
+			for _, t := range b.Pubs() {
 				mqtt.Publish(t, jb)
 			}
 

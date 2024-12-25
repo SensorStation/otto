@@ -1,4 +1,4 @@
-package otto
+package message
 
 import (
 	"encoding/json"
@@ -6,16 +6,14 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/sensorstation/otto/message"
 )
 
-func getMsg() (*message.Msg, time.Time) {
+func getMsg() (*Msg, time.Time) {
 	now := time.Now()
 	path := "ss/d/%s/test"
 
 	b := fmt.Sprintf("%d", 4)
-	m := message.NewMsg(path, []byte(b), "test")
+	m := New(path, []byte(b), "test")
 	m.Source = "be:ef:ca:fe:01"
 	m.Time = now
 
@@ -33,7 +31,7 @@ func TestStationMsg(t *testing.T) {
 		return
 	}
 
-	msg := message.NewMsg(topic, j, "test")
+	msg := New(topic, j, "test")
 	if msg == nil {
 		t.Error("msg topic expected but is nil")
 	}

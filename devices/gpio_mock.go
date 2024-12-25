@@ -1,4 +1,4 @@
-package gpio
+package devices
 
 import (
 	"fmt"
@@ -51,7 +51,7 @@ func (m MockLine) Offset() int {
 	return m.offset
 }
 
-func (m MockLine) SetValue(val int) error {
+func (m *MockLine) SetValue(val int) error {
 	m.Val = val
 	return nil
 }
@@ -72,7 +72,7 @@ func getSeqno() uint32 {
 	return seqno
 }
 
-func (m MockLine) MockHWInput(v int) {
+func (m *MockLine) MockHWInput(v int) {
 	m.Val = v
 
 	t := gpiocdev.LineEventRisingEdge
@@ -89,7 +89,6 @@ func (m MockLine) MockHWInput(v int) {
 			Seqno:     seq,
 			LineSeqno: seq,
 		}
-
 		m.EventHandler(evt)
 	}
 }

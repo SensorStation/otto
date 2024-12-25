@@ -12,7 +12,7 @@ import (
 	"syscall"
 
 	"github.com/sensorstation/otto"
-	"github.com/sensorstation/otto/gpio"
+	"github.com/sensorstation/otto/devices"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -20,7 +20,7 @@ import (
 var content embed.FS
 
 type relay struct {
-	*gpio.Pin
+	*devices.Pin
 }
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 	go s.Start()
 
 	// Get the GPIO driver
-	g := gpio.GetGPIO()
+	g := devices.GetGPIO()
 	defer func() {
 		g.Shutdown()
 	}()

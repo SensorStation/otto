@@ -1,13 +1,14 @@
 package message
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 )
 
 type Message interface {
-	// GetMsg() *Msg
 }
 
 // Msg holds a value and some type of meta data to be pass around in
@@ -25,6 +26,8 @@ type Msg struct {
 
 var (
 	msgid int64 = 0
+
+	msgSaver *MsgSaver
 )
 
 func getMsgID() int64 {
@@ -32,7 +35,7 @@ func getMsgID() int64 {
 	return msgid
 }
 
-func NewMsg(topic string, data []byte, source string) *Msg {
+func New(topic string, data []byte, source string) *Msg {
 	msg := &Msg{
 		ID:     getMsgID(),
 		Topic:  topic,
@@ -42,6 +45,9 @@ func NewMsg(topic string, data []byte, source string) *Msg {
 		Source: source,
 	}
 
+	if msgSaver != nil && msgSaver.Saving {
+		msgSaver.SavedMessages = append(msgSaver.SavedMessages, msg)
+	}
 	return msg
 }
 
@@ -61,4 +67,16 @@ func (msg *Msg) Dump() string {
 	str += fmt.Sprintf(" Src: %s\n", msg.Source)
 	str += fmt.Sprintf("Time: %s\n", msg.Time)
 	return str
+}
+
+type MsgSaver struct {
+	SavedMessages []*Msg `json:"saved-messages"`
+	Saving        bool   `json:"saving"`
+}
+
+// ServeHTTP will respond to the writer with 'Pong'
+func (ms *MsgSaver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ms)
 }

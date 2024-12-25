@@ -86,13 +86,10 @@ package otto
 
 import (
 	"fmt"
-
-	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 // global variables and structures
 var (
-	mqtt     *MQTT
 	config   *Configuration
 	data     *DataManager
 	server   *Server
@@ -100,9 +97,9 @@ var (
 	store    *Store
 	l        *Logger
 
-	Done chan bool
-
-	Version string
+	Done        chan bool
+	StationName string
+	Version     string
 )
 
 func init() {
@@ -112,6 +109,7 @@ func init() {
 		Interactive: true,
 	}
 
+	StationName = "station"
 	Version = "0.1.2"
 }
 
@@ -128,22 +126,6 @@ func GetDataManager() *DataManager {
 
 func GetLogger() *Logger {
 	return l
-}
-
-func GetMQTTClient(c gomqtt.Client) *MQTT {
-	mqtt = NewMQTT()
-	mqtt.Client = c
-	return mqtt
-}
-
-func GetMQTT() *MQTT {
-	if mqtt == nil {
-		mqtt = NewMQTT()
-	}
-	if !mqtt.IsConnected() {
-		mqtt.Connect()
-	}
-	return mqtt
 }
 
 func GetStationManager() *StationManager {

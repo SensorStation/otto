@@ -9,14 +9,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sensorstation/otto/gpio"
+	"github.com/sensorstation/otto/devices"
 	"github.com/warthog618/go-gpiocdev"
 )
 
 func main() {
 
 	// Get the GPIO driver
-	g := gpio.GetGPIO()
+	g := devices.GetGPIO()
 	defer func() {
 		g.Shutdown()
 	}()

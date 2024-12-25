@@ -32,6 +32,6 @@ func (w *WeatherData) NewMsg() *message.Msg {
 	}
 
 	path := "ss/d/station/weather"
-	msg := message.NewMsg(path, j, "weather-data")
+	msg := message.New(path, j, "weather-data")
 	return msg
 }

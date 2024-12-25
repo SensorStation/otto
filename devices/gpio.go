@@ -1,4 +1,4 @@
-package gpio
+package devices
 
 import (
 	"encoding/json"
@@ -35,7 +35,6 @@ const (
 
 // Pin represents a single GPIO Pin
 type Pin struct {
-	Name string `json:"name"`
 	Opts []gpiocdev.LineReqOption
 	Line
 
@@ -68,9 +67,9 @@ func (p *Pin) Init() error {
 func (pin *Pin) String() string {
 	v, err := pin.Value()
 	if err != nil {
-		otto.GetLogger().Error("Failed getting the value of ", "pin", pin.Name, "error", err)
+		otto.GetLogger().Error("Failed getting the value of ", "pin", pin.offset, "error", err)
 	}
-	str := fmt.Sprintf("%10s[%d]: %d\n", pin.Name, pin.offset, v)
+	str := fmt.Sprintf("%d: %d\n", pin.offset, v)
 	return str
 }
 
@@ -162,7 +161,7 @@ func (gpio *GPIO) Init() error {
 	l := otto.GetLogger()
 	for _, pin := range gpio.Pins {
 		if err := pin.Init(); err != nil {
-			l.Error("Error initializing pin ", "name", pin.Name, "offset", pin.offset)
+			l.Error("Error initializing pin ", "offset", pin.offset)
 		}
 	}
 	return nil
@@ -173,7 +172,6 @@ func (gpio *GPIO) Pin(name string, offset int, opts ...gpiocdev.LineReqOption) (
 	l := otto.GetLogger()
 
 	p = &Pin{
-		Name:   name,
 		offset: offset,
 		Opts:   opts,
 	}
