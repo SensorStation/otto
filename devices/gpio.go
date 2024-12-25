@@ -63,7 +63,8 @@ func (pin *Pin) String() string {
 }
 
 // Get returns the value of the pin, an error is returned if
-// the GPIO value fails
+// the GPIO value fails. Note: you can Get() the value of an
+// input pin so no direction checks are done
 func (pin *Pin) Get() (int, error) {
 	if pin.Line == nil {
 		return 0, fmt.Errorf("GPIO not active")
@@ -71,7 +72,9 @@ func (pin *Pin) Get() (int, error) {
 	return pin.Line.Value()
 }
 
-// Set the value of the pin
+// Set the value of the pin. Note: you can NOT set the value
+// of an input pin, so we will check it and return an error.
+// This maybe worthy of making it a panic!
 func (pin *Pin) Set(v int) error {
 	if pin.Line == nil {
 		return fmt.Errorf("GPIO not active")
@@ -92,7 +95,16 @@ func (pin *Pin) Off() error {
 
 // Toggle with flip the value of the pin from 1 to 0 or 0 to 1
 func (pin *Pin) Toggle() error {
-	val := ^pin.val
+	val, err := pin.Get()
+	if err != nil {
+		return err
+	}
+
+	if val == 0 {
+		val = 1
+	} else {
+		val = 0
+	}
 	return pin.Set(val)
 }
 
@@ -110,16 +122,6 @@ func (pin Pin) Callback(msg *message.Msg) {
 		pin.Toggle()
 
 	}
-}
-
-// Input configures the given pin as an pinput
-func (p *Pin) Input() error {
-	return p.Reconfigure(gpiocdev.AsInput)
-}
-
-// Output configures the given pin as an output
-func (p *Pin) Output(v int) error {
-	return p.Reconfigure(gpiocdev.AsOutput(v))
 }
 
 // GPIO is used to initialize the GPIO and pins on a raspberry pi
@@ -160,6 +162,9 @@ func (gpio *GPIO) Pin(name string, offset int, opts ...gpiocdev.LineReqOption) (
 		Opts:   opts,
 	}
 
+	if gpio.Pins == nil {
+		gpio.Pins = make(map[int]*Pin)
+	}
 	gpio.Pins[offset] = p
 	if err := p.Init(); err != nil {
 		l.Error(err.Error(), "name", name, "offset", offset)
@@ -173,6 +178,7 @@ func (gpio *GPIO) Shutdown() {
 		p.Reconfigure(gpiocdev.AsInput)
 		p.Close()
 	}
+	gpio.Pins = nil
 }
 
 // String returns the string representation of the GPIO

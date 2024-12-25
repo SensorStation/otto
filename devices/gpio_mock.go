@@ -57,7 +57,6 @@ func (m *MockLine) SetValue(val int) error {
 }
 
 func (m MockLine) Reconfigure(...gpiocdev.LineConfigOption) error {
-	println("We have entered reconfigure")
 	return nil
 }
 
