@@ -5,6 +5,14 @@ import (
 	"os"
 )
 
+var (
+	l *Logger
+)
+
+func GetLogger() *Logger {
+	return l
+}
+
 type Logger struct {
 	*slog.Logger
 }

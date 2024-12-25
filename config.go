@@ -26,6 +26,14 @@ type Configuration struct {
 	Verbose bool
 }
 
+var (
+	config *Configuration
+)
+
+func GetConfig() *Configuration {
+	return config
+}
+
 // ServeHTTP provides a REST interface to the config structure
 func (c Configuration) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")

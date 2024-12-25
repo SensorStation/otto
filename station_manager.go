@@ -27,6 +27,17 @@ type StationEvent struct {
 	Value     string `json:"value"`
 }
 
+var (
+	stations *StationManager
+)
+
+func GetStationManager() *StationManager {
+	if stations == nil {
+		stations = NewStationManager()
+	}
+	return stations
+}
+
 func NewStationManager() (sm *StationManager) {
 	sm = &StationManager{}
 	sm.Stations = make(map[string]*Station)

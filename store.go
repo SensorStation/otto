@@ -7,6 +7,17 @@ type Store struct {
 	StoreQ chan *message.Msg
 }
 
+var (
+	store *Store
+)
+
+func GetStore() *Store {
+	if store == nil {
+		store = NewStore()
+	}
+	return store
+}
+
 func NewStore() *Store {
 	m := make(map[string]map[string]float64)
 	q := make(chan *message.Msg)

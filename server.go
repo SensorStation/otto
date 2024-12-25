@@ -17,8 +17,16 @@ type Server struct {
 }
 
 var (
-	wserv Websock
+	wserv  Websock
+	server *Server
 )
+
+func GetServer() *Server {
+	if server == nil {
+		server = NewServer()
+	}
+	return server
+}
 
 func NewServer() *Server {
 	s := &Server{

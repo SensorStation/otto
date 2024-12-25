@@ -6,6 +6,17 @@ import (
 	"github.com/sensorstation/otto/message"
 )
 
+var (
+	data *DataManager
+)
+
+func GetDataManager() *DataManager {
+	if data == nil {
+		data = NewDataManager()
+	}
+	return data
+}
+
 // DataManager is a map of Timeseries data that belongs to
 // a specific station. The timeseries for each station are
 // differentiated by the timeseries labels.

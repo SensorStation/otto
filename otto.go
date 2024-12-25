@@ -90,13 +90,6 @@ import (
 
 // global variables and structures
 var (
-	config   *Configuration
-	data     *DataManager
-	server   *Server
-	stations *StationManager
-	store    *Store
-	l        *Logger
-
 	Done        chan bool
 	StationName string
 	Version     string
@@ -113,44 +106,7 @@ func init() {
 	Version = "0.1.2"
 }
 
-func GetConfig() *Configuration {
-	return config
-}
-
-func GetDataManager() *DataManager {
-	if data == nil {
-		data = NewDataManager()
-	}
-	return data
-}
-
-func GetLogger() *Logger {
-	return l
-}
-
-func GetStationManager() *StationManager {
-	if stations == nil {
-		stations = NewStationManager()
-	}
-	return stations
-}
-
-func GetServer() *Server {
-	if server == nil {
-		server = NewServer()
-	}
-	return server
-}
-
-func GetStore() *Store {
-	if store == nil {
-		store = NewStore()
-	}
-	return store
-}
-
 func Cleanup() {
-
 	<-Done
 	l.Info("Done, cleaning up()")
 
@@ -163,6 +119,7 @@ func Cleanup() {
 	}
 
 	if l != nil {
+		// close the logger file descriptor
 	}
 }
 
