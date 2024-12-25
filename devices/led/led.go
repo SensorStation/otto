@@ -19,7 +19,7 @@ func New(name string, offset int) *LED {
 func (l *LED) Callback(msg *message.Msg) {
 	switch msg.Path[3] {
 	case "off":
-		l.GPIODevice.Off()
+		l.Off()
 
 	case "on":
 		l.On()

@@ -2,6 +2,7 @@ package mocks
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
@@ -58,66 +59,77 @@ func GetMockClient() *MockClient {
 	return cli
 }
 
-func (m MockClient) IsConnected() bool {
+func (m *MockClient) IsConnected() bool {
 	return m.connected
 }
 
-func (m MockClient) IsConnectionOpen() bool {
+func (m *MockClient) IsConnectionOpen() bool {
 	return m.connected
 }
 
-func (m MockClient) Connect() gomqtt.Token {
+func (m *MockClient) Connect() gomqtt.Token {
 	m.connected = true
 	var t MockToken
 	return t
 }
 
-func (m MockClient) Disconnect(quiecense uint) {
+func (m *MockClient) Disconnect(quiecense uint) {
 }
 
-func (m MockClient) MessageHandler(c gomqtt.Client, mm gomqtt.Message) {
+func (m *MockClient) MessageHandler(c gomqtt.Client, mm gomqtt.Message) {
 	// t := mm.Topic()
 	// p := mm.Payload()
 
 	// fmt.Printf("%s -> %+v\n", t, p)
 }
 
-func (m MockClient) Publish(topic string, qos byte, retained bool, payload interface{}) gomqtt.Token {
+func (m *MockClient) Publish(topic string, qos byte, retained bool, payload interface{}) gomqtt.Token {
 	n := root.lookup(topic)
 	var t MockToken
 	if n == nil {
 		t.Err = errors.New("no subscribers for message")
 		return t
 	}
+
 	mm := MockMessage{
-		topic:   topic,
-		payload: []byte(payload.(string)),
+		topic: topic,
 	}
+	switch typ := payload.(type) {
+	case []byte:
+		mm.payload = payload.([]byte)
+
+	case string:
+		mm.payload = []byte(payload.(string))
+
+	default:
+		t.Err = fmt.Errorf("unhandled payload type %s", typ)
+	}
+
 	n.pub(m, mm)
 	return t
 }
 
-func (m MockClient) Subscribe(topic string, qos byte, mh gomqtt.MessageHandler) gomqtt.Token {
+func (m *MockClient) Subscribe(topic string, qos byte, mh gomqtt.MessageHandler) gomqtt.Token {
 	root.insert(topic, mh)
 
 	var t MockToken
 	return t
 }
 
-func (m MockClient) SubscribeMultiple(filters map[string]byte, callback gomqtt.MessageHandler) gomqtt.Token {
+func (m *MockClient) SubscribeMultiple(filters map[string]byte, callback gomqtt.MessageHandler) gomqtt.Token {
 	var t MockToken
 	return t
 }
 
-func (m MockClient) Unsubscribe(topics ...string) gomqtt.Token {
+func (m *MockClient) Unsubscribe(topics ...string) gomqtt.Token {
 	var t MockToken
 	return t
 }
 
-func (m MockClient) AddRoute(topic string, callback gomqtt.MessageHandler) {
+func (m *MockClient) AddRoute(topic string, callback gomqtt.MessageHandler) {
 }
 
-func (m MockClient) OptionsReader() gomqtt.ClientOptionsReader {
+func (m *MockClient) OptionsReader() gomqtt.ClientOptionsReader {
 	var r gomqtt.ClientOptionsReader
 	return r
 }

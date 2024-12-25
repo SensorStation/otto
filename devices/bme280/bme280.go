@@ -54,7 +54,7 @@ func (b *BME280) Read() (*bme280.Response, error) {
 }
 
 func (b *BME280) Loop(done chan bool) {
-	timer := time.NewTimer(b.Period)
+	timer := time.NewTimer(b.Period())
 
 	running := true
 	for running {

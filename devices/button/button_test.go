@@ -24,6 +24,8 @@ func TestButton(t *testing.T) {
 		t.Error("Failed to connect to MQTT broker: ", err)
 	}
 
+	devices.GetGPIO().Mock = true
+
 	b := New("button", 23)
 	m.Subscribe("ss/c/"+otto.StationName+"/button", b)
 	go b.EventLoop(done)

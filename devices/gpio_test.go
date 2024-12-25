@@ -20,7 +20,8 @@ var gpioStr = `
 `
 
 func TestFromJSON(t *testing.T) {
-	var gpio GPIO
+	gpio := GetGPIO()
+	gpio.Mock = true
 	if err := json.Unmarshal([]byte(gpioStr), &gpio); err != nil {
 		t.Error(err)
 	}

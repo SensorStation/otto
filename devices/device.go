@@ -14,7 +14,7 @@ type Dev struct {
 	pubs []string
 	subs []string
 
-	Period time.Duration
+	period time.Duration
 }
 
 func (d *Dev) Name() string {
@@ -29,10 +29,10 @@ func (d *Dev) Pubs() []string {
 	return d.pubs
 }
 
-func (d *Dev) Subs() []string {
-	return d.pubs
-}
-
 func (d *Dev) AddPub(topic string) {
 	d.pubs = append(d.pubs, topic)
+}
+
+func (d *Dev) Period() time.Duration {
+	return d.period
 }

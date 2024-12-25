@@ -20,8 +20,8 @@ func TestMockRoutes(t *testing.T) {
 
 	gotit := false
 	topic := "test/path/full"
-	c := MockClient{}
-	m := MockMessage{topic: topic}
+	c := &MockClient{}
+	m := &MockMessage{topic: topic}
 	root.insert(topic, func(c gomqtt.Client, m gomqtt.Message) {
 		gotit = true
 	})

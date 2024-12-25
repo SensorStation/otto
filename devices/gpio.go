@@ -19,20 +19,6 @@ type Line interface {
 	Value() (int, error)
 }
 
-// Line interface is used by Mode causes the Pin to be configured as Input, Output,
-// PWM or Analog
-type Mode int
-
-// Mode values
-const (
-	ModeNone Mode = iota
-	ModeOutput
-	ModeInput
-	ModeEventHandler
-	ModePWM
-	ModeAnalog
-)
-
 // Pin represents a single GPIO Pin
 type Pin struct {
 	Opts []gpiocdev.LineReqOption
@@ -51,13 +37,16 @@ var (
 func (p *Pin) Init() error {
 
 	gpio := GetGPIO()
-
-	line, err := gpiocdev.RequestLine(gpio.Chipname, p.offset, p.Opts...)
-	if err != nil {
+	if gpio.Mock {
 		line := GetMockLine(p.offset, p.Opts...)
 		p.mock = true
 		p.Line = line
 		return nil
+	}
+
+	line, err := gpiocdev.RequestLine(gpio.Chipname, p.offset, p.Opts...)
+	if err != nil {
+		return err
 	}
 	p.Line = line
 	return nil
@@ -71,11 +60,6 @@ func (pin *Pin) String() string {
 	}
 	str := fmt.Sprintf("%d: %d\n", pin.offset, v)
 	return str
-}
-
-// Output sets the pin to be an output with the default value
-func Output(val int) Mode {
-	return ModeOutput
 }
 
 // Get returns the value of the pin, an error is returned if
