@@ -197,7 +197,6 @@ func TestGPIO(t *testing.T) {
 	if str == "" {
 		t.Error("expected gpio.String() output but got nothing")
 	}
-	t.Logf(str)
 
 	g.Shutdown()
 	if g.Pins != nil {

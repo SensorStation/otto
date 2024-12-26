@@ -19,7 +19,7 @@ type MQTT struct {
 	Broker string
 	Debug  bool
 
-	Subscribers map[string][]*Sub
+	Subscribers map[string][]*sub
 	gomqtt.Client
 }
 
@@ -29,7 +29,7 @@ func NewMQTT() *MQTT {
 		ID:     "otto",
 		Broker: "localhost",
 	}
-	mqtt.Subscribers = make(map[string][]*Sub)
+	mqtt.Subscribers = make(map[string][]*sub)
 	return mqtt
 }
 
@@ -115,10 +115,21 @@ func (m MQTT) Publish(topic string, value interface{}) {
 // wildcards '+' and '#' are supported.  Examples
 // ss/<ethaddr>/<data>/tempf value
 // ss/<ethaddr>/<data>/humidity value
-func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler, cb Subscriber) error {
-	sub := &Sub{id, path, f, cb}
-	m.Subscribers[path] = append(m.Subscribers[path], sub)
+func (m *MQTT) sub(id string, path string, f gomqtt.MessageHandler, cb any) error {
+	sub := &sub{
+		ID:             id,
+		Path:           path,
+		MessageHandler: f,
+	}
+	switch cb.(type) {
+	case Subscriber:
+		sub.Subscriber = cb.(Subscriber)
 
+	case Subscribed:
+		sub.Subscribed = cb.(Subscribed)
+	}
+
+	m.Subscribers[path] = append(m.Subscribers[path], sub)
 	if m.Client == nil {
 		l.Error("MQTT Client is not connected to a broker")
 		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
@@ -137,28 +148,34 @@ func (m *MQTT) Sub(id string, path string, f gomqtt.MessageHandler, cb Subscribe
 
 // Subscribe causes the MQTT client to subscribe to the given topic with
 // the connected broker
-func (mqtt *MQTT) Subscribe(topic string, s Subscriber) {
+func (mqtt *MQTT) Subscribe(topic string, cb any) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
 		msg := message.New(m.Topic(), m.Payload(), "mqtt-sub")
 		for _, sub := range mqtt.Subscribers[m.Topic()] {
-			sub.Subscriber.Callback(msg)
+			if sub.Subscriber != nil {
+				sub.Subscriber.Callback(msg)
+			}
+			if sub.Subscribed != nil {
+				sub.Subscribed(msg)
+			}
 		}
 	}
-	mqtt.Sub(topic, topic, mfunc, s)
+	mqtt.sub(topic, topic, mfunc, cb)
 }
 
 // Sub contains a Subscriber ID, a topic Path and a Message Handler
 // for messages to the corresponding topic path
-type Sub struct {
+type sub struct {
 	ID   string
 	Path string
 	gomqtt.MessageHandler
 	Subscriber
+	Subscribed
 }
 
 // String returns a string representation of the Subscriber and
 // Subscriber ID
-func (sub *Sub) String() string {
+func (sub *sub) String() string {
 	return sub.ID + " " + sub.Path
 }
 

@@ -47,36 +47,29 @@ func initStations() {
 }
 
 func initDevices(done chan bool) {
-	m := otto.GetMQTT()
-	stationName := otto.StationName
-	dm := devices.GetDeviceManager()
 
+	m := otto.GetMQTT()
 	relay := relay.New("relay", 22)
-	m.Subscribe("ss/c/"+stationName+"/off", relay)
-	m.Subscribe("ss/c/"+stationName+"/on", relay)
-	dm.Add(relay)
+	m.Subscribe(otto.TopicControl("relay"), relay)
 
 	led := led.New("led", 6)
-	m.Subscribe("ss/c/"+stationName+"/off", led)
-	m.Subscribe("ss/c/"+stationName+"/on", led)
-	dm.Add(led)
+	m.Subscribe(otto.TopicControl("led"), led)
 
-	onButton := button.New("on", 23)
-	dm.Add(onButton)
+	butOn := button.New("on", 23)
+	butOn.Pubs = append(butOn.Pubs, otto.TopicControl("on"))
+	go butOn.EventLoop(done)
 
-	offButton := button.New("off", 27)
-	dm.Add(offButton)
-	go onButton.EventLoop(done)
-	go offButton.EventLoop(done)
+	butOff := button.New("off", 27)
+	go butOff.EventLoop(done)
 
 	bme := bme280.New("bme", "/dev/i2c-1", 0x76)
 	err := bme.Init()
 	if err != nil {
-		l.Error("Failed to open the bme280", "error", err)
+		otto.GetLogger().Error("Failed to initialize bme", "error", err)
 		return
 	}
-	dm.Add(bme)
-	bme.AddPub("ss/d/" + stationName + "/bme280")
+
+	bme.Pubs = append(bme.Pubs, otto.TopicData("bme280"))
 	go bme.Loop(done)
 
 }

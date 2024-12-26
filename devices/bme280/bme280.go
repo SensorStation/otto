@@ -20,6 +20,11 @@ func New(name, bus string, addr int) *BME280 {
 	b := &BME280{
 		I2CDevice: devices.NewI2CDevice(name, bus, addr),
 	}
+	err := b.Init()
+	if err != nil {
+		otto.GetLogger().Error("Failed to open the bme280", "error", err)
+		return nil
+	}
 	return b
 }
 
@@ -54,7 +59,7 @@ func (b *BME280) Read() (*bme280.Response, error) {
 }
 
 func (b *BME280) Loop(done chan bool) {
-	timer := time.NewTimer(b.Period())
+	timer := time.NewTimer(b.Period)
 
 	running := true
 	for running {
@@ -73,7 +78,7 @@ func (b *BME280) Loop(done chan bool) {
 				break
 			}
 			mqtt := otto.GetMQTT()
-			for _, t := range b.Pubs() {
+			for _, t := range b.Pubs {
 				mqtt.Publish(t, jb)
 			}
 

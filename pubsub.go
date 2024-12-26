@@ -8,6 +8,8 @@ type Subscriber interface {
 	Callback(msg *message.Msg)
 }
 
+type Subscribed func(msg *message.Msg)
+
 // Publisher interface allows objects to publish message to a particular
 // topic as defined in the message.Msg
 type Publisher interface {

@@ -27,7 +27,7 @@ func TestButton(t *testing.T) {
 	devices.GetGPIO().Mock = true
 
 	b := New("button", 23)
-	m.Subscribe("ss/c/"+otto.StationName+"/button", b)
+	m.Subscribe(otto.TopicControl("button"), b)
 	go b.EventLoop(done)
 	b.Line.(*devices.MockLine).MockHWInput(0)
 	b.Line.(*devices.MockLine).MockHWInput(1)

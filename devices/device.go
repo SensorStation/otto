@@ -1,38 +1,26 @@
 package devices
 
-import "time"
+import (
+	"time"
 
-type Device interface {
-	Name() string
-	SetName(name string)
-	Pubs() []string
-	AddPub(topic string)
-}
+	"github.com/warthog618/go-gpiocdev"
+)
 
-type Dev struct {
-	name string
-	pubs []string
-	subs []string
+type Mode int
 
-	period time.Duration
-}
+const (
+	ModeNone Mode = iota
+	ModeInput
+	ModeOutput
+	ModePWM
+)
 
-func (d *Dev) Name() string {
-	return d.name
-}
+type Device struct {
+	Name string
+	Pubs []string
+	Subs []string
+	Mode
 
-func (d *Dev) SetName(name string) {
-	d.name = name
-}
-
-func (d *Dev) Pubs() []string {
-	return d.pubs
-}
-
-func (d *Dev) AddPub(topic string) {
-	d.pubs = append(d.pubs, topic)
-}
-
-func (d *Dev) Period() time.Duration {
-	return d.period
+	Period time.Duration
+	EvtQ   chan gpiocdev.LineEvent
 }

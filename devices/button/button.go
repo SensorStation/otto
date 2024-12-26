@@ -2,6 +2,7 @@ package button
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/sensorstation/otto"
 	"github.com/sensorstation/otto/devices"
@@ -9,14 +10,19 @@ import (
 )
 
 type Button struct {
-	*devices.GPIODevice
+	*devices.DeviceGPIO
 }
 
 func New(name string, pin int) *Button {
-	b := &Button{
-		GPIODevice: devices.GPIOIn(name, pin),
-	}
-	b.AddPub("ss/c/" + otto.StationName + "/" + name)
+	b := &Button{}
+	b.DeviceGPIO = devices.NewDeviceGPIO(name, pin, devices.ModeInput,
+		gpiocdev.WithPullUp,
+		gpiocdev.WithFallingEdge,
+		gpiocdev.WithDebounce(10*time.Millisecond),
+		gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
+			b.EvtQ <- evt
+		}))
+	b.Pubs = append(b.Pubs, otto.TopicControl(name))
 	return b
 }
 
@@ -40,7 +46,7 @@ func (b *Button) EventLoop(done chan bool) {
 				continue
 			}
 
-			l.Info("GPIO edge", "device", b.Name(), "direction", evtype,
+			l.Info("GPIO edge", "device", b.Name, "direction", evtype,
 				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
 
 			v, err := b.Get()
@@ -50,7 +56,7 @@ func (b *Button) EventLoop(done chan bool) {
 			}
 
 			val := strconv.Itoa(v)
-			for _, t := range b.Pubs() {
+			for _, t := range b.Pubs {
 				otto.GetMQTT().Publish(t, val)
 			}
 
