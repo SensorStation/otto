@@ -1,7 +1,7 @@
 package devices
 
 import (
-	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/sensorstation/otto"
@@ -32,8 +32,8 @@ func GetMockLine(offset int, opts ...gpiocdev.LineReqOption) *MockLine {
 		case gpiocdev.EventHandler:
 			m.EventHandler = opt.(gpiocdev.EventHandler)
 			mqtt := otto.GetMQTT()
-			topic := fmt.Sprintf("ss/c/+/%d", m.offset)
-			mqtt.Subscribe(topic, m)
+			// mqtt.Subscribe(otto.TopicControl(string(m.offset)), m)
+			mqtt.Subscribe(otto.TopicControl("mock/"+strconv.Itoa(m.Offset())), m)
 
 		default:
 			l.Info("MockLine does not record", "optType", v)
@@ -92,17 +92,21 @@ func (m *MockLine) MockHWInput(v int) {
 	}
 }
 
-func (m MockLine) Callback(msg *message.Msg) {
+func (m *MockLine) Callback(msg *message.Msg) {
 	l := otto.GetLogger()
 
 	// Change this to a map[string]string or map[string]interface{}
 	str := msg.String()
 	switch str {
 	case "on":
+		fallthrough
+
 	case "1":
 		m.MockHWInput(1)
 
 	case "off":
+		fallthrough
+
 	case "0":
 		m.MockHWInput(0)
 

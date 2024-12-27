@@ -1,9 +1,15 @@
 package otto
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+type Topics map[string]int
 
 var (
-	topics    map[string]int
+	topics    Topics
 	topicBase string
 )
 
@@ -19,7 +25,16 @@ func TopicControl(topic string) string {
 }
 
 func TopicData(topic string) string {
-	t := fmt.Sprintf(topicBase, "c", StationName, topic)
+	t := fmt.Sprintf(topicBase, "d", StationName, topic)
 	topics[t]++
 	return t
+}
+
+func (t Topics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	jstr, err := json.Marshal(t)
+	if err != nil {
+		http.Error(w, "Not Yet Supported", 401)
+	}
+	fmt.Fprint(w, jstr)
 }

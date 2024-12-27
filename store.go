@@ -1,10 +1,17 @@
 package otto
 
-import "github.com/sensorstation/otto/message"
+import (
+	"os"
+
+	"github.com/sensorstation/otto/message"
+)
 
 type Store struct {
-	Source map[string]map[string]float64
-	StoreQ chan *message.Msg
+	Filename string
+	Source   map[string]map[string]float64
+	StoreQ   chan *message.Msg
+
+	f *os.File
 }
 
 var (

@@ -18,7 +18,7 @@ func New(name string, offset int) *LED {
 }
 
 func (l *LED) Callback(msg *message.Msg) {
-	switch msg.Path[3] {
+	switch msg.String() {
 	case "off":
 		l.Off()
 

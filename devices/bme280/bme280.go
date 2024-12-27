@@ -59,6 +59,7 @@ func (b *BME280) Read() (*bme280.Response, error) {
 }
 
 func (b *BME280) Loop(done chan bool) {
+	// if period == 0 the loop will only run once
 	timer := time.NewTimer(b.Period)
 
 	running := true

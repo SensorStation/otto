@@ -2,6 +2,7 @@ package otto
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -14,6 +15,8 @@ import (
 type Server struct {
 	*http.Server
 	*http.ServeMux
+
+	EndPoints map[string]http.Handler
 }
 
 var (
@@ -35,7 +38,6 @@ func NewServer() *Server {
 		},
 	}
 	s.ServeMux = http.NewServeMux()
-
 	return s
 }
 
@@ -43,17 +45,21 @@ func NewServer() *Server {
 // URL or MQTT channel.
 func (s *Server) Register(p string, h http.Handler) {
 	l.Info("HTTP REST API Registered: ", "path", p)
+	if s.EndPoints == nil {
+		s.EndPoints = make(map[string]http.Handler)
+	}
+	s.EndPoints[p] = h
 	s.Handle(p, h)
 }
 
 // Start the HTTP server after registering REST API callbacks
 // and initializing the Web application directory
 func (s *Server) Start() {
-	l.Info("Starting hub Web and REST server on ", "addr", s.Addr)
-
 	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
-	l.Info("Starting HTTP server ", "addr", s.Addr)
+	s.Register("/api", s)
+
+	l.Info("Starting hub Web and REST server on ", "addr", s.Addr)
 	http.ListenAndServe(s.Addr, s.ServeMux)
 	return
 }
@@ -65,23 +71,32 @@ func (s *Server) Appdir(path, file string) {
 
 func (s *Server) EmbedTempl(path string, data any, content embed.FS) {
 	l.Info("embedTempl", "path", path)
-
 	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		if path == "/emb" || filepath.Ext(path) == ".html" {
-
-			fmt.Println("here we are foo bar ", r.URL.String())
 			tmpl, err := template.ParseFS(content, "app/*.html")
 			if err != nil {
 				l.Error("Failed to parse web template: ", "error", err.Error())
 			}
-
 			tmpl.Execute(w, data)
-
 		} else {
 			s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 				fmt.Println("there we go ", r.URL.String())
 			})
 		}
-
 	})
+}
+
+func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ep := struct {
+		Endpoints []string
+	}{}
+	for e, _ := range s.EndPoints {
+		ep.Endpoints = append(ep.Endpoints, e)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(ep)
+	if err != nil {
+		l.Error("Server.ServeHTTP failed to encode", "error", err)
+	}
 }

@@ -2,31 +2,61 @@ package main
 
 import (
 	"embed"
+	"flag"
 
 	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/cmd"
 	"github.com/sensorstation/otto/devices"
 	"github.com/sensorstation/otto/devices/bme280"
 	"github.com/sensorstation/otto/devices/button"
 	"github.com/sensorstation/otto/devices/led"
 	"github.com/sensorstation/otto/devices/relay"
+	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/mocks"
 )
 
 var (
-	l    *otto.Logger
-	done chan bool
+	l        *otto.Logger
+	done     chan bool
+	mock     bool
+	mockMQTT bool
+	mockGPIO bool
+
+	cli bool
 )
 
+func init() {
+	flag.BoolVar(&mockMQTT, "mock", false, "mock the hardware")
+	flag.BoolVar(&mockMQTT, "mock-mqtt", false, "mock the hardware")
+	flag.BoolVar(&mockGPIO, "mock-gpio", false, "mock the hardware")
+	flag.BoolVar(&cli, "cli", false, "Run the otto interactive cli")
+}
+
 func main() {
+	flag.Parse()
+
 	l = otto.GetLogger()
 	done = make(chan bool)
 
-	// TODO capture signals
+	if mock {
+		mockMQTT = true
+		mockGPIO = true
+	}
+	if mockMQTT {
+		otto.GetMQTTClient(mocks.GetMockClient())
+	}
+	if mockGPIO {
+		devices.GetGPIO().Mock = true
+	}
 
+	// TODO capture signals
 	initSignals()
 	initApp()
 	initStations()
 	initDevices(done)
-	// cmd.Execute()
+	if cli {
+		cmd.Execute()
+	}
 
 	<-done
 	cleanup()
@@ -56,22 +86,26 @@ func initDevices(done chan bool) {
 	m.Subscribe(otto.TopicControl("led"), led)
 
 	butOn := button.New("on", 23)
-	butOn.Pubs = append(butOn.Pubs, otto.TopicControl("on"))
 	go butOn.EventLoop(done)
+	m.SubscribeHandle(otto.TopicControl("on"), func(msg *message.Msg) {
+		m.Publish(otto.TopicControl("relay"), "on")
+		m.Publish(otto.TopicControl("led"), "on")
+	})
 
 	butOff := button.New("off", 27)
 	go butOff.EventLoop(done)
+	m.SubscribeHandle(otto.TopicControl("off"), func(msg *message.Msg) {
+		m.Publish(otto.TopicControl("relay"), "off")
+		m.Publish(otto.TopicControl("led"), "off")
+	})
 
 	bme := bme280.New("bme", "/dev/i2c-1", 0x76)
-	err := bme.Init()
-	if err != nil {
-		otto.GetLogger().Error("Failed to initialize bme", "error", err)
+	if bme == nil {
 		return
 	}
-
 	bme.Pubs = append(bme.Pubs, otto.TopicData("bme280"))
+	bme.Period = 10
 	go bme.Loop(done)
-
 }
 
 //go:embed app

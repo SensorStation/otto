@@ -10,7 +10,6 @@ var (
 )
 
 func init() {
-
 }
 
 func GetDeviceManager() *DeviceManager {

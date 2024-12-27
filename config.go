@@ -34,20 +34,6 @@ func GetConfig() *Configuration {
 	return config
 }
 
-// ServeHTTP provides a REST interface to the config structure
-func (c Configuration) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	r.ParseForm()
-	switch r.Method {
-	case "GET":
-		json.NewEncoder(w).Encode(config)
-
-	case "POST", "PUT":
-		http.Error(w, "Not Yet Supported", 401)
-	}
-}
-
 // Save write the configuration to a file in JSON format
 func (c *Configuration) SaveFile(fname string) error {
 
@@ -80,4 +66,18 @@ func (c *Configuration) ReadFile(fname string) error {
 	}
 
 	return err
+}
+
+// ServeHTTP provides a REST interface to the config structure
+func (c Configuration) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	r.ParseForm()
+	switch r.Method {
+	case "GET":
+		json.NewEncoder(w).Encode(config)
+
+	case "POST", "PUT":
+		http.Error(w, "Not Yet Supported", 401)
+	}
 }

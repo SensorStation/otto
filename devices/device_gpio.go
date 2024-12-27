@@ -27,6 +27,7 @@ func NewDeviceGPIO(name string, idx int, mode Mode, opts ...gpiocdev.LineReqOpti
 		}
 	}
 
+	d.Pubs = append(d.Pubs, otto.TopicData(name))
 	gpio = GetGPIO()
 	d.Pin = gpio.Pin(name, idx, opts...)
 	return d

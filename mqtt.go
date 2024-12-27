@@ -1,8 +1,10 @@
 package otto
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sensorstation/otto/message"
@@ -12,15 +14,31 @@ var (
 	mqtt *MQTT
 )
 
+// Subscriber is an interface that defines a struct needs to have the
+// Callback(topic string, data []byte) function defined.
+type MsgHandler interface {
+	Callback(msg *message.Msg)
+}
+
+type MsgHandle func(msg *message.Msg)
+
+// Publisher interface allows objects to publish message to a particular
+// topic as defined in the message.Msg
+type Publisher interface {
+	Publish(msg *message.Msg)
+}
+
 // MQTT is a wrapper around the Paho MQTT Go package
 // Wraps the Broker, ID and Debug variables.
 type MQTT struct {
-	ID     string
-	Broker string
-	Debug  bool
+	ID     string `json:"id"`
+	Broker string `json:"broker"`
+	Debug  bool   `json:"debug"`
 
-	Subscribers map[string][]*sub
-	gomqtt.Client
+	Subscribers map[string][]*sub `json:"subscribers"`
+	Publishers  map[string]int    `json:"publishers"`
+
+	gomqtt.Client `json:"-"`
 }
 
 // NewMQTT creates a new instance of the MQTT client type.
@@ -30,6 +48,11 @@ func NewMQTT() *MQTT {
 		Broker: "localhost",
 	}
 	mqtt.Subscribers = make(map[string][]*sub)
+	if server != nil {
+		server.Register("/api/mqtt", mqtt)
+	}
+	mqtt.Publishers = make(map[string]int)
+
 	return mqtt
 }
 
@@ -92,6 +115,8 @@ func (m *MQTT) Connect() error {
 func (m MQTT) Publish(topic string, value interface{}) {
 	var t gomqtt.Token
 
+	m.Publishers[topic] += 1
+
 	if m.Client == nil {
 		l.Warn("MQTT Client is not connected to a broker")
 		return
@@ -115,18 +140,13 @@ func (m MQTT) Publish(topic string, value interface{}) {
 // wildcards '+' and '#' are supported.  Examples
 // ss/<ethaddr>/<data>/tempf value
 // ss/<ethaddr>/<data>/humidity value
-func (m *MQTT) sub(id string, path string, f gomqtt.MessageHandler, cb any) error {
+func (m *MQTT) sub(id string, path string, f gomqtt.MessageHandler, h MsgHandler, mh MsgHandle) error {
 	sub := &sub{
 		ID:             id,
 		Path:           path,
 		MessageHandler: f,
-	}
-	switch cb.(type) {
-	case Subscriber:
-		sub.Subscriber = cb.(Subscriber)
-
-	case Subscribed:
-		sub.Subscribed = cb.(Subscribed)
+		MsgHandler:     h,
+		MsgHandle:      mh,
 	}
 
 	m.Subscribers[path] = append(m.Subscribers[path], sub)
@@ -148,19 +168,61 @@ func (m *MQTT) sub(id string, path string, f gomqtt.MessageHandler, cb any) erro
 
 // Subscribe causes the MQTT client to subscribe to the given topic with
 // the connected broker
-func (mqtt *MQTT) Subscribe(topic string, cb any) {
+func (mqtt *MQTT) Subscribe(topic string, h MsgHandler) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
 		msg := message.New(m.Topic(), m.Payload(), "mqtt-sub")
 		for _, sub := range mqtt.Subscribers[m.Topic()] {
-			if sub.Subscriber != nil {
-				sub.Subscriber.Callback(msg)
+			if sub.MsgHandler != nil {
+				sub.MsgHandler.Callback(msg)
 			}
-			if sub.Subscribed != nil {
-				sub.Subscribed(msg)
+			if sub.MsgHandle != nil {
+				sub.MsgHandle(msg)
 			}
 		}
 	}
-	mqtt.sub(topic, topic, mfunc, cb)
+	mqtt.sub(topic, topic, mfunc, h, nil)
+}
+
+func (mqtt *MQTT) SubscribeHandle(topic string, f MsgHandle) {
+	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
+		msg := message.New(m.Topic(), m.Payload(), "mqtt-sub")
+		for _, sub := range mqtt.Subscribers[m.Topic()] {
+			if sub.MsgHandler != nil {
+				sub.MsgHandler.Callback(msg)
+			}
+			if sub.MsgHandle != nil {
+				sub.MsgHandle(msg)
+			}
+		}
+	}
+	mqtt.sub(topic, topic, mfunc, nil, f)
+}
+
+func (mqtt MQTT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	mq := struct {
+		ID     string `json:"id"`
+		Broker string `json:"broker"`
+		Debug  bool   `json:"debug"`
+
+		Subscribers []string
+		Publishers  []string
+	}{
+		ID:     mqtt.ID,
+		Broker: mqtt.Broker,
+		Debug:  mqtt.Debug,
+	}
+	for s, _ := range mqtt.Subscribers {
+		mq.Subscribers = append(mq.Subscribers, s)
+	}
+	for p, _ := range mqtt.Publishers {
+		mq.Publishers = append(mq.Publishers, p)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(mq)
+	if err != nil {
+		l.Error("MQTT.ServeHTTP failed to encode", "error", err)
+	}
 }
 
 // Sub contains a Subscriber ID, a topic Path and a Message Handler
@@ -169,8 +231,8 @@ type sub struct {
 	ID   string
 	Path string
 	gomqtt.MessageHandler
-	Subscriber
-	Subscribed
+	MsgHandler
+	MsgHandle
 }
 
 // String returns a string representation of the Subscriber and

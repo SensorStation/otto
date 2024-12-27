@@ -3,6 +3,7 @@ package relay
 import (
 	"github.com/sensorstation/otto/devices"
 	"github.com/sensorstation/otto/message"
+	"github.com/warthog618/go-gpiocdev"
 )
 
 type Relay struct {
@@ -11,13 +12,13 @@ type Relay struct {
 
 func New(name string, offset int) *Relay {
 	relay := &Relay{
-		DeviceGPIO: devices.NewDeviceGPIO(name, offset, devices.ModeOutput),
+		DeviceGPIO: devices.NewDeviceGPIO(name, offset, devices.ModeOutput, gpiocdev.AsOutput(0)),
 	}
 	return relay
 }
 
 func (r *Relay) Callback(msg *message.Msg) {
-	switch msg.Path[3] {
+	switch msg.String() {
 	case "off":
 		r.Off()
 

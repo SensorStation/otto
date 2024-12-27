@@ -17,38 +17,6 @@ type Sub struct {
 	Callback
 }
 
-type MockMessage struct {
-	topic   string
-	payload []byte
-}
-
-func (m MockMessage) Duplicate() bool {
-	return false
-}
-
-func (m MockMessage) Qos() byte {
-	return 0
-}
-
-func (m MockMessage) Retained() bool {
-	return false
-}
-
-func (m MockMessage) Topic() string {
-	return m.topic
-}
-
-func (m MockMessage) MessageID() uint16 {
-	return 10
-}
-
-func (m MockMessage) Payload() []byte {
-	return m.payload
-}
-
-func (m MockMessage) Ack() {
-}
-
 type MockClient struct {
 	connected   bool
 	Subscribers map[string]Sub
@@ -152,4 +120,36 @@ func (t MockToken) Done() <-chan struct{} {
 
 func (t MockToken) Error() error {
 	return nil
+}
+
+type MockMessage struct {
+	topic   string
+	payload []byte
+}
+
+func (m MockMessage) Duplicate() bool {
+	return false
+}
+
+func (m MockMessage) Qos() byte {
+	return 0
+}
+
+func (m MockMessage) Retained() bool {
+	return false
+}
+
+func (m MockMessage) Topic() string {
+	return m.topic
+}
+
+func (m MockMessage) MessageID() uint16 {
+	return 10
+}
+
+func (m MockMessage) Payload() []byte {
+	return m.payload
+}
+
+func (m MockMessage) Ack() {
 }
