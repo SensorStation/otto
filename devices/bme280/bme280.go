@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"github.com/maciej/bme280"
-	"github.com/sensorstation/otto"
 	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/logger"
+	"github.com/sensorstation/otto/messanger"
 	"golang.org/x/exp/io/i2c"
 )
 
@@ -22,7 +23,7 @@ func New(name, bus string, addr int) *BME280 {
 	}
 	err := b.Init()
 	if err != nil {
-		otto.GetLogger().Error("Failed to open the bme280", "error", err)
+		logger.GetLogger().Error("Failed to open the bme280", "error", err)
 		return nil
 	}
 	return b
@@ -68,17 +69,17 @@ func (b *BME280) Loop(done chan bool) {
 		case <-timer.C:
 			vals, err := b.Read()
 			if err != nil {
-				otto.GetLogger().Error("Failed to read bme280", "error", err)
+				logger.GetLogger().Error("Failed to read bme280", "error", err)
 				continue
 			}
 
 			jb, err := json.Marshal(vals)
 			if err != nil {
-				otto.GetLogger().Error("failed to unmarshal bme Response", "error", err.Error())
+				logger.GetLogger().Error("failed to unmarshal bme Response", "error", err.Error())
 				done <- true
 				break
 			}
-			mqtt := otto.GetMQTT()
+			mqtt := messanger.GetMQTT()
 			for _, t := range b.Pubs {
 				mqtt.Publish(t, jb)
 			}

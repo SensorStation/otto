@@ -1,4 +1,4 @@
-package otto
+package station
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 )
 
@@ -29,11 +30,15 @@ type StationEvent struct {
 
 var (
 	stations *StationManager
+	l        *logger.Logger
 )
 
 func GetStationManager() *StationManager {
 	if stations == nil {
 		stations = NewStationManager()
+	}
+	if l == nil {
+		l = logger.GetLogger()
 	}
 	return stations
 }

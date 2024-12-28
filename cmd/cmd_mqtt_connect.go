@@ -4,7 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/spf13/cobra"
 )
 
@@ -21,5 +21,5 @@ func init() {
 }
 
 func runMQTTConnect(cmd *cobra.Command, args []string) {
-	otto.GetMQTT()
+	messanger.GetMQTT()
 }

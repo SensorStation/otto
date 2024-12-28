@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sensorstation/otto"
-	"github.com/sensorstation/otto/mocks"
+	"github.com/sensorstation/otto/data"
+	"github.com/sensorstation/otto/messanger"
 )
 
 func TestBlasters(t *testing.T) {
@@ -38,13 +38,13 @@ func TestBlasters(t *testing.T) {
 }
 
 func TestBlasting(t *testing.T) {
-	c := mocks.GetMockClient()
-	m := otto.GetMQTTClient(c)
+	c := messanger.GetMockClient()
+	m := messanger.GetMQTTClient(c)
 	m.Connect()
 
 	blasters := NewMQTTBlasters(5)
 	for _, bl := range blasters.Blasters {
-		m.Subscribe(bl.Topic, bl.Station.DataManager)
+		m.Subscribe(bl.Topic, data.GetDataManager())
 	}
 
 	go blasters.Blast()
@@ -54,9 +54,6 @@ func TestBlasting(t *testing.T) {
 		if bl == nil {
 			t.Error("Explected a blaster got (nil)")
 		}
-		// Todo add tests
-		// fmt.Printf("bl: %+v\n", bl)
-		// fmt.Printf("\tst: %+v\n", bl.Station.DataManager)
 	}
 
 	blasters.Stop()

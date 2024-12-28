@@ -1,10 +1,12 @@
-package otto
+package mesh
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/sensorstation/otto/logger"
 	// mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -18,7 +20,15 @@ type MeshNetwork struct {
 	Nodes  map[string]*MeshNode `json:"nodes"`
 }
 
-var mn MeshNetwork
+var (
+	mn MeshNetwork
+	l  *logger.Logger
+)
+
+func init() {
+	// This may init before logger has a chance to
+	l = logger.GetLogger()
+}
 
 // GetNode will return the node associated with the given ID
 func (m *MeshNetwork) GetNode(nid string) (mn *MeshNode) {

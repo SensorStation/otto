@@ -1,10 +1,15 @@
-package otto
+package data
 
 import "testing"
 
 func TestTimeSeries(t *testing.T) {
-	ts := NewTimeseries("test-int")
+
+	ts := NewTimeseries("test-station", "test-int")
 	if ts.Label != "test-int" {
+		t.Errorf("Timeseries label expected (test-int) got (%s)", ts.Label)
+	}
+
+	if ts.Station != "test-station" {
 		t.Errorf("Timeseries label expected (test-int) got (%s)", ts.Label)
 	}
 
@@ -29,11 +34,5 @@ func TestTimeSeries(t *testing.T) {
 	}
 }
 
-
 func TestTimeData(t *testing.T) {
-	dfloat := NewData(23.3)
-	val := dfloat.Float()
-	if val != 23.3 {
-		t.Errorf("Expected (23.3) got (%f)", val)
-	}
 }

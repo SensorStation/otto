@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/logger"
+	"github.com/sensorstation/otto/messanger"
+	"github.com/sensorstation/otto/station"
 )
 
 // MQTTBlaster is a virtual station that will spew messages to a given
 // topic to be used for testing.
 type MQTTBlaster struct {
-	*otto.Station
+	*station.Station
 	Topic string
 }
 
@@ -39,7 +41,7 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 
 		mb.Blasters[i] = &MQTTBlaster{
 			Topic:   topic,
-			Station: otto.NewStation(id),
+			Station: station.NewStation(id),
 		}
 	}
 	return mb
@@ -49,7 +51,7 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 // messages.
 func (mb *MQTTBlasters) Blast() error {
 
-	mqtt := otto.GetMQTT()
+	mqtt := messanger.GetMQTT()
 	mqtt.Connect()
 	if !mqtt.IsConnected() {
 		return fmt.Errorf("MQTT Client is not connected to a broker")
@@ -68,7 +70,7 @@ func (mb *MQTTBlasters) Blast() error {
 		}
 		time.Sleep(time.Duration(mb.Wait) * time.Millisecond)
 	}
-	otto.GetLogger().Info("MQTT Blaster has stopped")
+	logger.GetLogger().Info("MQTT Blaster has stopped")
 	return nil
 }
 

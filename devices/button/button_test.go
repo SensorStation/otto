@@ -4,10 +4,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/sensorstation/otto"
 	"github.com/sensorstation/otto/devices"
 	"github.com/sensorstation/otto/message"
-	"github.com/sensorstation/otto/mocks"
+	"github.com/sensorstation/otto/messanger"
 )
 
 var (
@@ -17,8 +16,8 @@ var (
 func TestButton(t *testing.T) {
 	done := make(chan bool)
 
-	c := mocks.GetMockClient()
-	m := otto.GetMQTTClient(c)
+	c := messanger.GetMockClient()
+	m := messanger.GetMQTTClient(c)
 	err := m.Connect()
 	if err != nil {
 		t.Error("Failed to connect to MQTT broker: ", err)
@@ -27,7 +26,7 @@ func TestButton(t *testing.T) {
 	devices.GetGPIO().Mock = true
 
 	b := New("button", 23)
-	m.Subscribe(otto.TopicControl("button"), b)
+	m.Subscribe(messanger.TopicControl("button"), b)
 	go b.EventLoop(done)
 	b.Line.(*devices.MockLine).MockHWInput(0)
 	b.Line.(*devices.MockLine).MockHWInput(1)

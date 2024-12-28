@@ -11,8 +11,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/sensorstation/otto"
 	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/logger"
+	"github.com/sensorstation/otto/messanger"
+	"github.com/sensorstation/otto/server"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -24,10 +26,10 @@ type relay struct {
 }
 
 func main() {
-	l := otto.GetLogger()
+	l := logger.GetLogger()
 
 	// var data any
-	s := otto.GetServer()
+	s := server.GetServer()
 	// s.EmbedTempl("/", data, content)
 	s.Appdir("/", "app")
 	go s.Start()
@@ -44,7 +46,7 @@ func main() {
 	defer signal.Stop(quit)
 
 	r := g.Pin("relay", 6, gpiocdev.AsOutput(0))
-	m := otto.GetMQTT()
+	m := messanger.GetMQTT()
 	m.Connect()
 	m.Subscribe("ss/c/station/relay", r)
 

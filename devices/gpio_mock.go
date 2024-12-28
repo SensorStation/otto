@@ -4,8 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -19,7 +20,7 @@ type MockLine struct {
 }
 
 func GetMockLine(offset int, opts ...gpiocdev.LineReqOption) *MockLine {
-	l := otto.GetLogger()
+	l := logger.GetLogger()
 	m := &MockLine{
 		offset: offset,
 		start:  time.Now(),
@@ -31,9 +32,8 @@ func GetMockLine(offset int, opts ...gpiocdev.LineReqOption) *MockLine {
 
 		case gpiocdev.EventHandler:
 			m.EventHandler = opt.(gpiocdev.EventHandler)
-			mqtt := otto.GetMQTT()
-			// mqtt.Subscribe(otto.TopicControl(string(m.offset)), m)
-			mqtt.Subscribe(otto.TopicControl("mock/"+strconv.Itoa(m.Offset())), m)
+			mqtt := messanger.GetMQTT()
+			mqtt.Subscribe(messanger.TopicControl("mock/"+strconv.Itoa(m.Offset())), m)
 
 		default:
 			l.Info("MockLine does not record", "optType", v)
@@ -93,7 +93,7 @@ func (m *MockLine) MockHWInput(v int) {
 }
 
 func (m *MockLine) Callback(msg *message.Msg) {
-	l := otto.GetLogger()
+	l := logger.GetLogger()
 
 	// Change this to a map[string]string or map[string]interface{}
 	str := msg.String()

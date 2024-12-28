@@ -1,10 +1,9 @@
-package otto
+package messanger
 
 import (
 	"testing"
 
 	"github.com/sensorstation/otto/message"
-	"github.com/sensorstation/otto/mocks"
 )
 
 type tclient struct {
@@ -25,7 +24,7 @@ func (t *tclient) Callback(msg *message.Msg) {
 }
 
 func TestSubscribe(t *testing.T) {
-	c := mocks.GetMockClient()
+	c := GetMockClient()
 	m := GetMQTTClient(c)
 	err := m.Connect()
 	if err != nil {

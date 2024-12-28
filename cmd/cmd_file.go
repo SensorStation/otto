@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +21,7 @@ func init() {
 }
 
 func fileRun(cmd *cobra.Command, args []string) {
-	l = otto.GetLogger()
+	l = logger.GetLogger()
 	otto.GetConfig().Interactive = true
 	fname := args[0]
 	file, err := os.Open(fname)

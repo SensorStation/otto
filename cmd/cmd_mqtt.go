@@ -6,7 +6,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +33,7 @@ func init() {
 }
 
 func mqttRun(cmd *cobra.Command, args []string) {
-	m := otto.GetMQTT()
+	m := messanger.GetMQTT()
 
 	// If the broker config changes and mqtt is connected, disconnect
 	// and reconnect to new broker

@@ -86,6 +86,11 @@ package otto
 
 import (
 	"fmt"
+
+	"github.com/sensorstation/otto/logger"
+	"github.com/sensorstation/otto/messanger"
+	"github.com/sensorstation/otto/server"
+	"github.com/sensorstation/otto/station"
 )
 
 // global variables and structures
@@ -93,9 +98,12 @@ var (
 	Done        chan bool
 	StationName string
 	Version     string
+	l           *logger.Logger
 )
 
 func init() {
+	l = logger.GetLogger()
+
 	config = &Configuration{
 		Addr:        ":8011",
 		Broker:      "localhost",
@@ -103,24 +111,15 @@ func init() {
 	}
 
 	StationName = "station"
-	Version = "0.1.2"
+	Version = "0.0.3"
 }
 
 func Cleanup() {
 	<-Done
 	l.Info("Done, cleaning up()")
 
-	if mqtt != nil {
-		mqtt.Disconnect(1000)
-	}
-
-	if server != nil {
-		server.Close()
-	}
-
-	if l != nil {
-		// close the logger file descriptor
-	}
+	messanger.GetMQTT().Disconnect(1000)
+	server.GetServer().Close()
 }
 
 // OttO is a convinience function starting the MQTT and HTTP servers,
@@ -134,14 +133,11 @@ func OttO() {
 	Done = make(chan bool)
 
 	// Allocate and start the station manager
-	stations := GetStationManager()
+	stations := station.GetStationManager()
 	stations.Start()
 
-	mqtt := GetMQTT()
-	mqtt.Subscribe("ss/d/+/+", GetDataManager())
-
 	// start web server / rest server
-	server := GetServer()
+	server := server.GetServer()
 	go server.Start()
 	if config.Interactive {
 		println("go cleanup")

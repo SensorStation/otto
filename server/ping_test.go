@@ -1,4 +1,4 @@
-package otto
+package server
 
 import (
 	"io/ioutil"

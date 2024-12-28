@@ -1,4 +1,4 @@
-package otto
+package mesh
 
 import (
 	"strings"

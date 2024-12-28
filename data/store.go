@@ -1,4 +1,4 @@
-package otto
+package data
 
 import (
 	"os"

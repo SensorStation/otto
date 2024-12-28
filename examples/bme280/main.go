@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/data"
+	"github.com/sensorstation/otto/logger"
+	"github.com/sensorstation/otto/messanger"
 )
 
 var (
@@ -27,11 +29,11 @@ func main() {
 
 	// Get mqtt ready to start publishing the results
 	// from the bme via mqtt
-	mqtt := otto.GetMQTT()
+	mqtt := messanger.GetMQTT()
 
 	// Before we start reading temp, etc. let's subscribe to
 	// the messages we are going to publish.
-	dm := otto.GetDataManager()
+	dm := data.GetDataManager()
 	mqtt.Subscribe(path, dm)
 
 	// start reading in a loop and publish the results
@@ -49,7 +51,7 @@ func main() {
 			fmt.Printf("vals: %+v\n", vals)
 			jb, err := json.Marshal(vals)
 			if err != nil {
-				otto.GetLogger().Error("failed to unmarshal bme Response", "error", err.Error())
+				logger.GetLogger().Error("failed to unmarshal bme Response", "error", err.Error())
 				done <- true
 				break
 			}

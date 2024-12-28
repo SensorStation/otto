@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/station"
 	"github.com/spf13/cobra"
 )
 
@@ -20,12 +20,9 @@ var stationCmd = &cobra.Command{
 }
 
 func stationRun(cmd *cobra.Command, args []string) {
-	stations := otto.GetStationManager()
+	stations := station.GetStationManager()
 	for _, st := range stations.Stations {
 		fmt.Printf("station: %s: %s/%v\n",
 			st.ID, st.LastHeard.Format(time.RFC3339), st.Expiration)
-		for l, ts := range st.DataManager.DataMap {
-			fmt.Printf("%20s => %d\n", l, len(ts.Data))
-		}
 	}
 }

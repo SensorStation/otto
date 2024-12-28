@@ -4,8 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sensorstation/otto"
 	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/logger"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -22,12 +23,12 @@ func New(name string, pin int) *Button {
 		gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
 			b.EvtQ <- evt
 		}))
-	b.Pubs = append(b.Pubs, otto.TopicControl(name))
+	b.Pubs = append(b.Pubs, messanger.TopicControl(name))
 	return b
 }
 
 func (b *Button) EventLoop(done chan bool) {
-	l := otto.GetLogger()
+	l := logger.GetLogger()
 
 	running := true
 	for running {
@@ -57,7 +58,7 @@ func (b *Button) EventLoop(done chan bool) {
 
 			val := strconv.Itoa(v)
 			for _, t := range b.Pubs {
-				otto.GetMQTT().Publish(t, val)
+				messanger.GetMQTT().Publish(t, val)
 			}
 
 		case <-done:

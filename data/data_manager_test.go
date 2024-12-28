@@ -1,4 +1,4 @@
-package otto
+package data
 
 import (
 	"fmt"
@@ -22,9 +22,4 @@ func TestDataManagerCallback(t *testing.T) {
 	msg := message.New(path, data, "data-manager-test")
 	dm.Callback(msg)
 
-	sm := GetStationManager()
-	st := sm.Get("station1")
-	if len(st.DataManager.DataMap) != 1 {
-		t.Errorf("failed to get count == 1 data from station1")
-	}
 }

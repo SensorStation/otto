@@ -6,7 +6,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ func init() {
 }
 
 func runMQTTSub(cmd *cobra.Command, args []string) {
-	m := otto.GetMQTT()
+	m := messanger.GetMQTT()
 	if m.Client == nil || !m.IsConnected() {
 		err := m.Connect()
 		if err != nil {
@@ -32,6 +32,6 @@ func runMQTTSub(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	p := &otto.MQTTPrinter{}
+	p := &messanger.MQTTPrinter{}
 	m.Subscribe(args[0], p)
 }

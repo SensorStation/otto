@@ -4,21 +4,22 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sensorstation/otto"
 	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/logger"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
 var (
-	l    *otto.Logger
-	mqtt *otto.MQTT
+	l    *logger.Logger
+	mqtt *messanger.MQTT
 )
 
 func main() {
 
-	l = otto.GetLogger()
+	l = logger.GetLogger()
 
-	mqtt = otto.GetMQTT()
+	mqtt = messanger.GetMQTT()
 
 	// Get the GPIO driver
 	g := devices.GetGPIO()
@@ -66,7 +67,7 @@ func startSwitchHandler(g *devices.GPIO, done chan bool) {
 				l.Info("GPIO raising edge", "pin", sw.Offset())
 				v, err := sw.Get()
 				if err != nil {
-					otto.GetLogger().Error("Error getting input value: ", "error", err.Error())
+					logger.GetLogger().Error("Error getting input value: ", "error", err.Error())
 					continue
 				}
 				val := strconv.Itoa(v)

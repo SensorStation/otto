@@ -3,7 +3,7 @@ package devices
 import (
 	"fmt"
 
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -27,7 +27,7 @@ func NewDeviceGPIO(name string, idx int, mode Mode, opts ...gpiocdev.LineReqOpti
 		}
 	}
 
-	d.Pubs = append(d.Pubs, otto.TopicData(name))
+	d.Pubs = append(d.Pubs, messanger.TopicData(name))
 	gpio = GetGPIO()
 	d.Pin = gpio.Pin(name, idx, opts...)
 	return d
@@ -48,7 +48,7 @@ func (d *DeviceGPIO) Set(v int) {
 		val = "on"
 	}
 
-	m := otto.GetMQTT()
+	m := messanger.GetMQTT()
 	for _, p := range d.Pubs {
 		m.Publish(p, val)
 	}

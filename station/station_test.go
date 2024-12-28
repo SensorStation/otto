@@ -1,4 +1,4 @@
-package otto
+package station
 
 import (
 	"encoding/json"

@@ -4,19 +4,21 @@ import (
 	"embed"
 	"flag"
 
-	"github.com/sensorstation/otto"
 	"github.com/sensorstation/otto/cmd"
 	"github.com/sensorstation/otto/devices"
 	"github.com/sensorstation/otto/devices/bme280"
 	"github.com/sensorstation/otto/devices/button"
 	"github.com/sensorstation/otto/devices/led"
 	"github.com/sensorstation/otto/devices/relay"
+	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
-	"github.com/sensorstation/otto/mocks"
+	"github.com/sensorstation/otto/messanger"
+	"github.com/sensorstation/otto/server"
+	"github.com/sensorstation/otto/station"
 )
 
 var (
-	l        *otto.Logger
+	l        *logger.Logger
 	done     chan bool
 	mock     bool
 	mockMQTT bool
@@ -35,7 +37,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	l = otto.GetLogger()
+	l = logger.GetLogger()
 	done = make(chan bool)
 
 	if mock {
@@ -43,7 +45,7 @@ func main() {
 		mockGPIO = true
 	}
 	if mockMQTT {
-		otto.GetMQTTClient(mocks.GetMockClient())
+		messanger.GetMQTTClient(messanger.GetMockClient())
 	}
 	if mockGPIO {
 		devices.GetGPIO().Mock = true
@@ -72,38 +74,38 @@ func initSignals() {
 }
 
 func initStations() {
-	st := otto.GetStationManager()
+	st := station.GetStationManager()
 	st.Start()
 }
 
 func initDevices(done chan bool) {
 
-	m := otto.GetMQTT()
+	m := messanger.GetMQTT()
 	relay := relay.New("relay", 22)
-	m.Subscribe(otto.TopicControl("relay"), relay)
+	m.Subscribe(messanger.TopicControl("relay"), relay)
 
 	led := led.New("led", 6)
-	m.Subscribe(otto.TopicControl("led"), led)
+	m.Subscribe(messanger.TopicControl("led"), led)
 
 	butOn := button.New("on", 23)
 	go butOn.EventLoop(done)
-	m.SubscribeHandle(otto.TopicControl("on"), func(msg *message.Msg) {
-		m.Publish(otto.TopicControl("relay"), "on")
-		m.Publish(otto.TopicControl("led"), "on")
+	m.SubscribeHandle(messanger.TopicControl("on"), func(msg *message.Msg) {
+		m.Publish(messanger.TopicControl("relay"), "on")
+		m.Publish(messanger.TopicControl("led"), "on")
 	})
 
 	butOff := button.New("off", 27)
 	go butOff.EventLoop(done)
-	m.SubscribeHandle(otto.TopicControl("off"), func(msg *message.Msg) {
-		m.Publish(otto.TopicControl("relay"), "off")
-		m.Publish(otto.TopicControl("led"), "off")
+	m.SubscribeHandle(messanger.TopicControl("off"), func(msg *message.Msg) {
+		m.Publish(messanger.TopicControl("relay"), "off")
+		m.Publish(messanger.TopicControl("led"), "off")
 	})
 
 	bme := bme280.New("bme", "/dev/i2c-1", 0x76)
 	if bme == nil {
 		return
 	}
-	bme.Pubs = append(bme.Pubs, otto.TopicData("bme280"))
+	bme.Pubs = append(bme.Pubs, messanger.TopicData("bme280"))
 	bme.Period = 10
 	go bme.Loop(done)
 }
@@ -112,7 +114,7 @@ func initDevices(done chan bool) {
 var content embed.FS
 
 func initApp() {
-	s := otto.GetServer()
+	s := server.GetServer()
 
 	// The following line is commented out because
 	var data any

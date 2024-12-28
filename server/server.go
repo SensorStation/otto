@@ -1,4 +1,4 @@
-package otto
+package server
 
 import (
 	"embed"
@@ -7,6 +7,8 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+
+	"github.com/sensorstation/otto/logger"
 )
 
 // Server serves up HTTP on Addr (default 0.0.0.0:8011)
@@ -22,6 +24,7 @@ type Server struct {
 var (
 	wserv  Websock
 	server *Server
+	l      *logger.Logger
 )
 
 func GetServer() *Server {
@@ -38,6 +41,9 @@ func NewServer() *Server {
 		},
 	}
 	s.ServeMux = http.NewServeMux()
+	if l == nil {
+		l = logger.GetLogger()
+	}
 	return s
 }
 

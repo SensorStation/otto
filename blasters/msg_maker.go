@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"math/rand/v2"
 
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 )
 
@@ -27,7 +27,7 @@ func (w *WeatherData) NewMsg() *message.Msg {
 
 	j, err := json.Marshal(w)
 	if err != nil {
-		otto.GetLogger().Error("Error marshalling JSON data", "error", err)
+		logger.GetLogger().Error("Error marshalling JSON data", "error", err)
 		return nil
 	}
 

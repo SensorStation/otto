@@ -1,4 +1,4 @@
-package otto
+package station
 
 import (
 	"sync"
@@ -13,12 +13,17 @@ type Station struct {
 	ID         string        `json:"id"`
 	LastHeard  time.Time     `json:"last-heard"`
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
+	ticker     *time.Ticker  `json:"-"`
+	quit       chan bool     `json:"-"`
+	mu         sync.Mutex    `json:"-"`
+}
 
-	*DataManager
+var (
+	StationName string
+)
 
-	ticker *time.Ticker `json:"-"`
-	quit   chan bool    `json:"-"`
-	mu     sync.Mutex   `json:"-"`
+func init() {
+	StationName = "station"
 }
 
 // NewStation creates a new Station with an ID as provided
@@ -28,7 +33,6 @@ func NewStation(id string) (st *Station) {
 		ID:         id,
 		Expiration: 30 * time.Second,
 	}
-	st.DataManager = NewDataManager()
 	return st
 }
 
@@ -43,17 +47,4 @@ func (s *Station) Update(msg *message.Msg) {
 // Stop the station from advertising
 func (s *Station) Stop() {
 	s.quit <- true
-}
-
-func (s *Station) Insert(label string, val interface{}) {
-	d := &Data{
-		Time:  time.Now(),
-		Value: val,
-	}
-
-	if s.DataManager.DataMap[label] == nil {
-		s.DataManager.DataMap[label] = NewTimeseries(label)
-	}
-
-	s.DataManager.DataMap[label].Data = append(s.DataMap[label].Data, d)
 }

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/sensorstation/otto"
+	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 	"github.com/warthog618/go-gpiocdev"
 )
@@ -56,7 +56,7 @@ func (p *Pin) Init() error {
 func (pin *Pin) String() string {
 	v, err := pin.Value()
 	if err != nil {
-		otto.GetLogger().Error("Failed getting the value of ", "pin", pin.offset, "error", err)
+		logger.GetLogger().Error("Failed getting the value of ", "pin", pin.offset, "error", err)
 	}
 	str := fmt.Sprintf("%d: %d\n", pin.offset, v)
 	return str
@@ -144,7 +144,7 @@ func GetGPIO() *GPIO {
 
 // Init initialized the GPIO
 func (gpio *GPIO) Init() error {
-	l := otto.GetLogger()
+	l := logger.GetLogger()
 	for _, pin := range gpio.Pins {
 		if err := pin.Init(); err != nil {
 			l.Error("Error initializing pin ", "offset", pin.offset)
@@ -155,7 +155,7 @@ func (gpio *GPIO) Init() error {
 
 // Pin initializes the given GPIO pin, name and mode
 func (gpio *GPIO) Pin(name string, offset int, opts ...gpiocdev.LineReqOption) (p *Pin) {
-	l := otto.GetLogger()
+	l := logger.GetLogger()
 
 	p = &Pin{
 		offset: offset,

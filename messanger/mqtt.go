@@ -1,4 +1,4 @@
-package otto
+package messanger
 
 import (
 	"encoding/json"
@@ -7,11 +7,14 @@ import (
 	"net/http"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/server"
 )
 
 var (
 	mqtt *MQTT
+	l    *logger.Logger
 )
 
 // Subscriber is an interface that defines a struct needs to have the
@@ -48,10 +51,15 @@ func NewMQTT() *MQTT {
 		Broker: "localhost",
 	}
 	mqtt.Subscribers = make(map[string][]*sub)
+	server := server.GetServer()
 	if server != nil {
 		server.Register("/api/mqtt", mqtt)
 	}
 	mqtt.Publishers = make(map[string]int)
+
+	if l == nil {
+		l = logger.GetLogger()
+	}
 
 	return mqtt
 }

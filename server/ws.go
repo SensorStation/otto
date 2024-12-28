@@ -1,15 +1,16 @@
-package otto
+package server
 
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/sensorstation/otto/station"
 )
 
 type Websock struct {
-	msgQ chan *Station
-	webQ map[chan *Station]chan *Station
+	msgQ chan *station.Station
+	webQ map[chan *station.Station]chan *station.Station
 }
 
 var upgrader = websocket.Upgrader{
@@ -22,8 +23,8 @@ func checkOrigin(r *http.Request) bool {
 	return true
 }
 
-func (w *Websock) AddWebQ() chan *Station {
-	c := make(chan *Station)
+func (w *Websock) AddWebQ() chan *station.Station {
+	c := make(chan *station.Station)
 	w.webQ[c] = c
 	return c
 }
@@ -39,7 +40,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	if ws.webQ == nil {
-		ws.webQ = make(map[chan *Station]chan *Station)
+		ws.webQ = make(map[chan *station.Station]chan *station.Station)
 	}
 
 	go func() {
