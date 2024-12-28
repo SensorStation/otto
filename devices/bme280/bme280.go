@@ -60,13 +60,16 @@ func (b *BME280) Read() (*bme280.Response, error) {
 }
 
 func (b *BME280) Loop(done chan bool) {
-	// if period == 0 the loop will only run once
-	timer := time.NewTimer(b.Period)
+	// No need to loop if we don't have a ticker ticking
+	if b.Period <= 0 {
+		return
+	}
+	ticker := time.NewTicker(time.Second * b.Period)
 
 	running := true
 	for running {
 		select {
-		case <-timer.C:
+		case <-ticker.C:
 			vals, err := b.Read()
 			if err != nil {
 				logger.GetLogger().Error("Failed to read bme280", "error", err)
