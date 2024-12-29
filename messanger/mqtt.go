@@ -23,7 +23,7 @@ type MsgHandler interface {
 	Callback(msg *message.Msg)
 }
 
-type MsgHandle func(msg *message.Msg)
+type MsgHandle func(msg *message.Msg) error
 
 // Publisher interface allows objects to publish message to a particular
 // topic as defined in the message.Msg
@@ -124,7 +124,6 @@ func (m MQTT) Publish(topic string, value interface{}) {
 	var t gomqtt.Token
 
 	m.Publishers[topic] += 1
-
 	if m.Client == nil {
 		l.Warn("MQTT Client is not connected to a broker")
 		return
@@ -142,6 +141,28 @@ func (m MQTT) Publish(topic string, value interface{}) {
 		l.Error("MQTT Publish token: ", "error", t.Error())
 	}
 
+}
+
+func (m *MQTT) Subscribe(path string, f MsgHandle) error {
+	// m.Subscribers[path] = append(m.Subscribers[path], f)
+	if m.Client == nil {
+		l.Error("MQTT Client is not connected to a broker")
+		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
+	}
+
+	var err error
+	token := m.Client.Subscribe(path, byte(0), func(c gomqtt.Client, m gomqtt.Message) {
+		msg := message.New(m.Topic(), m.Payload(), "mqtt-sub")
+		fmt.Printf("MQTT incoming: %+v\n", msg)
+		err = f(msg)
+	})
+
+	if token.Wait() && token.Error() != nil {
+		// TODO: add routing that automatically subscribes subscribers when a
+		// connection has been made
+		return token.Error()
+	}
+	return err
 }
 
 // Subscribe to MQTT messages that follow specific topic patterns
@@ -176,14 +197,18 @@ func (m *MQTT) sub(id string, path string, f gomqtt.MessageHandler, h MsgHandler
 
 // Subscribe causes the MQTT client to subscribe to the given topic with
 // the connected broker
-func (mqtt *MQTT) Subscribe(topic string, h MsgHandler) {
+func (mqtt *MQTT) SubscribeOld(topic string, h MsgHandler) {
 	mfunc := func(c gomqtt.Client, m gomqtt.Message) {
 		msg := message.New(m.Topic(), m.Payload(), "mqtt-sub")
+		fmt.Printf("MQTT incoming: %+v\n", msg)
 		for _, sub := range mqtt.Subscribers[m.Topic()] {
+			fmt.Printf("\tsub: %+v\n", sub)
 			if sub.MsgHandler != nil {
+				fmt.Printf("\tcallback: %+v\n", sub)
 				sub.MsgHandler.Callback(msg)
 			}
 			if sub.MsgHandle != nil {
+				fmt.Printf("\thandle: %+v\n", sub)
 				sub.MsgHandle(msg)
 			}
 		}
@@ -256,6 +281,7 @@ type MQTTPrinter struct {
 
 // Callback will print out all messages sent to the given topic
 // from the MQTTPrinter
-func (mp *MQTTPrinter) Callback(msg *message.Msg) {
+func (mp *MQTTPrinter) Callback(msg *message.Msg) error {
 	fmt.Printf("%+v\n", msg)
+	return nil
 }

@@ -1,11 +1,11 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 )
 
 // DataManager is a map of Timeseries data that belongs to
@@ -36,6 +36,10 @@ func NewDataManager() (dm *DataManager) {
 	dm = &DataManager{
 		DataMap: make(map[string]map[string]*Timeseries),
 	}
+	mqtt := messanger.GetMQTT()
+	if mqtt != nil {
+		mqtt.Subscribe("ss/d/#", dm.Callback)
+	}
 	return dm
 }
 
@@ -43,14 +47,15 @@ func NewDataManager() (dm *DataManager) {
 // MQTT messages. TODO: move this call back to the stations because
 // the stations will have a better understanding of the data they
 // are subscribing to.
-func (dm *DataManager) Callback(msg *message.Msg) {
-
-	var m map[string]interface{}
-	err := json.Unmarshal(msg.Data, &m)
-	if err != nil {
-		l.Error("Failed to unmarshal data: %s", "error", err)
-		return
+func (dm *DataManager) Callback(msg *message.Msg) error {
+	fmt.Printf("M: %+v\n", msg)
+	if msg.IsJSON() {
+		m, err := msg.Map()
+		if err != nil {
+			return err
+		}
+		fmt.Printf("MAP: %+v\n", m)
 	}
 
-	fmt.Printf("%+v\n", m)
+	return nil
 }

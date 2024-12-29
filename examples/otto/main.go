@@ -5,6 +5,7 @@ import (
 	"flag"
 
 	"github.com/sensorstation/otto/cmd"
+	"github.com/sensorstation/otto/data"
 	"github.com/sensorstation/otto/devices"
 	"github.com/sensorstation/otto/devices/bme280"
 	"github.com/sensorstation/otto/devices/button"
@@ -52,6 +53,7 @@ func main() {
 	}
 
 	// TODO capture signals
+	data.GetDataManager()
 	initSignals()
 	initApp()
 	initStations()
@@ -82,23 +84,25 @@ func initDevices(done chan bool) {
 
 	m := messanger.GetMQTT()
 	relay := relay.New("relay", 22)
-	m.Subscribe(messanger.TopicControl("relay"), relay)
+	m.Subscribe(messanger.TopicControl("relay"), relay.Callback)
 
 	led := led.New("led", 6)
-	m.Subscribe(messanger.TopicControl("led"), led)
+	m.Subscribe(messanger.TopicControl("led"), led.Callback)
 
 	butOn := button.New("on", 23)
 	go butOn.EventLoop(done)
-	m.SubscribeHandle(messanger.TopicControl("on"), func(msg *message.Msg) {
+	m.SubscribeHandle(messanger.TopicControl("on"), func(msg *message.Msg) error {
 		m.Publish(messanger.TopicControl("relay"), "on")
 		m.Publish(messanger.TopicControl("led"), "on")
+		return nil
 	})
 
 	butOff := button.New("off", 27)
 	go butOff.EventLoop(done)
-	m.SubscribeHandle(messanger.TopicControl("off"), func(msg *message.Msg) {
+	m.SubscribeHandle(messanger.TopicControl("off"), func(msg *message.Msg) error {
 		m.Publish(messanger.TopicControl("relay"), "off")
 		m.Publish(messanger.TopicControl("led"), "off")
+		return nil
 	})
 
 	bme := bme280.New("bme", "/dev/i2c-1", 0x76)

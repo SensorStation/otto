@@ -44,7 +44,7 @@ func TestBlasting(t *testing.T) {
 
 	blasters := NewMQTTBlasters(5)
 	for _, bl := range blasters.Blasters {
-		m.Subscribe(bl.Topic, data.GetDataManager())
+		m.Subscribe(bl.Topic, data.GetDataManager().Callback)
 	}
 
 	go blasters.Blast()

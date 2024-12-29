@@ -17,7 +17,7 @@ func New(name string, offset int) *Relay {
 	return relay
 }
 
-func (r *Relay) Callback(msg *message.Msg) {
+func (r *Relay) Callback(msg *message.Msg) error {
 	switch msg.String() {
 	case "off":
 		r.Off()
@@ -25,4 +25,5 @@ func (r *Relay) Callback(msg *message.Msg) {
 	case "on":
 		r.On()
 	}
+	return nil
 }

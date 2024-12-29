@@ -51,8 +51,26 @@ func New(topic string, data []byte, source string) *Msg {
 	return msg
 }
 
+func (msg *Msg) Last() string {
+	l := len(msg.Path)
+	return msg.Path[l-1]
+}
+
 func (msg *Msg) Byte() []byte {
 	return msg.Data
+}
+
+func (msg *Msg) IsJSON() bool {
+	return json.Valid(msg.Data)
+}
+
+func (msg *Msg) Map() (map[string]interface{}, error) {
+	var m map[string]interface{}
+	err := json.Unmarshal(msg.Data, &m)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to unmarshal data: %s", err)
+	}
+	return m, nil
 }
 
 func (msg *Msg) String() string {

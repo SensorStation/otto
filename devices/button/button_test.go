@@ -26,7 +26,7 @@ func TestButton(t *testing.T) {
 	devices.GetGPIO().Mock = true
 
 	b := New("button", 23)
-	m.Subscribe(messanger.TopicControl("button"), b)
+	m.Subscribe(messanger.TopicControl("button"), b.Callback)
 	go b.EventLoop(done)
 	b.Line.(*devices.MockLine).MockHWInput(0)
 	b.Line.(*devices.MockLine).MockHWInput(1)
@@ -38,10 +38,11 @@ func TestButton(t *testing.T) {
 
 }
 
-func (b *Button) Callback(msg *message.Msg) {
+func (b *Button) Callback(msg *message.Msg) error {
 	i, err := strconv.Atoi(string(msg.Data))
 	if err != nil {
-		return
+		return err
 	}
 	gotit[i] = true
+	return nil
 }

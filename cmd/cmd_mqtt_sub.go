@@ -33,5 +33,5 @@ func runMQTTSub(cmd *cobra.Command, args []string) {
 	}
 
 	p := &messanger.MQTTPrinter{}
-	m.Subscribe(args[0], p)
+	m.Subscribe(args[0], p.Callback)
 }

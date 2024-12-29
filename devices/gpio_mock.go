@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -33,7 +34,7 @@ func GetMockLine(offset int, opts ...gpiocdev.LineReqOption) *MockLine {
 		case gpiocdev.EventHandler:
 			m.EventHandler = opt.(gpiocdev.EventHandler)
 			mqtt := messanger.GetMQTT()
-			mqtt.Subscribe(messanger.TopicControl("mock/"+strconv.Itoa(m.Offset())), m)
+			mqtt.Subscribe(messanger.TopicControl("mock/"+strconv.Itoa(m.Offset())), m.Callback)
 
 		default:
 			l.Info("MockLine does not record", "optType", v)
@@ -92,10 +93,7 @@ func (m *MockLine) MockHWInput(v int) {
 	}
 }
 
-func (m *MockLine) Callback(msg *message.Msg) {
-	l := logger.GetLogger()
-
-	// Change this to a map[string]string or map[string]interface{}
+func (m *MockLine) Callback(msg *message.Msg) error {
 	str := msg.String()
 	switch str {
 	case "on":
@@ -111,6 +109,7 @@ func (m *MockLine) Callback(msg *message.Msg) {
 		m.MockHWInput(0)
 
 	default:
-		l.Warn("bad hw mock value", "value", str)
+		return fmt.Errorf("bad hw mock value %s", str)
 	}
+	return nil
 }

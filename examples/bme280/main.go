@@ -34,7 +34,7 @@ func main() {
 	// Before we start reading temp, etc. let's subscribe to
 	// the messages we are going to publish.
 	dm := data.GetDataManager()
-	mqtt.Subscribe(path, dm)
+	mqtt.Subscribe(path, dm.Callback)
 
 	// start reading in a loop and publish the results
 	// via MQTT

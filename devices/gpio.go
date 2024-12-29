@@ -110,8 +110,9 @@ func (pin *Pin) Toggle() error {
 
 // Callback is the default callback for pins if they are
 // registered with the MQTT.Subscribe() function
-func (pin Pin) Callback(msg *message.Msg) {
-	switch msg.String() {
+func (pin Pin) Callback(msg *message.Msg) error {
+	cmd := msg.String()
+	switch cmd {
 	case "on":
 		pin.On()
 
@@ -122,6 +123,7 @@ func (pin Pin) Callback(msg *message.Msg) {
 		pin.Toggle()
 
 	}
+	return nil
 }
 
 // GPIO is used to initialize the GPIO and pins on a raspberry pi

@@ -48,7 +48,7 @@ func main() {
 	r := g.Pin("relay", 6, gpiocdev.AsOutput(0))
 	m := messanger.GetMQTT()
 	m.Connect()
-	m.Subscribe("ss/c/station/relay", r)
+	m.Subscribe("ss/c/station/relay", r.Callback)
 
 	<-quit
 	l.Info("Exiting relay")
