@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
 	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
@@ -86,7 +85,6 @@ func (dm *DataManager) Callback(msg *message.Msg) {
 		}
 	}
 
-	dm.Dump(os.Stdout)
 	return
 }
 

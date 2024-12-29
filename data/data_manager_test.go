@@ -9,8 +9,8 @@ import (
 
 func TestNewDataManager(t *testing.T) {
 	dm := NewDataManager()
-	if len(dm.DataMap) != 0 {
-		t.Errorf("Datamanger map not empty expected(0) got (%d)", len(dm.DataMap))
+	if len(dm.dataMap) != 0 {
+		t.Errorf("Datamanger map not empty expected(0) got (%d)", len(dm.dataMap))
 	}
 }
 
