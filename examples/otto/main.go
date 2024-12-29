@@ -55,10 +55,10 @@ func main() {
 	}
 
 	// TODO capture signals
-	data.GetDataManager()
 	initSignals()
 	initApp()
 	initStations()
+	initDataManager()
 
 	err := initDevices(done)
 	if err != nil {
@@ -76,6 +76,12 @@ func main() {
 func cleanup() {
 	g := devices.GetGPIO()
 	g.Shutdown()
+}
+
+func initDataManager() {
+	dm := data.GetDataManager()
+	srv := server.GetServer()
+	srv.Register("/api/data", dm)
 }
 
 func initSignals() {
@@ -119,12 +125,12 @@ func initButton(name string, idx int) {
 }
 
 func initBME280(bus string, addr int, done chan bool) error {
-	bme := bme280.New("bme", "/dev/i2c-1", 0x76)
+	bme := bme280.New("bme280", "/dev/i2c-1", 0x76)
 	if bme == nil {
 		return fmt.Errorf("Failed initialize BME280 %s %d", "/dev/i2c-1", 0x76)
 	}
 
-	if mockMQTT {
+	if mockGPIO {
 		bme.Mock = true
 	}
 	err := bme.Init()

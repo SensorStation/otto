@@ -21,5 +21,4 @@ func TestDataManagerCallback(t *testing.T) {
 	dm := NewDataManager()
 	msg := message.New(path, data, "data-manager-test")
 	dm.Callback(msg)
-
 }

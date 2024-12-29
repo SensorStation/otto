@@ -1,12 +1,15 @@
 package data
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // Data is an array of timestamps and values representing the same
 // source of data over a period of time
 type Data struct {
 	Value     any           `json:"value"`
-	TimeStamp time.Duration `json:"time"`
+	Timestamp time.Duration `json:"time-increment"`
 }
 
 // Return the float64 representation of the data. If the data is not
@@ -19,4 +22,8 @@ func (d *Data) Float() float64 {
 // an integer a panic will result.
 func (d *Data) Int() int {
 	return d.Value.(int)
+}
+
+func (d *Data) String() string {
+	return fmt.Sprintf(" %v (+%s), ", d.Value, d.Timestamp.Truncate(time.Second))
 }

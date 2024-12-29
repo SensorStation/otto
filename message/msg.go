@@ -51,6 +51,13 @@ func New(topic string, data []byte, source string) *Msg {
 	return msg
 }
 
+func (msg *Msg) Station() string {
+	if len(msg.Path) < 3 {
+		return ""
+	}
+	return msg.Path[3]
+}
+
 func (msg *Msg) Last() string {
 	l := len(msg.Path)
 	return msg.Path[l-1]

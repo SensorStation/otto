@@ -1,7 +1,11 @@
 package data
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
 
 	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
@@ -12,7 +16,7 @@ import (
 // a specific station. The timeseries for each station are
 // differentiated by the timeseries labels.
 type DataManager struct {
-	DataMap map[string]map[string]*Timeseries `json:"datamap"`
+	dataMap map[string]map[string]*Timeseries `json:"datamap"`
 }
 
 var (
@@ -34,7 +38,7 @@ func GetDataManager() *DataManager {
 // by NewStation()
 func NewDataManager() (dm *DataManager) {
 	dm = &DataManager{
-		DataMap: make(map[string]map[string]*Timeseries),
+		dataMap: make(map[string]map[string]*Timeseries),
 	}
 	mqtt := messanger.GetMQTT()
 	if mqtt != nil {
@@ -43,19 +47,62 @@ func NewDataManager() (dm *DataManager) {
 	return dm
 }
 
+// Add will add data according to station and label
+func (dm *DataManager) Add(station, label string, data any) {
+	stmap, ex := dm.dataMap[station]
+	if !ex {
+		dm.dataMap[station] = make(map[string]*Timeseries)
+		stmap = dm.dataMap[station]
+	}
+	ts, ex := stmap[label]
+	if !ex {
+		stmap[label] = NewTimeseries(station, label)
+	}
+	ts = stmap[label]
+	ts.Add(data)
+}
+
+func (dm *DataManager) Dump(w io.Writer) {
+	for _, st := range dm.dataMap {
+		for _, ts := range st {
+			fmt.Fprint(w, ts.String())
+		}
+	}
+}
+
 // Callback is the callback used by the DataManager to receive
 // MQTT messages. TODO: move this call back to the stations because
 // the stations will have a better understanding of the data they
 // are subscribing to.
 func (dm *DataManager) Callback(msg *message.Msg) {
-	fmt.Printf("M: %+v\n", msg)
 	if msg.IsJSON() {
 		m, err := msg.Map()
 		if err != nil {
 			return
 		}
-		fmt.Printf("MAP: %+v\n", m)
+
+		for k, v := range m {
+			dm.Add(msg.Station(), k, v)
+		}
 	}
 
+	dm.Dump(os.Stdout)
 	return
+}
+
+// ServeHTTP provides a REST interface to the config structure
+func (dm DataManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case "GET":
+		err := json.NewEncoder(w).Encode(dm)
+		if err != nil {
+			l.Error("Failed to encode data:", "error", err)
+			http.Error(w, "failure", 401)
+		}
+
+	case "POST", "PUT":
+		http.Error(w, "Not Yet Supported", 401)
+	}
 }
