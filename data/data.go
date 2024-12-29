@@ -5,11 +5,25 @@ import (
 	"time"
 )
 
+var Truncate time.Duration
+
 // Data is an array of timestamps and values representing the same
 // source of data over a period of time
 type Data struct {
 	Value     any           `json:"value"`
 	Timestamp time.Duration `json:"time-increment"`
+}
+
+func NewData(dat any, dur time.Duration) *Data {
+	d := &Data{
+		Value:     dat,
+		Timestamp: dur,
+	}
+	return d
+}
+
+func SetTruncateValue(d time.Duration) {
+	Truncate = d
 }
 
 // Return the float64 representation of the data. If the data is not
@@ -25,5 +39,5 @@ func (d *Data) Int() int {
 }
 
 func (d *Data) String() string {
-	return fmt.Sprintf(" %v (+%s), ", d.Value, d.Timestamp.Truncate(time.Second))
+	return fmt.Sprintf("%v (+%s), ", d.Value, d.Timestamp.Truncate(Truncate))
 }

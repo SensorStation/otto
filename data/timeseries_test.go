@@ -33,6 +33,3 @@ func TestTimeSeries(t *testing.T) {
 		}
 	}
 }
-
-func TestTimeData(t *testing.T) {
-}

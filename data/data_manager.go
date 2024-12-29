@@ -79,11 +79,13 @@ func (dm *DataManager) Callback(msg *message.Msg) {
 		if err != nil {
 			return
 		}
-
 		for k, v := range m {
 			dm.Add(msg.Station(), k, v)
 		}
+		return
 	}
+
+	dm.Add(msg.Station(), msg.Last(), msg.Data)
 
 	return
 }
