@@ -17,7 +17,7 @@ func New(name string, offset int) *LED {
 	return led
 }
 
-func (l *LED) Callback(msg *message.Msg) error {
+func (l *LED) Callback(msg *message.Msg) {
 	switch msg.String() {
 	case "off":
 		l.Off()
@@ -25,5 +25,5 @@ func (l *LED) Callback(msg *message.Msg) error {
 	case "on":
 		l.On()
 	}
-	return nil
+	return
 }

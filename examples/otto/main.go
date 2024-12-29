@@ -3,6 +3,8 @@ package main
 import (
 	"embed"
 	"flag"
+	"fmt"
+	"time"
 
 	"github.com/sensorstation/otto/cmd"
 	"github.com/sensorstation/otto/data"
@@ -57,7 +59,12 @@ func main() {
 	initSignals()
 	initApp()
 	initStations()
-	initDevices(done)
+
+	err := initDevices(done)
+	if err != nil {
+		fmt.Println("Failed to initialize devices: ", err)
+	}
+
 	if cli {
 		cmd.Execute()
 	}
@@ -80,38 +87,53 @@ func initStations() {
 	st.Start()
 }
 
-func initDevices(done chan bool) {
+func initDevices(done chan bool) error {
+	initRelay(22)
+	initLED(6)
+	initButton("on", 23)
+	initButton("off", 27)
+	err := initBME280("/dev/i2c-1", 0x76, done)
+	return err
+}
 
+func initRelay(idx int) {
 	m := messanger.GetMQTT()
-	relay := relay.New("relay", 22)
+	relay := relay.New("relay", idx)
 	m.Subscribe(messanger.TopicControl("relay"), relay.Callback)
+}
 
-	led := led.New("led", 6)
+func initLED(idx int) {
+	m := messanger.GetMQTT()
+	led := led.New("led", idx)
 	m.Subscribe(messanger.TopicControl("led"), led.Callback)
+}
 
-	butOn := button.New("on", 23)
-	go butOn.EventLoop(done)
-	m.SubscribeHandle(messanger.TopicControl("on"), func(msg *message.Msg) error {
-		m.Publish(messanger.TopicControl("relay"), "on")
-		m.Publish(messanger.TopicControl("led"), "on")
-		return nil
+func initButton(name string, idx int) {
+	m := messanger.GetMQTT()
+	but := button.New(name, idx)
+	go but.EventLoop(done)
+	m.Subscribe(messanger.TopicControl(name), func(msg *message.Msg) {
+		m.Publish(messanger.TopicControl("relay"), name)
+		m.Publish(messanger.TopicControl("led"), name)
 	})
+}
 
-	butOff := button.New("off", 27)
-	go butOff.EventLoop(done)
-	m.SubscribeHandle(messanger.TopicControl("off"), func(msg *message.Msg) error {
-		m.Publish(messanger.TopicControl("relay"), "off")
-		m.Publish(messanger.TopicControl("led"), "off")
-		return nil
-	})
-
+func initBME280(bus string, addr int, done chan bool) error {
 	bme := bme280.New("bme", "/dev/i2c-1", 0x76)
 	if bme == nil {
-		return
+		return fmt.Errorf("Failed initialize BME280 %s %d", "/dev/i2c-1", 0x76)
 	}
-	bme.Pubs = append(bme.Pubs, messanger.TopicData("bme280"))
-	bme.Period = 10
+
+	if mockMQTT {
+		bme.Mock = true
+	}
+	err := bme.Init()
+	if err != nil {
+		return err
+	}
+	bme.Period = 10 * time.Second
 	go bme.Loop(done)
+	return nil
 }
 
 //go:embed app

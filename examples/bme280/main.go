@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto/data"
+	"github.com/sensorstation/otto/devices/bme280"
 	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/messanger"
 )
@@ -16,10 +17,7 @@ var (
 
 func main() {
 	// Set the BME i2c device and address
-	bme := BME280{
-		Addr: 0x76,
-		Dev:  "/dev/i2c-1",
-	}
+	bme := bme280.New("bme280", "/dev/i2c-1", 0x76)
 
 	// Initialize the bme to use the i2c bus
 	err := bme.Init()

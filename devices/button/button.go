@@ -23,7 +23,7 @@ func New(name string, pin int) *Button {
 		gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
 			b.EvtQ <- evt
 		}))
-	b.Pubs = append(b.Pubs, messanger.TopicControl(name))
+	b.AddPub(messanger.TopicControl(name))
 	return b
 }
 

@@ -12,6 +12,10 @@ test:
 test-v:
 	go test -cover -v ./...
 
+html:
+	go test -coverprofile=/home/rusty/cover.out ./...
+	go tool cover -html=/home/rusty/cover.out
+
 $(SUBDIRS):
 	$(MAKE) -C $@
 

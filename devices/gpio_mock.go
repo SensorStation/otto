@@ -1,7 +1,6 @@
 package devices
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -93,7 +92,7 @@ func (m *MockLine) MockHWInput(v int) {
 	}
 }
 
-func (m *MockLine) Callback(msg *message.Msg) error {
+func (m *MockLine) Callback(msg *message.Msg) {
 	str := msg.String()
 	switch str {
 	case "on":
@@ -109,7 +108,7 @@ func (m *MockLine) Callback(msg *message.Msg) error {
 		m.MockHWInput(0)
 
 	default:
-		return fmt.Errorf("bad hw mock value %s", str)
+		return
 	}
-	return nil
+	return
 }

@@ -24,3 +24,14 @@ type Device struct {
 	Period time.Duration
 	EvtQ   chan gpiocdev.LineEvent
 }
+
+func NewDevice(name string) *Device {
+	d := &Device{
+		Name: name,
+	}
+	return d
+}
+
+func (d *Device) AddPub(p string) {
+	d.Pubs = append(d.Pubs, p)
+}

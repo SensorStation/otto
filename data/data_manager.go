@@ -47,15 +47,15 @@ func NewDataManager() (dm *DataManager) {
 // MQTT messages. TODO: move this call back to the stations because
 // the stations will have a better understanding of the data they
 // are subscribing to.
-func (dm *DataManager) Callback(msg *message.Msg) error {
+func (dm *DataManager) Callback(msg *message.Msg) {
 	fmt.Printf("M: %+v\n", msg)
 	if msg.IsJSON() {
 		m, err := msg.Map()
 		if err != nil {
-			return err
+			return
 		}
 		fmt.Printf("MAP: %+v\n", m)
 	}
 
-	return nil
+	return
 }

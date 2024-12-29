@@ -15,23 +15,26 @@ import (
 type BME280 struct {
 	devices.I2CDevice
 	driver *bme280.Driver
+	Mock   bool
 }
+
+type Response bme280.Response
 
 func New(name, bus string, addr int) *BME280 {
 	b := &BME280{
 		I2CDevice: devices.NewI2CDevice(name, bus, addr),
 	}
-	err := b.Init()
-	if err != nil {
-		logger.GetLogger().Error("Failed to open the bme280", "error", err)
-		return nil
-	}
+	b.AddPub(messanger.TopicData(name))
 	return b
 }
 
 // Init opens the i2c bus at the specified address and gets the device
 // read for reading
 func (b *BME280) Init() error {
+	if b.Mock {
+		return nil
+	}
+
 	device, err := i2c.Open(&i2c.Devfs{Dev: b.Bus}, b.Addr)
 	if err != nil {
 		return err
@@ -52,6 +55,14 @@ func (b *BME280) Init() error {
 }
 
 func (b *BME280) Read() (*bme280.Response, error) {
+	if b.Mock {
+		return &bme280.Response{
+			Temperature: 20.33,
+			Pressure:    1027.33,
+			Humidity:    74.33,
+		}, nil
+	}
+
 	response, err := b.driver.Read()
 	if err != nil {
 		return nil, err
@@ -60,11 +71,11 @@ func (b *BME280) Read() (*bme280.Response, error) {
 }
 
 func (b *BME280) Loop(done chan bool) {
-	// No need to loop if we don't have a ticker ticking
+	// No need to loop if we don't have a ticker period
 	if b.Period <= 0 {
 		return
 	}
-	ticker := time.NewTicker(time.Second * b.Period)
+	ticker := time.NewTicker(b.Period)
 
 	running := true
 	for running {

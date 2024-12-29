@@ -1,7 +1,6 @@
 package messanger
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/sensorstation/otto/message"
@@ -13,16 +12,16 @@ type tclient struct {
 	msg   string
 }
 
-func (t *tclient) Callback(msg *message.Msg) error {
+func (t *tclient) Callback(msg *message.Msg) {
 	if msg.Path[0] != "t" || msg.Path[1] != "test" {
-		return fmt.Errorf("bad path: %v", msg.Path)
+		return
 	}
 
 	if string(msg.Data) != "message" {
-		return fmt.Errorf("bad data: %s", msg.Data)
+		return
 	}
 	t.gotit = true
-	return nil
+	return
 }
 
 func TestSubscribe(t *testing.T) {

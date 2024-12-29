@@ -38,11 +38,11 @@ func TestButton(t *testing.T) {
 
 }
 
-func (b *Button) Callback(msg *message.Msg) error {
+func (b *Button) Callback(msg *message.Msg) {
 	i, err := strconv.Atoi(string(msg.Data))
 	if err != nil {
-		return err
+		return
 	}
 	gotit[i] = true
-	return nil
+	return
 }
