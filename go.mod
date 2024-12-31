@@ -9,9 +9,12 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/gorilla/websocket v1.5.1
 	github.com/maciej/bme280 v0.2.0
+	github.com/sandbankdisperser/go-i2c-oled v0.0.0-20241201115847-5e7c8ab8064e
 	github.com/spf13/cobra v1.8.1
 	github.com/warthog618/go-gpiocdev v0.9.0
+	github.com/waxdred/go-i2c-oled v1.0.1
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
+	golang.org/x/image v0.23.0
 )
 
 require (

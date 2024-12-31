@@ -20,6 +20,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
+github.com/sandbankdisperser/go-i2c-oled v0.0.0-20241201115847-5e7c8ab8064e h1:QtkWwbE+mg49kWNXXFteFnDFawsK767GbNd608EbTAg=
+github.com/sandbankdisperser/go-i2c-oled v0.0.0-20241201115847-5e7c8ab8064e/go.mod h1:JukZwYlRNO1BjkcQYCEtS3NgTiwhmVcDVcwaJpmwXHs=
 github.com/spf13/cobra v1.8.1 h1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=
 github.com/spf13/cobra v1.8.1/go.mod h1:wHxEcudfqmLYa8iTfL+OuZPbBZkmvliBWKIezN3kD9Y=
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
@@ -30,8 +32,12 @@ github.com/warthog618/go-gpiocdev v0.9.0 h1:AZWUq1WObgKCO9cJCACFpwWQw6yu8vJbIE6f
 github.com/warthog618/go-gpiocdev v0.9.0/go.mod h1:GV4NZC82fWJERqk7Gu0+KfLSDIBEDNm6aPGiHlmT5fY=
 github.com/warthog618/go-gpiosim v0.1.0 h1:2rTMTcKUVZxpUuvRKsagnKAbKpd3Bwffp87xywEDVGI=
 github.com/warthog618/go-gpiosim v0.1.0/go.mod h1:Ngx/LYI5toxHr4E+Vm6vTgCnt0of0tktsSuMUEJ2wCI=
+github.com/waxdred/go-i2c-oled v1.0.1 h1:viFpEXdyzyNHscgmgsmHEACSzSkeM0y+Fl22DlQMrUw=
+github.com/waxdred/go-i2c-oled v1.0.1/go.mod h1:EDvl5zP/km9wRofVhsaD/ojaRaXmsr+ul9vlDdF9Bo4=
 golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67 h1:1UoZQm6f0P/ZO0w1Ri+f+ifG/gXhegadRdwBIXEFWDo=
 golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67/go.mod h1:qj5a5QZpwLU2NLQudwIN5koi3beDhSAlJwa67PuM98c=
+golang.org/x/image v0.23.0 h1:HseQ7c2OpPKTPVzNjG5fwJsOTCiiwS4QdsYi5XU6H68=
+golang.org/x/image v0.23.0/go.mod h1:wJJBTdLfCCf3tiHa1fNxpZmUI4mmoZvwMCPP0ddoNKY=
 golang.org/x/net v0.32.0 h1:ZqPmj8Kzc+Y6e0+skZsuACbx+wzMgo5MQsJh9Qd6aYI=
 golang.org/x/net v0.32.0/go.mod h1:CwU0IoeOlnQQWJ6ioyFrfRuomB8GKF6KbYXZVyeXNfs=
 golang.org/x/sync v0.10.0 h1:3NQrjDixjgGwUOCaF8w2+VYHv0Ve/vGYSbdkTa98gmQ=

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/sensorstation/otto/timing"
 )
 
 func getMsg() (*Msg, time.Time) {
@@ -15,7 +17,7 @@ func getMsg() (*Msg, time.Time) {
 	b := fmt.Sprintf("%d", 4)
 	m := New(path, []byte(b), "test")
 	m.Source = "be:ef:ca:fe:01"
-	m.Time = now
+	m.Timestamp = timing.Timestamp()
 
 	return m, now
 }
@@ -24,6 +26,11 @@ func TestStationMsg(t *testing.T) {
 	topic := "ss/d/be:ef:ca:fe:01/station"
 	omsg, _ := getMsg()
 	omsg.Source = "be:ef:ca:fe:01"
+
+	fmt.Printf("PATH: %+v\n", omsg.Path)
+	if omsg.Last() != "test" {
+		t.Errorf("Failed to get station")
+	}
 
 	j, err := json.Marshal(omsg)
 	if err != nil {
@@ -65,8 +72,75 @@ func TestStationMsg(t *testing.T) {
 func TestJSON(t *testing.T) {
 	m, _ := getMsg()
 
-	_, err := json.Marshal(m)
+	jstr := `{ "int": 10, "float": 12.3, "string": "45.6" }`
+	m.Data = []byte(jstr)
+
+	jbyte, err := json.Marshal(m)
 	if err != nil {
 		t.Errorf("Failed to marshal message %+v", m)
+	}
+
+	var m2 Msg
+	err = json.Unmarshal(jbyte, &m2)
+	if err != nil {
+		t.Error("Failed to unmarshal message", err)
+	}
+
+	if m2.ID != m.ID || m2.Topic != m.Topic ||
+		m.Timestamp != m2.Timestamp ||
+		m.Source != m2.Source {
+		t.Errorf("Failed to unmarshal message expected (%+v) got (%+v)", m, m2)
+	}
+
+	if len(m.Data) != len(m2.Data) {
+		t.Errorf("Msg Data Len expected(%d) got (%d)", len(m.Data), len(m2.Data))
+	} else {
+		for i := 0; i < len(m.Data); i++ {
+			if m.Data[i] != m2.Data[i] {
+				t.Errorf("Messages data[%d] expected (%d) got (%d)", i, m.Data[i], m2.Data[i])
+			}
+		}
+	}
+
+	if len(m.Path) != len(m2.Path) {
+		t.Errorf("Msg Path Len expected(%d) got (%d)", len(m.Path), len(m2.Path))
+	} else {
+		for i := 0; i < len(m.Path); i++ {
+			if m.Path[i] != m2.Path[i] {
+				t.Errorf("Messages path[%d] expected (%s) got (%s)", i, m.Path[i], m2.Path[i])
+			}
+		}
+	}
+
+	if !m2.IsJSON() {
+		t.Error("Msg expected to be JSON but is not ")
+	}
+
+	mpp, err := m2.Map()
+	if err != nil {
+		t.Errorf("Msg expected map but got an error (%s)", err)
+	}
+
+	for k, v := range mpp {
+		switch k {
+		case "int":
+			if v != 10.0 {
+				t.Errorf("Expected int (%d) got (%f)", 10, v)
+			}
+		case "float":
+			if v != 12.3 {
+				t.Errorf("Expected float (%f) got (%f)", 12.3, v)
+			}
+		case "string":
+			if v != "45.6" {
+				t.Errorf("Expected string (%s) got (%s)", "45.6", k)
+			}
+
+		}
+	}
+
+	m.Data = []byte("this is not json")
+	if m.IsJSON() {
+		t.Errorf("JSON expected (false) got (true) ")
 	}
 }

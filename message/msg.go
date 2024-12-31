@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/sensorstation/otto/timing"
 )
 
 type Message interface {
@@ -21,12 +23,11 @@ type Msg struct {
 	Data   []byte   `json:"msg"`
 	Source string   `json:"source"`
 
-	time.Time `json:"time"`
+	Timestamp time.Duration `json:"timestamp"`
 }
 
 var (
-	msgid int64 = 0
-
+	msgid    int64 = 0
 	msgSaver *MsgSaver
 )
 
@@ -37,12 +38,12 @@ func getMsgID() int64 {
 
 func New(topic string, data []byte, source string) *Msg {
 	msg := &Msg{
-		ID:     getMsgID(),
-		Topic:  topic,
-		Path:   strings.Split(topic, "/"),
-		Data:   data,
-		Time:   time.Now(),
-		Source: source,
+		ID:        getMsgID(),
+		Topic:     topic,
+		Path:      strings.Split(topic, "/"),
+		Data:      data,
+		Timestamp: timing.Timestamp(),
+		Source:    source,
 	}
 
 	if msgSaver != nil && msgSaver.Saving {
@@ -90,7 +91,7 @@ func (msg *Msg) Dump() string {
 	str += fmt.Sprintf("Args: %q\n", msg.Args)
 	str += fmt.Sprintf(" Msg: %s\n", string(msg.Data))
 	str += fmt.Sprintf(" Src: %s\n", msg.Source)
-	str += fmt.Sprintf("Time: %s\n", msg.Time)
+	str += fmt.Sprintf("Time: %s\n", msg.Timestamp)
 	return str
 }
 
