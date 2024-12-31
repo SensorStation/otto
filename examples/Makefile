@@ -1,0 +1,9 @@
+TOPTARGETS := all clean pi
+
+SUBDIRS := $(wildcard */.)
+
+$(TOPTARGETS): $(SUBDIRS)
+$(SUBDIRS):
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+.PHONY: $(TOPTARGETS) $(SUBDIRS)

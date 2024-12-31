@@ -57,9 +57,7 @@ func (b *Button) EventLoop(done chan bool) {
 			}
 
 			val := strconv.Itoa(v)
-			for _, t := range b.Pubs {
-				messanger.GetMQTT().Publish(t, val)
-			}
+			messanger.GetMQTT().Publish(b.Pub, val)
 
 		case <-done:
 			running = false

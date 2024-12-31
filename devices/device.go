@@ -17,7 +17,7 @@ const (
 
 type Device struct {
 	Name string
-	Pubs []string
+	Pub  string
 	Subs []string
 	Mode
 
@@ -33,5 +33,5 @@ func NewDevice(name string) *Device {
 }
 
 func (d *Device) AddPub(p string) {
-	d.Pubs = append(d.Pubs, p)
+	d.Pub = p
 }

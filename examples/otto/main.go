@@ -4,6 +4,7 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/sensorstation/otto/cmd"
@@ -13,6 +14,7 @@ import (
 	"github.com/sensorstation/otto/devices/button"
 	"github.com/sensorstation/otto/devices/led"
 	"github.com/sensorstation/otto/devices/relay"
+	"github.com/sensorstation/otto/devices/ssd1306"
 	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
@@ -98,7 +100,11 @@ func initDevices(done chan bool) error {
 	initLED(6)
 	initButton("on", 23)
 	initButton("off", 27)
-	err := initBME280("/dev/i2c-1", 0x76, done)
+	bme, err := initBME280("/dev/i2c-1", 0x76, done)
+	if err != nil {
+		return err
+	}
+	initOLED(bme, done)
 	return err
 }
 
@@ -124,22 +130,84 @@ func initButton(name string, idx int) {
 	})
 }
 
-func initBME280(bus string, addr int, done chan bool) error {
-	bme := bme280.New("bme280", "/dev/i2c-1", 0x76)
+func initBME280(bus string, addr int, done chan bool) (bme *bme280.BME280, err error) {
+	bme = bme280.New("bme280", "/dev/i2c-1", 0x76)
 	if bme == nil {
-		return fmt.Errorf("Failed initialize BME280 %s %d", "/dev/i2c-1", 0x76)
+		return nil, fmt.Errorf("Failed initialize BME280 %s %d", "/dev/i2c-1", 0x76)
 	}
 
 	if mockGPIO {
 		bme.Mock = true
 	}
-	err := bme.Init()
+	err = bme.Init()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	bme.Period = 10 * time.Second
 	go bme.Loop(done)
-	return nil
+	return bme, nil
+}
+
+func initOLED(bme *bme280.BME280, done chan bool) {
+
+	display, err := ssd1306.NewDisplay("oled", 128, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	m := messanger.GetMQTT()
+	m.Subscribe(bme.Pub, func(msg *message.Msg) {
+		mm, err := msg.Map()
+		if err != nil {
+			l.Error("Failed top get map", "error", err)
+		}
+
+		temp, ex := mm["Temperature"]
+		if !ex {
+			l.Error("failed to get temperature")
+		}
+		pressure, ex := mm["Pressure"]
+		if !ex {
+			l.Error("failed to get pressure")
+		}
+		humidity, ex := mm["Humidity"]
+		if !ex {
+			l.Error("failed to get Humidity")
+		}
+
+		display.Clear()
+		start := 25
+		display.DrawString(10, 10, "OttO IoT Champion")
+		display.DrawString(10, start, fmt.Sprintf("temp: %7.2f", temp))
+		display.DrawString(10, start + 15, fmt.Sprintf("pres: %7.2f", pressure))
+		display.DrawString(10, start + 30, fmt.Sprintf("humi: %7.2f", humidity))
+		display.Draw()
+	})
+
+	// go func() {
+	// 	running := true
+	// 	for running {
+	// 		select {
+	// 		case <-done:
+	// 			running = false
+
+	// 		default:
+	// 			// draw a line at 50, 100 lenght 50 pixels, 4 wide
+	// 			display.Clear()
+	// 			display.Line(0, 12, display.Width, 2, ssd1306.On)
+	// 			display.Rectangle(100, 40, 120, 60, ssd1306.On)
+	// 			display.DrawString(10, 10, "Hello, world!")
+	// 			display.Draw()
+
+	// 			time.Sleep(10 * time.Second)
+
+	// 			display.Clear()
+	// 			display.AnimatedGIF("ballerine.gif")
+	// 			display.Draw()
+	// 			time.Sleep(10 * time.Second)
+	// 		}
+	// 	}
+	// }()
 }
 
 //go:embed app

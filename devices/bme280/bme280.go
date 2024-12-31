@@ -94,9 +94,7 @@ func (b *BME280) Loop(done chan bool) {
 				break
 			}
 			mqtt := messanger.GetMQTT()
-			for _, t := range b.Pubs {
-				mqtt.Publish(t, jb)
-			}
+			mqtt.Publish(b.Pub, jb)
 
 		case <-done:
 			running = false

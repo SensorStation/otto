@@ -34,7 +34,7 @@ func NewDeviceGPIO(name string, idx int, mode Mode, opts ...gpiocdev.LineReqOpti
 	}
 
 	// append the pubs
-	d.Pubs = append(d.Pubs, messanger.TopicData(name))
+	d.AddPub(name)
 	gpio = GetGPIO()
 	d.Pin = gpio.Pin(name, idx, opts...)
 	return d
@@ -59,7 +59,5 @@ func (d *DeviceGPIO) Set(v int) {
 	}
 
 	m := messanger.GetMQTT()
-	for _, p := range d.Pubs {
-		m.Publish(p, val)
-	}
+	m.Publish(d.Pub, val)
 }

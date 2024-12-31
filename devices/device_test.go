@@ -8,19 +8,16 @@ func TestDev(t *testing.T) {
 		t string
 		e bool
 	}{
-		{"ss/c/test", false},
 		{"ss/d/test", false},
 	}
 	for _, e := range exp {
-		d.Pubs = append(d.Pubs, e.t)
+		d.AddPub(e.t)
 	}
 
-	for _, p := range d.Pubs {
-		for i, _ := range exp {
-			if exp[i].t == p {
-				exp[i].e = true
-				break
-			}
+	for i, _ := range exp {
+		if exp[i].t == d.Pub {
+			exp[i].e = true
+			break
 		}
 	}
 

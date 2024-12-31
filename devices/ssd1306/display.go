@@ -74,7 +74,6 @@ func NewDisplay(name string, width, height int) (*Display, error) {
 func (d *Display) Clear() {
 	// got to be a better way
 	d.Rectangle(0, 0, d.Width, d.Height, Off)
-	d.Draw()
 }
 
 func (d *Display) Draw() error {
