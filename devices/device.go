@@ -3,6 +3,7 @@ package devices
 import (
 	"time"
 
+	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -34,4 +35,9 @@ func NewDevice(name string) *Device {
 
 func (d *Device) AddPub(p string) {
 	d.Pub = p
+}
+
+func (d *Device) Publish(data any) {
+	m := messanger.GetMQTT()
+	m.Publish(d.Pub, data)
 }
