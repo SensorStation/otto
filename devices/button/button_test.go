@@ -39,7 +39,7 @@ func TestButton(t *testing.T) {
 }
 
 func (b *Button) Callback(msg *message.Msg) {
-	i, err := strconv.Atoi(string(msg.Data))
+	i, err := strconv.Atoi(msg.String())
 	if err != nil {
 		return
 	}

@@ -17,7 +17,7 @@ func (t *tclient) Callback(msg *message.Msg) {
 		return
 	}
 
-	if string(msg.Data) != "message" {
+	if msg.String() != "message" {
 		return
 	}
 	t.gotit = true
