@@ -1,4 +1,4 @@
-package otto
+package util
 
 import (
 	"fmt"

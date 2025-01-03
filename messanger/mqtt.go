@@ -30,11 +30,13 @@ type MQTT struct {
 	gomqtt.Client `json:"-"`
 }
 
-// NewMQTT creates a new instance of the MQTT client type.
+// NewMQTT creates a new instance of the MQTT client type. The
+// Client ID and Broker will have "otto" and "localhost" set as
+// defaults.  They can be overwritten before MQTT.Connect() is called.
 func NewMQTT() *MQTT {
 	mqtt := &MQTT{
-		ID:     "otto",
-		Broker: "localhost",
+		ID:     "otto",      // set some reasonable defaults
+		Broker: "localhost", // they can be overridden before opt
 	}
 	mqtt.Subscribers = make(map[string][]MsgHandle)
 	server := server.GetServer()

@@ -69,7 +69,6 @@ func (g *GTU7) StartReading() chan *GPS {
 }
 
 func (g *GTU7) startParser(parseQ chan string) chan *GPS {
-
 	gps := &GPS{}
 	gpsQ := make(chan *GPS)
 	go func() {
