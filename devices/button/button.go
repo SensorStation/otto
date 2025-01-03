@@ -11,12 +11,12 @@ import (
 )
 
 type Button struct {
-	*devices.DeviceGPIO
+	*devices.GPIODevice
 }
 
 func New(name string, pin int) *Button {
 	b := &Button{}
-	b.DeviceGPIO = devices.NewDeviceGPIO(name, pin, devices.ModeInput,
+	b.GPIODevice = devices.NewGPIODevice(name, pin, devices.ModeInput,
 		gpiocdev.WithPullUp,
 		gpiocdev.WithFallingEdge,
 		gpiocdev.WithDebounce(10*time.Millisecond),
