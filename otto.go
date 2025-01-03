@@ -98,20 +98,15 @@ var (
 	Done        chan bool
 	StationName string
 	Version     string
+	Interactive bool
 	l           *logger.Logger
 )
 
 func init() {
 	l = logger.GetLogger()
 
-	config = &Configuration{
-		Addr:        ":8011",
-		Broker:      "localhost",
-		Interactive: true,
-	}
-
 	StationName = "station"
-	Version = "0.0.5"
+	Version = "0.0.7"
 }
 
 func Cleanup() {
@@ -139,7 +134,7 @@ func OttO() {
 	// start web server / rest server
 	server := server.GetServer()
 	go server.Start()
-	if config.Interactive {
+	if Interactive {
 		println("go cleanup")
 		go Cleanup()
 	} else {

@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"github.com/sensorstation/otto"
 	"github.com/sensorstation/otto/logger"
 	"github.com/spf13/cobra"
 )
 
 var (
-	l *logger.Logger
+	l      *logger.Logger
+	appdir string
 )
 
 var rootCmd = &cobra.Command{
@@ -19,8 +19,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	c := otto.GetConfig()
-	rootCmd.PersistentFlags().StringVar(&c.Appdir, "appdir", "embed", "root of the web app")
+	rootCmd.PersistentFlags().StringVar(&appdir, "appdir", "embed", "root of the web app")
 }
 
 func GetRootCmd() *cobra.Command {

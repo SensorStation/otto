@@ -22,7 +22,7 @@ func init() {
 
 func fileRun(cmd *cobra.Command, args []string) {
 	l = logger.GetLogger()
-	otto.GetConfig().Interactive = true
+	otto.Interactive = true
 	fname := args[0]
 	file, err := os.Open(fname)
 	if err != nil {
