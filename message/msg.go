@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sensorstation/otto/timing"
+	"github.com/sensorstation/otto/utils"
 )
 
 type Message interface {
@@ -42,7 +42,7 @@ func New(topic string, data []byte, source string) *Msg {
 		Topic:     topic,
 		Path:      strings.Split(topic, "/"),
 		Data:      data,
-		Timestamp: timing.Timestamp(),
+		Timestamp: utils.Timestamp(),
 		Source:    source,
 	}
 

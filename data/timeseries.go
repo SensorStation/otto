@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sensorstation/otto/timing"
+	"github.com/sensorstation/otto/utils"
 )
 
 // Timeseries represents a single source of data over a time period
@@ -20,7 +20,7 @@ func NewTimeseries(station, label string) *Timeseries {
 	return &Timeseries{
 		Station:   station,
 		Label:     label,
-		Timestamp: timing.Timestamp(),
+		Timestamp: utils.Timestamp(),
 	}
 }
 
@@ -28,7 +28,7 @@ func NewTimeseries(station, label string) *Timeseries {
 func (ts *Timeseries) Add(d any) *Data {
 	dat := &Data{
 		Value:     d,
-		Timestamp: timing.Timestamp(),
+		Timestamp: utils.Timestamp(),
 	}
 	ts.Data = append(ts.Data, dat)
 	return dat

@@ -1,4 +1,4 @@
-package otto
+package utils
 
 import "runtime"
 

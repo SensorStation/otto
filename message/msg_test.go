@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sensorstation/otto/timing"
+	"github.com/sensorstation/otto/utils"
 )
 
 func getMsg() (*Msg, time.Time) {
@@ -17,7 +17,7 @@ func getMsg() (*Msg, time.Time) {
 	b := fmt.Sprintf("%d", 4)
 	m := New(path, []byte(b), "test")
 	m.Source = "be:ef:ca:fe:01"
-	m.Timestamp = timing.Timestamp()
+	m.Timestamp = utils.Timestamp()
 
 	return m, now
 }

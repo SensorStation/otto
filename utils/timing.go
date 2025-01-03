@@ -1,4 +1,4 @@
-package timing
+package utils
 
 import "time"
 
