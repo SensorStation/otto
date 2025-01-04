@@ -26,7 +26,7 @@ func (t *tclient) Callback(msg *message.Msg) {
 
 func TestSubscribe(t *testing.T) {
 	c := GetMockClient()
-	m := GetMQTTClient(c)
+	m := SetMQTTClient(c)
 	err := m.Connect()
 	if err != nil {
 		t.Error("Failed to connect to MQTT broker: ", err)

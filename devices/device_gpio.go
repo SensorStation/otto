@@ -3,7 +3,6 @@ package devices
 import (
 	"fmt"
 
-	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -54,7 +53,5 @@ func (d *GPIODevice) Set(v int) {
 	if v > 0 {
 		val = "on"
 	}
-
-	m := messanger.GetMQTT()
-	m.Publish(d.Pub, val)
+	d.Publish(val)
 }

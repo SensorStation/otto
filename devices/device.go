@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/sensorstation/otto/logger"
@@ -46,11 +47,29 @@ func (d *Device) Subscribe(topic string, f func(*message.Msg)) {
 }
 
 func (d *Device) Publish(data any) {
-	m := messanger.GetMQTT()
 	if d.Pub == "" {
 		logger.GetLogger().Error("Device.Publish failed has no pub", "name", d.Name)
+		return
 	}
-	m.Publish(d.Pub, data)
+	var buf []byte
+	switch data.(type) {
+	case []byte:
+		buf = data.([]byte)
+
+	case string:
+		buf = []byte(data.(string))
+
+	default:
+		panic("unknown type: " + fmt.Sprintf("%T", data))
+	}
+
+	msg := message.New(d.Pub, buf, d.Name)
+	m := messanger.GetMQTT()
+	m.PublishMsg(msg)
+}
+
+func (d *Device) Shutdown() {
+	GetGPIO().Shutdown()
 }
 
 func (d *Device) EventLoop(done chan bool, readpub func() error) {

@@ -7,7 +7,6 @@ import (
 
 	"github.com/sensorstation/otto/devices"
 	"github.com/sensorstation/otto/logger"
-	"github.com/sensorstation/otto/messanger"
 )
 
 type GTU7 struct {
@@ -20,7 +19,6 @@ type GTU7 struct {
 func NewGTU7(devname string) *GTU7 {
 	g := &GTU7{}
 	g.SerialDevice = devices.NewSerialDevice("gt-u7", devname, 9600)
-	g.AddPub(messanger.TopicData("gt-u7"))
 	return g
 }
 

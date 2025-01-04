@@ -47,7 +47,7 @@ func New(topic string, data []byte, source string) *Msg {
 	}
 
 	if msgSaver != nil && msgSaver.Saving {
-		msgSaver.SavedMessages = append(msgSaver.SavedMessages, msg)
+		msgSaver.Messages = append(msgSaver.Messages, msg)
 	}
 	return msg
 }
@@ -68,6 +68,16 @@ func (msg *Msg) Byte() []byte {
 	return msg.Data
 }
 
+func (msg *Msg) String() string {
+	return string(msg.Data)
+}
+
+func (msg *Msg) Float64() float64 {
+	var f float64
+	fmt.Sscanf(msg.String(), "%f", &f)
+	return f
+}
+
 func (msg *Msg) IsJSON() bool {
 	return json.Valid(msg.Data)
 }
@@ -81,23 +91,42 @@ func (msg *Msg) Map() (map[string]interface{}, error) {
 	return m, nil
 }
 
-func (msg *Msg) String() string {
-	return string(msg.Data)
-}
-
 func (msg *Msg) Dump() string {
 	str := fmt.Sprintf("  ID: %d\n", msg.ID)
 	str += fmt.Sprintf("Path: %q\n", msg.Path)
 	str += fmt.Sprintf("Args: %q\n", msg.Args)
-	str += fmt.Sprintf(" Msg: %s\n", string(msg.Data))
 	str += fmt.Sprintf(" Src: %s\n", msg.Source)
 	str += fmt.Sprintf("Time: %s\n", msg.Timestamp)
+	str += fmt.Sprintf("Data: %s\n", string(msg.Data))
+
 	return str
 }
 
 type MsgSaver struct {
-	SavedMessages []*Msg `json:"saved-messages"`
-	Saving        bool   `json:"saving"`
+	Messages []*Msg `json:"saved-messages"`
+	Saving   bool   `json:"saving"`
+}
+
+func GetMsgSaver() *MsgSaver {
+	if msgSaver == nil {
+		msgSaver = &MsgSaver{}
+	}
+	return msgSaver
+}
+
+func (ms *MsgSaver) StartSaving() {
+	ms.Saving = true
+}
+
+func (ms *MsgSaver) StopSaving() {
+	ms.Saving = false
+}
+
+func (ms *MsgSaver) Dump() {
+	for _, msg := range ms.Messages {
+		println(msg.Dump())
+		println("----------------------------------------------")
+	}
 }
 
 // ServeHTTP will respond to the writer with 'Pong'

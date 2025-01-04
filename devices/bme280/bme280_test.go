@@ -11,7 +11,7 @@ import (
 func init() {
 	// Setup the mock mqtt client
 	c := messanger.GetMockClient()
-	messanger.GetMQTTClient(c)
+	messanger.SetMQTTClient(c)
 }
 
 func TestBME280(t *testing.T) {
@@ -61,9 +61,9 @@ func TestBME280(t *testing.T) {
 	// Set up for bme EventLoop run the loop every 200 milliseconds then
 	// stop the loop
 	count := 0
-	m := messanger.GetMQTT()
 	topic := messanger.TopicData(name)
-	m.Subscribe(topic, func(msg *message.Msg) {
+	bme.AddPub(topic)
+	bme.Subscribe(topic, func(msg *message.Msg) {
 		if msg.Topic != topic {
 			t.Errorf("expected topic (%s) got (%s)", topic, msg.Topic)
 			return

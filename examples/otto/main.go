@@ -50,7 +50,7 @@ func main() {
 		mockGPIO = true
 	}
 	if mockMQTT {
-		messanger.GetMQTTClient(messanger.GetMockClient())
+		messanger.SetMQTTClient(messanger.GetMockClient())
 	}
 	if mockGPIO {
 		devices.GetGPIO().Mock = true
@@ -93,7 +93,7 @@ func initSignals() {
 
 func initDataManager() {
 	dm := data.GetDataManager()
-	dm.Subscribe("ss/d/#")
+	dm.Subscribe("ss/d/#", dm.Callback)
 
 	srv := server.GetServer()
 	srv.Register("/api/data", dm)

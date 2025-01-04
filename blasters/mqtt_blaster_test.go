@@ -39,7 +39,7 @@ func TestBlasters(t *testing.T) {
 
 func TestBlasting(t *testing.T) {
 	c := messanger.GetMockClient()
-	m := messanger.GetMQTTClient(c)
+	m := messanger.SetMQTTClient(c)
 	m.Connect()
 
 	blasters := NewMQTTBlasters(5)

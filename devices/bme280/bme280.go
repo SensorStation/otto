@@ -6,7 +6,6 @@ import (
 
 	"github.com/maciej/bme280"
 	"github.com/sensorstation/otto/devices"
-	"github.com/sensorstation/otto/messanger"
 	"golang.org/x/exp/io/i2c"
 )
 
@@ -23,7 +22,6 @@ func New(name, bus string, addr int) *BME280 {
 	b := &BME280{
 		I2CDevice: devices.NewI2CDevice(name, bus, addr),
 	}
-	b.AddPub(messanger.TopicData(name))
 	return b
 }
 

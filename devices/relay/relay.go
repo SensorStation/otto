@@ -18,7 +18,8 @@ func New(name string, offset int) *Relay {
 }
 
 func (r *Relay) Callback(msg *message.Msg) {
-	switch msg.String() {
+	str := msg.String()
+	switch str {
 	case "off":
 		r.Off()
 

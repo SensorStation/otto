@@ -9,7 +9,6 @@ import (
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
-	"github.com/sensorstation/otto/server"
 )
 
 var (
@@ -37,10 +36,6 @@ func NewMQTT() *MQTT {
 		Broker: "localhost",
 	}
 	mqtt.Subscribers = make(map[string][]MsgHandle)
-	server := server.GetServer()
-	if server != nil {
-		server.Register("/api/mqtt", mqtt)
-	}
 	mqtt.Publishers = make(map[string]int)
 
 	if l == nil {
@@ -50,7 +45,7 @@ func NewMQTT() *MQTT {
 	return mqtt
 }
 
-func GetMQTTClient(c gomqtt.Client) *MQTT {
+func SetMQTTClient(c gomqtt.Client) *MQTT {
 	mqtt = NewMQTT()
 	mqtt.Client = c
 	return mqtt
@@ -113,6 +108,10 @@ func (m MQTT) PublishMsg(msg *message.Msg) {
 // Publish will publish a value to the given channel
 func (m MQTT) Publish(topic string, value interface{}) {
 	var t gomqtt.Token
+
+	if topic == "" {
+		panic("topic is nil")
+	}
 
 	m.Publishers[topic] += 1
 	if m.Client == nil {

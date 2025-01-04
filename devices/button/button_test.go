@@ -17,7 +17,7 @@ func TestButton(t *testing.T) {
 	done := make(chan bool)
 
 	c := messanger.GetMockClient()
-	m := messanger.GetMQTTClient(c)
+	m := messanger.SetMQTTClient(c)
 	err := m.Connect()
 	if err != nil {
 		t.Error("Failed to connect to MQTT broker: ", err)

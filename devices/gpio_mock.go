@@ -19,6 +19,12 @@ type MockLine struct {
 	start                 time.Time
 }
 
+func GetMockGPIO() *GPIO {
+	gpio := GetGPIO()
+	gpio.Mock = true
+	return gpio
+}
+
 func GetMockLine(offset int, opts ...gpiocdev.LineReqOption) *MockLine {
 	l := logger.GetLogger()
 	m := &MockLine{

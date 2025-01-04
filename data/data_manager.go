@@ -16,6 +16,7 @@ import (
 // differentiated by the timeseries labels.
 type DataManager struct {
 	dataMap map[string]map[string]*Timeseries `json:"datamap"`
+	Subs    []string
 }
 
 var (
@@ -42,10 +43,11 @@ func NewDataManager() (dm *DataManager) {
 	return dm
 }
 
-func (dm *DataManager) Subscribe(topic string) {
+func (dm *DataManager) Subscribe(topic string, c func(msg *message.Msg)) {
+	dm.Subs = append(dm.Subs, topic)
 	mqtt := messanger.GetMQTT()
 	if mqtt != nil {
-		mqtt.Subscribe(topic, dm.Callback)
+		mqtt.Subscribe(topic, c)
 	}
 }
 
