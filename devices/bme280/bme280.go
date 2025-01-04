@@ -2,11 +2,10 @@ package bme280
 
 import (
 	"encoding/json"
-	"time"
+	"errors"
 
 	"github.com/maciej/bme280"
 	"github.com/sensorstation/otto/devices"
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/messanger"
 	"golang.org/x/exp/io/i2c"
 )
@@ -70,33 +69,16 @@ func (b *BME280) Read() (*bme280.Response, error) {
 	return &response, err
 }
 
-func (b *BME280) Loop(done chan bool) {
-	// No need to loop if we don't have a ticker period
-	if b.Period <= 0 {
-		return
+func (b *BME280) ReadPub() error {
+	vals, err := b.Read()
+	if err != nil {
+		return errors.New("Failed to read bme280: " + err.Error())
 	}
-	ticker := time.NewTicker(b.Period)
 
-	running := true
-	for running {
-		select {
-		case <-ticker.C:
-			vals, err := b.Read()
-			if err != nil {
-				logger.GetLogger().Error("Failed to read bme280", "error", err)
-				continue
-			}
-
-			jb, err := json.Marshal(vals)
-			if err != nil {
-				logger.GetLogger().Error("failed to unmarshal bme Response", "error", err.Error())
-				done <- true
-				break
-			}
-			b.Publish(jb)
-
-		case <-done:
-			running = false
-		}
+	jb, err := json.Marshal(vals)
+	if err != nil {
+		return errors.New("BME280 failed marshal read response" + err.Error())
 	}
+	b.Publish(jb)
+	return nil
 }

@@ -116,28 +116,28 @@ func initDevices(done chan bool) error {
 	}
 	bme.AddPub(messanger.TopicData("bme280"))
 	bme.Period = 10 * time.Second
-	go bme.Loop(done)
+	go bme.TimerLoop(done, bme.ReadPub)
 
 	initOLED(done)
 	return err
 }
 
 func initRelay(idx int) {
-	m := messanger.GetMQTT()
 	relay := relay.New("relay", idx)
-	m.Subscribe(messanger.TopicControl("button"), relay.Callback)
+	relay.AddPub(messanger.TopicData("relay"))
+	relay.Subscribe(messanger.TopicControl("button"), relay.Callback)
 }
 
 func initLED(idx int) {
-	m := messanger.GetMQTT()
 	led := led.New("led", idx)
-	m.Subscribe(messanger.TopicControl("button"), led.Callback)
+	led.AddPub(messanger.TopicData("led"))
+	led.Subscribe(messanger.TopicControl("button"), led.Callback)
 }
 
 func initButton(name string, idx int) {
 	but := button.New(name, idx)
 	but.AddPub(messanger.TopicControl("button"))
-	go but.EventLoop(done)
+	go but.EventLoop(done, but.ReadPub)
 }
 
 func initBME280(bus string, addr int, done chan bool) (bme *bme280.BME280, err error) {

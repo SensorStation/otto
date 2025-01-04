@@ -28,7 +28,7 @@ func TestButton(t *testing.T) {
 	b := New("button", 23)
 	b.AddPub(messanger.TopicControl("button"))
 	m.Subscribe(messanger.TopicControl("button"), b.Callback)
-	go b.EventLoop(done)
+	go b.EventLoop(done, b.ReadPub)
 	b.Line.(*devices.MockLine).MockHWInput(0)
 	b.Line.(*devices.MockLine).MockHWInput(1)
 	done <- true

@@ -104,7 +104,7 @@ func TestBME280(t *testing.T) {
 
 	done := make(chan bool)
 	bme.Period = 200 * time.Millisecond
-	go bme.Loop(done)
+	go bme.TimerLoop(done, bme.ReadPub)
 
 	select {
 	case <-done:

@@ -22,8 +22,6 @@ func NewGPIODevice(name string, idx int, mode Mode, opts ...gpiocdev.LineReqOpti
 	d := &GPIODevice{
 		Device: NewDevice(name),
 	}
-	// Do we need mode?
-	d.Mode = mode
 
 	// look for an eventhandler, if so setup an event channel
 	for _, opt := range opts {

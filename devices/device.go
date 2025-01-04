@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto/logger"
+	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
@@ -31,13 +32,17 @@ func NewDevice(name string) *Device {
 	d := &Device{
 		Name: name,
 	}
-	// should we do this here?
-	d.AddPub(name)
 	return d
 }
 
 func (d *Device) AddPub(p string) {
 	d.Pub = p
+}
+
+func (d *Device) Subscribe(topic string, f func(*message.Msg)) {
+	d.Subs = append(d.Subs, topic)
+	m := messanger.GetMQTT()
+	m.Subscribe(topic, f)
 }
 
 func (d *Device) Publish(data any) {
@@ -46,4 +51,60 @@ func (d *Device) Publish(data any) {
 		logger.GetLogger().Error("Device.Publish failed has no pub", "name", d.Name)
 	}
 	m.Publish(d.Pub, data)
+}
+
+func (d *Device) EventLoop(done chan bool, readpub func() error) {
+	l := logger.GetLogger()
+
+	running := true
+	for running {
+		select {
+		case evt := <-d.EvtQ:
+			evtype := "falling"
+			switch evt.Type {
+			case gpiocdev.LineEventFallingEdge:
+				evtype = "falling"
+
+			case gpiocdev.LineEventRisingEdge:
+				evtype = "raising"
+
+			default:
+				l.Warn("Unknown event type ", "type", evt.Type)
+				continue
+			}
+
+			l.Info("GPIO edge", "device", d.Name, "direction", evtype,
+				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
+
+			err := readpub()
+			if err != nil {
+				l.Error("Failed to read and publish", "device", d.Name, "error", err)
+			}
+
+		case <-done:
+			running = false
+		}
+	}
+}
+
+func (d *Device) TimerLoop(done chan bool, readpub func() error) {
+	// No need to loop if we don't have a ticker period
+	if d.Period <= 0 {
+		return
+	}
+	ticker := time.NewTicker(d.Period)
+
+	running := true
+	for running {
+		select {
+		case <-ticker.C:
+			err := readpub()
+			if err != nil {
+				logger.GetLogger().Error("TimerLoop failed to readpub", "device", d.Name, "error", err)
+			}
+
+		case <-done:
+			running = false
+		}
+	}
 }
