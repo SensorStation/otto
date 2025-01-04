@@ -18,14 +18,6 @@ type Station struct {
 	mu         sync.Mutex    `json:"-"`
 }
 
-var (
-	StationName string
-)
-
-func init() {
-	StationName = "station"
-}
-
 // NewStation creates a new Station with an ID as provided
 // by the first parameter
 func NewStation(id string) (st *Station) {

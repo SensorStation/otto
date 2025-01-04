@@ -75,19 +75,28 @@ func main() {
 	cleanup()
 }
 
+type controller struct {
+}
+
+func (c *controller) init() {
+
+}
+
 func cleanup() {
 	g := devices.GetGPIO()
 	g.Shutdown()
 }
 
-func initDataManager() {
-	dm := data.GetDataManager()
-	srv := server.GetServer()
-	srv.Register("/api/data", dm)
-}
-
 func initSignals() {
 	// todo make sure we capture signals
+}
+
+func initDataManager() {
+	dm := data.GetDataManager()
+	dm.Subscribe("ss/d/#")
+
+	srv := server.GetServer()
+	srv.Register("/api/data", dm)
 }
 
 func initStations() {
@@ -97,6 +106,7 @@ func initStations() {
 
 func initDevices(done chan bool) error {
 	initRelay(22)
+
 	initLED(6)
 	initButton("on", 23)
 	initButton("off", 27)
@@ -104,30 +114,30 @@ func initDevices(done chan bool) error {
 	if err != nil {
 		return err
 	}
-	initOLED(bme, done)
+	bme.AddPub(messanger.TopicData("bme280"))
+	bme.Period = 10 * time.Second
+	go bme.Loop(done)
+
+	initOLED(done)
 	return err
 }
 
 func initRelay(idx int) {
 	m := messanger.GetMQTT()
 	relay := relay.New("relay", idx)
-	m.Subscribe(messanger.TopicControl("relay"), relay.Callback)
+	m.Subscribe(messanger.TopicControl("button"), relay.Callback)
 }
 
 func initLED(idx int) {
 	m := messanger.GetMQTT()
 	led := led.New("led", idx)
-	m.Subscribe(messanger.TopicControl("led"), led.Callback)
+	m.Subscribe(messanger.TopicControl("button"), led.Callback)
 }
 
 func initButton(name string, idx int) {
-	m := messanger.GetMQTT()
 	but := button.New(name, idx)
+	but.AddPub(messanger.TopicControl("button"))
 	go but.EventLoop(done)
-	m.Subscribe(messanger.TopicControl(name), func(msg *message.Msg) {
-		m.Publish(messanger.TopicControl("relay"), name)
-		m.Publish(messanger.TopicControl("led"), name)
-	})
 }
 
 func initBME280(bus string, addr int, done chan bool) (bme *bme280.BME280, err error) {
@@ -143,71 +153,61 @@ func initBME280(bus string, addr int, done chan bool) (bme *bme280.BME280, err e
 	if err != nil {
 		return nil, err
 	}
-	bme.Period = 10 * time.Second
-	go bme.Loop(done)
 	return bme, nil
 }
 
-func initOLED(bme *bme280.BME280, done chan bool) {
+func initOLED(done chan bool) {
 
 	display, err := ssd1306.NewDisplay("oled", 128, 64)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	dispvals := struct {
+		temp     float64
+		pressure float64
+		humidity float64
+		relay    string
+	}{}
+
+	refresh := func() {
+		display.Clear()
+		start := 25
+		t := time.Now().Format(time.Kitchen)
+		display.DrawString(10, 10, "OttO: "+t)
+		display.DrawString(10, start, fmt.Sprintf("temp: %7.2f", dispvals.temp))
+		display.DrawString(10, start+15, fmt.Sprintf("pres: %7.2f", dispvals.pressure))
+		display.DrawString(10, start+30, fmt.Sprintf("humi: %7.2f", dispvals.humidity))
+		display.Draw()
+
+	}
+
 	m := messanger.GetMQTT()
-	m.Subscribe(bme.Pub, func(msg *message.Msg) {
+	m.Subscribe(messanger.TopicData("bme280"), func(msg *message.Msg) {
 		mm, err := msg.Map()
 		if err != nil {
 			l.Error("Failed top get map", "error", err)
 		}
 
-		temp, ex := mm["Temperature"]
+		var ex bool
+		dispvals.temp, ex = mm["Temperature"].(float64)
 		if !ex {
 			l.Error("failed to get temperature")
 		}
-		pressure, ex := mm["Pressure"]
+		dispvals.pressure, ex = mm["Pressure"].(float64)
 		if !ex {
 			l.Error("failed to get pressure")
 		}
-		humidity, ex := mm["Humidity"]
+		dispvals.humidity, ex = mm["Humidity"].(float64)
 		if !ex {
 			l.Error("failed to get Humidity")
 		}
-
-		display.Clear()
-		start := 25
-		display.DrawString(10, 10, "OttO IoT Champion")
-		display.DrawString(10, start, fmt.Sprintf("temp: %7.2f", temp))
-		display.DrawString(10, start + 15, fmt.Sprintf("pres: %7.2f", pressure))
-		display.DrawString(10, start + 30, fmt.Sprintf("humi: %7.2f", humidity))
-		display.Draw()
+		refresh()
 	})
 
-	// go func() {
-	// 	running := true
-	// 	for running {
-	// 		select {
-	// 		case <-done:
-	// 			running = false
-
-	// 		default:
-	// 			// draw a line at 50, 100 lenght 50 pixels, 4 wide
-	// 			display.Clear()
-	// 			display.Line(0, 12, display.Width, 2, ssd1306.On)
-	// 			display.Rectangle(100, 40, 120, 60, ssd1306.On)
-	// 			display.DrawString(10, 10, "Hello, world!")
-	// 			display.Draw()
-
-	// 			time.Sleep(10 * time.Second)
-
-	// 			display.Clear()
-	// 			display.AnimatedGIF("ballerine.gif")
-	// 			display.Draw()
-	// 			time.Sleep(10 * time.Second)
-	// 		}
-	// 	}
-	// }()
+	m.Subscribe(messanger.TopicData("relay"), func(msg *message.Msg) {
+		dispvals.relay = msg.String()
+	})
 }
 
 //go:embed app

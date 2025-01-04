@@ -34,7 +34,6 @@ func NewGPIODevice(name string, idx int, mode Mode, opts ...gpiocdev.LineReqOpti
 	}
 
 	// append the pubs
-	d.AddPub(name)
 	gpio = GetGPIO()
 	d.Pin = gpio.Pin(name, idx, opts...)
 	return d

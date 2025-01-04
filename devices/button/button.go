@@ -6,7 +6,6 @@ import (
 
 	"github.com/sensorstation/otto/devices"
 	"github.com/sensorstation/otto/logger"
-	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -23,7 +22,6 @@ func New(name string, pin int) *Button {
 		gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
 			b.EvtQ <- evt
 		}))
-	b.AddPub(messanger.TopicControl(name))
 	return b
 }
 
@@ -57,7 +55,7 @@ func (b *Button) EventLoop(done chan bool) {
 			}
 
 			val := strconv.Itoa(v)
-			messanger.GetMQTT().Publish(b.Pub, val)
+			b.Publish(val)
 
 		case <-done:
 			running = false

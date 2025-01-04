@@ -29,10 +29,10 @@ func TestBME280(t *testing.T) {
 	}
 
 	if bme.Bus != bus {
-		t.Errorf("expected name (%s) got (%s)", name, bme.Name)
+		t.Errorf("expected bus (%s) got (%s)", bus, bme.Bus)
 	}
 	if bme.Addr != addr {
-		t.Errorf("expected name (%s) got (%s)", name, bme.Name)
+		t.Errorf("expected addr (%x) got (%x)", addr, bme.Addr)
 	}
 
 	bme.Mock = true

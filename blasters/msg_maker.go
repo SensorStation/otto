@@ -21,7 +21,7 @@ type WeatherData struct {
 }
 
 // NewMsg will create a new message for testing
-func (w *WeatherData) NewMsg() *message.Msg {
+func (w *WeatherData) NewMsg(topic string) *message.Msg {
 	w.Tempc = rand.Float32()
 	w.Humidity = rand.Float32()
 
@@ -31,7 +31,6 @@ func (w *WeatherData) NewMsg() *message.Msg {
 		return nil
 	}
 
-	path := "ss/d/station/weather"
-	msg := message.New(path, j, "weather-data")
+	msg := message.New(topic, j, "weather-data")
 	return msg
 }

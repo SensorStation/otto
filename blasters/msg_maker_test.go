@@ -3,11 +3,13 @@ package blasters
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/sensorstation/otto/messanger"
 )
 
 func TestMsgMaker(t *testing.T) {
 	wd := WeatherData{}
-	msg := wd.NewMsg()
+	msg := wd.NewMsg(messanger.TopicData("weather"))
 	exp := []string{"ss", "d", "station", "weather"}
 	for i := 0; i < len(exp); i++ {
 		if msg.Path[i] != exp[i] {

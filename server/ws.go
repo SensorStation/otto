@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/sensorstation/otto/station"
+	"github.com/sensorstation/otto/message"
 )
 
 type Websock struct {
-	msgQ chan *station.Station
-	webQ map[chan *station.Station]chan *station.Station
+	msgQ chan *message.Msg
+	webQ map[chan *message.Msg]chan *message.Msg
 }
 
 var upgrader = websocket.Upgrader{
@@ -23,8 +23,8 @@ func checkOrigin(r *http.Request) bool {
 	return true
 }
 
-func (w *Websock) AddWebQ() chan *station.Station {
-	c := make(chan *station.Station)
+func (w *Websock) AddWebQ() chan *message.Msg {
+	c := make(chan *message.Msg)
 	w.webQ[c] = c
 	return c
 }
@@ -40,7 +40,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	if ws.webQ == nil {
-		ws.webQ = make(map[chan *station.Station]chan *station.Station)
+		ws.webQ = make(map[chan *message.Msg]chan *message.Msg)
 	}
 
 	go func() {
@@ -56,19 +56,6 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			println("read a message")
 			fmt.Printf("%v - %v - %s\n", mt, message, err)
-			// if err != nil {
-			// 	l.Error("Websocket ", "message", message, "error", err)
-			// 	break
-			// }
-
-			// switch message.Type {
-			// case "relay":
-			// 	// Stations.EventQ <- &message
-
-			// default:
-			// 	l.Error("unknown event type", "message", message)
-			// }
-
 		}
 	}()
 

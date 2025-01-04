@@ -64,9 +64,8 @@ func (mb *MQTTBlasters) Blast() error {
 	for mb.Running {
 		for i := 0; i < mb.Count; i++ {
 			b := mb.Blasters[i]
-
-			msg := wd.NewMsg()
-			mqtt.Publish(b.Topic, msg.Byte())
+			msg := wd.NewMsg(b.Topic)
+			mqtt.PublishMsg(msg)
 		}
 		time.Sleep(time.Duration(mb.Wait) * time.Millisecond)
 	}

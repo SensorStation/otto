@@ -52,6 +52,10 @@ func NewStationManager() (sm *StationManager) {
 	return sm
 }
 
+func (sm *StationManager) Callback(msg *message.Msg) {
+	sm.Update(msg)
+}
+
 func (sm *StationManager) Start() {
 
 	// Start a ticker to clean up stale entries
@@ -122,11 +126,12 @@ func (sm *StationManager) Update(msg *message.Msg) (st *Station) {
 
 	var err error
 
-	if len(msg.Path) < 3 {
+	stid := msg.Station()
+	if stid == "" {
 		fmt.Printf("Msg path does not include staionId: %q\n", msg.Path)
 		return nil
 	}
-	stid := msg.Path[2]
+
 	st = sm.Get(stid)
 	if st == nil {
 		if st, err = sm.Add(stid); err != nil {

@@ -39,11 +39,14 @@ func NewDataManager() (dm *DataManager) {
 	dm = &DataManager{
 		dataMap: make(map[string]map[string]*Timeseries),
 	}
+	return dm
+}
+
+func (dm *DataManager) Subscribe(topic string) {
 	mqtt := messanger.GetMQTT()
 	if mqtt != nil {
-		mqtt.Subscribe("ss/d/#", dm.Callback)
+		mqtt.Subscribe(topic, dm.Callback)
 	}
-	return dm
 }
 
 // Add will add data according to station and label

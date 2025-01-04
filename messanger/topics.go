@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/sensorstation/otto/station"
+	"github.com/sensorstation/otto/utils"
 )
 
 type TopicList map[string]int
@@ -21,13 +21,13 @@ func init() {
 }
 
 func TopicControl(topic string) string {
-	t := fmt.Sprintf(TopicBase, "c", station.StationName, topic)
+	t := fmt.Sprintf(TopicBase, "c", utils.Station(), topic)
 	Topics[t]++
 	return t
 }
 
 func TopicData(topic string) string {
-	t := fmt.Sprintf(TopicBase, "d", station.StationName, topic)
+	t := fmt.Sprintf(TopicBase, "d", utils.Station(), topic)
 	Topics[t]++
 	return t
 }

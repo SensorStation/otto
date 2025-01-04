@@ -105,6 +105,11 @@ func (m *MQTT) Connect() error {
 	return nil
 }
 
+// Publish message will publish a message
+func (m MQTT) PublishMsg(msg *message.Msg) {
+	m.Publish(msg.Topic, msg.Data)
+}
+
 // Publish will publish a value to the given channel
 func (m MQTT) Publish(topic string, value interface{}) {
 	var t gomqtt.Token
