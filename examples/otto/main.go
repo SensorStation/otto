@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"time"
 
 	"github.com/sensorstation/otto/cmd"
@@ -15,7 +16,6 @@ import (
 	"github.com/sensorstation/otto/devices/led"
 	"github.com/sensorstation/otto/devices/relay"
 	"github.com/sensorstation/otto/devices/ssd1306"
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
@@ -23,7 +23,6 @@ import (
 )
 
 var (
-	l        *logger.Logger
 	done     chan bool
 	mock     bool
 	mockMQTT bool
@@ -41,8 +40,6 @@ func init() {
 
 func main() {
 	flag.Parse()
-
-	l = logger.GetLogger()
 	done = make(chan bool)
 
 	if mock {
@@ -186,21 +183,21 @@ func initOLED(done chan bool) {
 	m.Subscribe(messanger.TopicData("bme280"), func(msg *message.Msg) {
 		mm, err := msg.Map()
 		if err != nil {
-			l.Error("Failed top get map", "error", err)
+			slog.Error("Failed top get map", "error", err)
 		}
 
 		var ex bool
 		dispvals.temp, ex = mm["Temperature"].(float64)
 		if !ex {
-			l.Error("failed to get temperature")
+			slog.Error("failed to get temperature")
 		}
 		dispvals.pressure, ex = mm["Pressure"].(float64)
 		if !ex {
-			l.Error("failed to get pressure")
+			slog.Error("failed to get pressure")
 		}
 		dispvals.humidity, ex = mm["Humidity"].(float64)
 		if !ex {
-			l.Error("failed to get Humidity")
+			slog.Error("failed to get Humidity")
 		}
 		refresh()
 	})

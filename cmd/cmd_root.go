@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"github.com/sensorstation/otto/logger"
+	"log/slog"
+
 	"github.com/spf13/cobra"
 )
 
 var (
-	l      *logger.Logger
 	appdir string
 )
 
@@ -27,9 +27,8 @@ func GetRootCmd() *cobra.Command {
 }
 
 func Execute() {
-	l = logger.GetLogger()
 	if err := rootCmd.Execute(); err != nil {
-		l.Error(err.Error())
+		slog.Error(err.Error())
 		return
 	}
 }

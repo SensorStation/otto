@@ -3,10 +3,9 @@ package mesh
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
-
-	"github.com/sensorstation/otto/logger"
 	// mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -22,13 +21,7 @@ type MeshNetwork struct {
 
 var (
 	mn MeshNetwork
-	l  *logger.Logger
 )
-
-func init() {
-	// This may init before logger has a chance to
-	l = logger.GetLogger()
-}
 
 // GetNode will return the node associated with the given ID
 func (m *MeshNetwork) GetNode(nid string) (mn *MeshNode) {
@@ -49,7 +42,7 @@ func (m *MeshNetwork) UpdateRoot(rootid string) {
 	//	addr, typ, msgtype, layer, rootid, self, parent);
 	if m.RootId != rootid {
 		// we have a change of roots
-		l.Info("Root Node has changed", "from", m.RootId, "to", rootid)
+		slog.Info("Root Node has changed", "from", m.RootId, "to", rootid)
 		m.RootId = rootid
 	}
 }
@@ -104,25 +97,25 @@ func NewNode(d map[string]interface{}) *MeshNode {
 // UpdateParent will reestablish the the given parent node
 func (n *MeshNode) UpdateParent(p *MeshNode) {
 	if n.Parent != p.Id {
-		l.Info("n.Parent has changed", "from", n.Parent, "to", p.Id)
+		slog.Info("n.Parent has changed", "from", n.Parent, "to", p.Id)
 	}
 	n.Parent = p.Id
 }
 
 // UpdateChild will re-establish the given child node
 func (n *MeshNode) UpdateChild(c *MeshNode) {
-	l.Info("Update child", "Parent ", n.Id)
+	slog.Info("Update child", "Parent ", n.Id)
 	if n.Children == nil {
 		n.Children = make(map[string]string)
 	}
 
 	if _, e := n.Children[c.Id]; e {
-		l.Info("update existing child ")
+		slog.Info("update existing child ")
 	} else {
-		l.Info(" ADDING NEW child ")
+		slog.Info(" ADDING NEW child ")
 	}
 	n.Children[c.Id] = c.Id
-	l.Info(c.Id)
+	slog.Info(c.Id)
 }
 
 // String representation of this meshnode
@@ -161,14 +154,14 @@ func (mn MeshNetwork) MsgRecv(topic string, payload []byte) {
 		var m MeshMessage
 		err := json.Unmarshal(payload, &m)
 		if err != nil {
-			l.Error("Failed to unmarshal payload")
+			slog.Error("Failed to unmarshal payload")
 			return
 		}
 
 		// unravel the json message and verify our current node information
 		paths := strings.Split(topic, "/")
 		if len(paths) != 3 {
-			l.Error("Error unsupported path len", "pathlen", len(paths))
+			slog.Error("Error unsupported path len", "pathlen", len(paths))
 			return
 		}
 
@@ -185,7 +178,7 @@ func (mn MeshNetwork) MsgRecv(topic string, payload []byte) {
 			mn.Update(rootid, self, parent, layer)
 
 		default:
-			l.Fatalln("Unknown message type: ", msgtype)
+			slog.Fatalln("Unknown message type: ", msgtype)
 		}
 	*/
 	return
@@ -194,9 +187,9 @@ func (mn MeshNetwork) MsgRecv(topic string, payload []byte) {
 // Update a mesh network with the given information
 func (mn MeshNetwork) Update(rootid, id, parent string, layer int) {
 
-	l.Debug("[MESH] Update [id/parent/rootid/layer]: ", id, parent, rootid, layer)
+	slog.Debug("[MESH] Update [id/parent/rootid/layer]: ", id, parent, rootid, layer)
 	if mn.RootId != rootid {
-		l.Info("[MESH] Root %s has changed to %s\n", mn.RootId, rootid)
+		slog.Info("[MESH] Root %s has changed to %s\n", mn.RootId, rootid)
 		mn.RootId = rootid
 	}
 
@@ -206,6 +199,6 @@ func (mn MeshNetwork) Update(rootid, id, parent string, layer int) {
 	}
 
 	if node.Layer != layer {
-		l.Info("[MESH] Node %s layer has changed from %d to %d\n", node.Id, node.Layer, "layer", layer)
+		slog.Info("[MESH] Node %s layer has changed from %d to %d\n", node.Id, node.Layer, "layer", layer)
 	}
 }

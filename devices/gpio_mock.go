@@ -1,10 +1,10 @@
 package devices
 
 import (
+	"log/slog"
 	"strconv"
 	"time"
 
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
@@ -26,7 +26,6 @@ func GetMockGPIO() *GPIO {
 }
 
 func GetMockLine(offset int, opts ...gpiocdev.LineReqOption) *MockLine {
-	l := logger.GetLogger()
 	m := &MockLine{
 		offset: offset,
 		start:  time.Now(),
@@ -42,7 +41,7 @@ func GetMockLine(offset int, opts ...gpiocdev.LineReqOption) *MockLine {
 			mqtt.Subscribe(messanger.TopicControl("mock/"+strconv.Itoa(m.Offset())), m.Callback)
 
 		default:
-			l.Info("MockLine does not record", "optType", v)
+			slog.Info("MockLine does not record", "optType", v)
 		}
 	}
 

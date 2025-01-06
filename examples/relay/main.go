@@ -7,12 +7,12 @@ package main
 
 import (
 	"embed"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/sensorstation/otto/devices"
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
 	"github.com/warthog618/go-gpiocdev"
@@ -26,8 +26,6 @@ type relay struct {
 }
 
 func main() {
-	l := logger.GetLogger()
-
 	// var data any
 	s := server.GetServer()
 	// s.EmbedTempl("/", data, content)
@@ -51,5 +49,5 @@ func main() {
 	m.Subscribe("ss/c/station/relay", r.Callback)
 
 	<-quit
-	l.Info("Exiting relay")
+	slog.Info("Exiting relay")
 }

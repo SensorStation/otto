@@ -1,6 +1,7 @@
 package data
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/sensorstation/otto/message"
@@ -46,6 +47,6 @@ func NewStore() *Store {
 }
 
 func (s *Store) Store(msg *message.Msg) error {
-	l.Info("Store: ", "message", msg)
+	slog.Info("Store: ", "message", msg)
 	return nil
 }

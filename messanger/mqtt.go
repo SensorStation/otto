@@ -4,16 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 )
 
 var (
 	mqtt *MQTT
-	l    *logger.Logger
 )
 
 // MQTT is a wrapper around the Paho MQTT Go package
@@ -37,10 +36,6 @@ func NewMQTT() *MQTT {
 	}
 	mqtt.Subscribers = make(map[string][]MsgHandle)
 	mqtt.Publishers = make(map[string]int)
-
-	if l == nil {
-		l = logger.GetLogger()
-	}
 
 	return mqtt
 }
@@ -94,7 +89,7 @@ func (m *MQTT) Connect() error {
 	}
 
 	if token := m.Client.Connect(); token.Wait() && token.Error() != nil {
-		l.Error("MQTT Connect: ", "error", token.Error())
+		slog.Error("MQTT Connect: ", "error", token.Error())
 		return fmt.Errorf("Failed to connect to MQTT broker %s", token.Error())
 	}
 	return nil
@@ -115,20 +110,20 @@ func (m MQTT) Publish(topic string, value interface{}) {
 
 	m.Publishers[topic] += 1
 	if m.Client == nil {
-		l.Warn("MQTT Client is not connected to a broker")
+		slog.Warn("MQTT Client is not connected to a broker")
 		return
 	}
 
 	if t = m.Client.Publish(topic, byte(0), false, value); t == nil {
 		if false {
-			l.Info("MQTT Pub NULL token: ", "topic", topic, "value", value)
+			slog.Info("MQTT Pub NULL token: ", "topic", topic, "value", value)
 		}
 		return
 	}
 
 	t.Wait()
 	if t.Error() != nil {
-		l.Error("MQTT Publish token: ", "error", t.Error())
+		slog.Error("MQTT Publish token: ", "error", t.Error())
 	}
 
 }
@@ -138,13 +133,13 @@ func (m MQTT) Publish(topic string, value interface{}) {
 func (m *MQTT) Subscribe(topic string, f MsgHandle) error {
 	m.Subscribers[topic] = append(m.Subscribers[topic], f)
 	if m.Client == nil {
-		l.Error("MQTT Client is not connected to a broker")
+		slog.Error("MQTT Client is not connected to a broker")
 		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
 	}
 
 	var err error
 	token := m.Client.Subscribe(topic, byte(0), func(c gomqtt.Client, m gomqtt.Message) {
-		l.Info("MQTT incoming: ", "topic", m.Topic(), "payload", string(m.Payload()))
+		slog.Info("MQTT incoming: ", "topic", m.Topic(), "payload", string(m.Payload()))
 		msg := message.New(m.Topic(), m.Payload(), "mqtt-sub")
 		f(msg)
 	})
@@ -180,7 +175,7 @@ func (mqtt MQTT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(mq)
 	if err != nil {
-		l.Error("MQTT.ServeHTTP failed to encode", "error", err)
+		slog.Error("MQTT.ServeHTTP failed to encode", "error", err)
 	}
 }
 

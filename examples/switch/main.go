@@ -1,24 +1,20 @@
 package main
 
 import (
+	"log/slog"
 	"strconv"
 	"time"
 
 	"github.com/sensorstation/otto/devices"
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
 var (
-	l    *logger.Logger
 	mqtt *messanger.MQTT
 )
 
 func main() {
-
-	l = logger.GetLogger()
-
 	mqtt = messanger.GetMQTT()
 
 	// Get the GPIO driver
@@ -60,21 +56,21 @@ func startSwitchHandler(g *devices.GPIO, done chan bool) {
 		case evt := <-evtQ:
 			switch evt.Type {
 			case gpiocdev.LineEventFallingEdge:
-				l.Info("GPIO failing edge", "pin", sw.Offset())
+				slog.Info("GPIO failing edge", "pin", sw.Offset())
 				fallthrough
 
 			case gpiocdev.LineEventRisingEdge:
-				l.Info("GPIO raising edge", "pin", sw.Offset())
+				slog.Info("GPIO raising edge", "pin", sw.Offset())
 				v, err := sw.Get()
 				if err != nil {
-					logger.GetLogger().Error("Error getting input value: ", "error", err.Error())
+					slog.Error("Error getting input value: ", "error", err.Error())
 					continue
 				}
 				val := strconv.Itoa(v)
 				mqtt.Publish("ss/d/station/switch", val)
 
 			default:
-				l.Warn("Unknown event type ", "type", evt.Type)
+				slog.Warn("Unknown event type ", "type", evt.Type)
 			}
 
 		case <-done:

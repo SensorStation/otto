@@ -3,11 +3,11 @@ package station
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 )
 
@@ -30,15 +30,11 @@ type StationEvent struct {
 
 var (
 	stations *StationManager
-	l        *logger.Logger
 )
 
 func GetStationManager() *StationManager {
 	if stations == nil {
 		stations = NewStationManager()
-	}
-	if l == nil {
-		l = logger.GetLogger()
 	}
 	return stations
 }
@@ -69,7 +65,7 @@ func (sm *StationManager) Start() {
 
 					// Do not timeout stations with a duration of 0
 					if st.Expiration == 0 {
-						l.Info("Station %s expiration == 0 do not timeout", "id", id)
+						slog.Info("Station %s expiration == 0 do not timeout", "id", id)
 						continue
 					}
 
@@ -80,7 +76,7 @@ func (sm *StationManager) Start() {
 					expires := st.LastHeard.Add(st.Expiration)
 					if expires.Sub(time.Now()) < 0 {
 						sm.mu.Lock()
-						l.Info("Station has timed out", "station", id)
+						slog.Info("Station has timed out", "station", id)
 						sm.Stale[id] = st
 						delete(sm.Stations, id)
 						sm.mu.Unlock()
@@ -89,10 +85,10 @@ func (sm *StationManager) Start() {
 				}
 
 			case ev := <-sm.EventQ:
-				l.Info("Station Event", "event", ev)
+				slog.Info("Station Event", "event", ev)
 				st := sm.Get(ev.StationID)
 				if st == nil {
-					l.Warn("Station Event could not find station", "station", ev.StationID)
+					slog.Warn("Station Event could not find station", "station", ev.StationID)
 					continue
 				}
 

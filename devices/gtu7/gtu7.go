@@ -3,10 +3,10 @@ package gtu7
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/sensorstation/otto/devices"
-	"github.com/sensorstation/otto/logger"
 )
 
 type GTU7 struct {
@@ -46,8 +46,6 @@ func (g *GTU7) OpenStrings(input string) {
 }
 
 func (g *GTU7) StartReading() chan *GPS {
-	l := logger.GetLogger()
-
 	parseQ := make(chan string)
 	gpsQ := g.startParser(parseQ)
 	go func() {
@@ -59,7 +57,7 @@ func (g *GTU7) StartReading() chan *GPS {
 			parseQ <- line
 		}
 		if err := g.scanner.Err(); err != nil {
-			l.Error("scanning GPS data", "error", err)
+			slog.Error("scanning GPS data", "error", err)
 		}
 		close(parseQ)
 	}()

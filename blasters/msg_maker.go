@@ -2,9 +2,9 @@ package blasters
 
 import (
 	"encoding/json"
+	"log/slog"
 	"math/rand/v2"
 
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 )
 
@@ -27,7 +27,7 @@ func (w *WeatherData) NewMsg(topic string) *message.Msg {
 
 	j, err := json.Marshal(w)
 	if err != nil {
-		logger.GetLogger().Error("Error marshalling JSON data", "error", err)
+		slog.Error("Error marshalling JSON data", "error", err)
 		return nil
 	}
 

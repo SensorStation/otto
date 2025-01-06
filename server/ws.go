@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -30,11 +31,11 @@ func (w *Websock) AddWebQ() chan *message.Msg {
 }
 
 func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	l.Info("[I] Connected with Websocket")
+	slog.Info("[I] Connected with Websocket")
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		l.Error("Websocket Upgrader err", "error", err)
+		slog.Error("Websocket Upgrader err", "error", err)
 		return
 	}
 	defer conn.Close()
@@ -51,7 +52,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			mt, message, err := conn.ReadMessage()
 			if err != nil {
 				println("read error")
-				l.Error("websocket read:", "error", err)
+				slog.Error("websocket read:", "error", err)
 				break
 			}
 			println("read a message")
@@ -64,7 +65,7 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		msg := <-wq
 		err = conn.WriteJSON(msg)
 		if err != nil {
-			l.Error("Failed to write web socket", "error", err)
+			slog.Error("Failed to write web socket", "error", err)
 			return
 		}
 	}

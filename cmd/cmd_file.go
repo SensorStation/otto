@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"bufio"
+	"log/slog"
 	"os"
 
 	"github.com/sensorstation/otto"
-	"github.com/sensorstation/otto/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -21,12 +21,11 @@ func init() {
 }
 
 func fileRun(cmd *cobra.Command, args []string) {
-	l = logger.GetLogger()
 	otto.Interactive = true
 	fname := args[0]
 	file, err := os.Open(fname)
 	if err != nil {
-		l.Error(err.Error())
+		slog.Error(err.Error())
 	}
 	defer file.Close()
 
@@ -36,7 +35,7 @@ func fileRun(cmd *cobra.Command, args []string) {
 		RunLine(line)
 	}
 	if err := scanner.Err(); err != nil {
-		l.Error(err.Error())
+		slog.Error(err.Error())
 	}
 	return
 }

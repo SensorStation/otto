@@ -2,9 +2,9 @@ package blasters
 
 import (
 	"fmt"
+	"log/slog"
 	"time"
 
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/station"
 )
@@ -69,7 +69,7 @@ func (mb *MQTTBlasters) Blast() error {
 		}
 		time.Sleep(time.Duration(mb.Wait) * time.Millisecond)
 	}
-	logger.GetLogger().Info("MQTT Blaster has stopped")
+	slog.Info("MQTT Blaster has stopped")
 	return nil
 }
 

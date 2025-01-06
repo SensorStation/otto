@@ -6,12 +6,12 @@ toggle mode.
 package main
 
 import (
+	"log/slog"
 	"time"
 
 	"encoding/json"
 
 	"github.com/sensorstation/otto/devices"
-	"github.com/sensorstation/otto/logger"
 )
 
 var gpioStr = `
@@ -29,16 +29,14 @@ var gpioStr = `
 `
 
 func main() {
-	l := logger.GetLogger()
-
 	var g devices.GPIO
 	if err := json.Unmarshal([]byte(gpioStr), &g); err != nil {
-		l.Error(err.Error())
+		slog.Error(err.Error())
 		return
 	}
 
 	if err := g.Init(); err != nil {
-		l.Error(err.Error())
+		slog.Error(err.Error())
 		return
 	}
 

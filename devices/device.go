@@ -2,9 +2,9 @@ package devices
 
 import (
 	"fmt"
+	"log/slog"
 	"time"
 
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
@@ -48,7 +48,7 @@ func (d *Device) Subscribe(topic string, f func(*message.Msg)) {
 
 func (d *Device) Publish(data any) {
 	if d.Pub == "" {
-		logger.GetLogger().Error("Device.Publish failed has no pub", "name", d.Name)
+		slog.Error("Device.Publish failed has no pub", "name", d.Name)
 		return
 	}
 	var buf []byte
@@ -73,8 +73,6 @@ func (d *Device) Shutdown() {
 }
 
 func (d *Device) EventLoop(done chan bool, readpub func() error) {
-	l := logger.GetLogger()
-
 	running := true
 	for running {
 		select {
@@ -88,16 +86,16 @@ func (d *Device) EventLoop(done chan bool, readpub func() error) {
 				evtype = "raising"
 
 			default:
-				l.Warn("Unknown event type ", "type", evt.Type)
+				slog.Warn("Unknown event type ", "type", evt.Type)
 				continue
 			}
 
-			l.Info("GPIO edge", "device", d.Name, "direction", evtype,
+			slog.Info("GPIO edge", "device", d.Name, "direction", evtype,
 				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
 
 			err := readpub()
 			if err != nil {
-				l.Error("Failed to read and publish", "device", d.Name, "error", err)
+				slog.Error("Failed to read and publish", "device", d.Name, "error", err)
 			}
 
 		case <-done:
@@ -119,7 +117,7 @@ func (d *Device) TimerLoop(done chan bool, readpub func() error) {
 		case <-ticker.C:
 			err := readpub()
 			if err != nil {
-				logger.GetLogger().Error("TimerLoop failed to readpub", "device", d.Name, "error", err)
+				slog.Error("TimerLoop failed to readpub", "device", d.Name, "error", err)
 			}
 
 		case <-done:

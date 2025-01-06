@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 )
@@ -21,15 +21,11 @@ type DataManager struct {
 
 var (
 	dataManager *DataManager
-	l           *logger.Logger
 )
 
 func GetDataManager() *DataManager {
 	if dataManager == nil {
 		dataManager = NewDataManager()
-	}
-	if l == nil {
-		l = logger.GetLogger()
 	}
 	return dataManager
 }
@@ -103,7 +99,7 @@ func (dm DataManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		err := json.NewEncoder(w).Encode(dm)
 		if err != nil {
-			l.Error("Failed to encode data:", "error", err)
+			slog.Error("Failed to encode data:", "error", err)
 			http.Error(w, "failure", 401)
 		}
 

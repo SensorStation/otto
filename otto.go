@@ -86,8 +86,8 @@ package otto
 
 import (
 	"fmt"
+	"log/slog"
 
-	"github.com/sensorstation/otto/logger"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
 	"github.com/sensorstation/otto/station"
@@ -99,19 +99,16 @@ var (
 	StationName string
 	Version     string
 	Interactive bool
-	l           *logger.Logger
 )
 
 func init() {
-	l = logger.GetLogger()
-
 	StationName = "station"
 	Version = "0.0.7"
 }
 
 func Cleanup() {
 	<-Done
-	l.Info("Done, cleaning up()")
+	slog.Info("Done, cleaning up()")
 
 	messanger.GetMQTT().Disconnect(1000)
 	server.GetServer().Close()
