@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
@@ -97,7 +96,7 @@ func (m *MockLine) MockHWInput(v int) {
 	}
 }
 
-func (m *MockLine) Callback(msg *message.Msg) {
+func (m *MockLine) Callback(msg *messanger.Msg) {
 	str := msg.String()
 	switch str {
 	case "on":

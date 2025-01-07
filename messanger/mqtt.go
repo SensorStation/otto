@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/sensorstation/otto/message"
 )
 
 var (
@@ -95,8 +94,8 @@ func (m *MQTT) Connect() error {
 	return nil
 }
 
-// Publish message will publish a message
-func (m MQTT) PublishMsg(msg *message.Msg) {
+// Publish messanger will publish a messanger
+func (m MQTT) PublishMsg(msg *Msg) {
 	m.Publish(msg.Topic, msg.Data)
 }
 
@@ -128,7 +127,7 @@ func (m MQTT) Publish(topic string, value interface{}) {
 
 }
 
-// Subscribe will cause messages to the given topic to be passed along to the
+// Subscribe will cause messangers to the given topic to be passed along to the
 // MsgHandle f
 func (m *MQTT) Subscribe(topic string, f MsgHandle) error {
 	m.Subscribers[topic] = append(m.Subscribers[topic], f)
@@ -140,7 +139,7 @@ func (m *MQTT) Subscribe(topic string, f MsgHandle) error {
 	var err error
 	token := m.Client.Subscribe(topic, byte(0), func(c gomqtt.Client, m gomqtt.Message) {
 		slog.Info("MQTT incoming: ", "topic", m.Topic(), "payload", string(m.Payload()))
-		msg := message.New(m.Topic(), m.Payload(), "mqtt-sub")
+		msg := New(m.Topic(), m.Payload(), "mqtt-sub")
 		f(msg)
 	})
 
@@ -186,7 +185,7 @@ type MQTTPrinter struct {
 
 // Callback will print out all messages sent to the given topic
 // from the MQTTPrinter
-func (mp *MQTTPrinter) Callback(msg *message.Msg) {
+func (mp *MQTTPrinter) Callback(msg *Msg) {
 	fmt.Printf("%+v\n", msg)
 	return
 }

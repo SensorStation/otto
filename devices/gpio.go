@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -110,7 +110,7 @@ func (pin *Pin) Toggle() error {
 
 // Callback is the default callback for pins if they are
 // registered with the MQTT.Subscribe() function
-func (pin Pin) Callback(msg *message.Msg) {
+func (pin Pin) Callback(msg *messanger.Msg) {
 	cmd := msg.String()
 	switch cmd {
 	case "on":

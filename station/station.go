@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 )
 
 // Station is the primary structure that holds an array of
@@ -30,7 +30,7 @@ func NewStation(id string) (st *Station) {
 
 // Update() will append a new data value to the series
 // of data points.
-func (s *Station) Update(msg *message.Msg) {
+func (s *Station) Update(msg *messanger.Msg) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.LastHeard = time.Now()

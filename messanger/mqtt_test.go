@@ -2,8 +2,6 @@ package messanger
 
 import (
 	"testing"
-
-	"github.com/sensorstation/otto/message"
 )
 
 type tclient struct {
@@ -12,7 +10,7 @@ type tclient struct {
 	msg   string
 }
 
-func (t *tclient) Callback(msg *message.Msg) {
+func (t *tclient) Callback(msg *Msg) {
 	if msg.Path[0] != "t" || msg.Path[1] != "test" {
 		return
 	}

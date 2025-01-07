@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 )
 
@@ -63,7 +62,7 @@ func TestBME280(t *testing.T) {
 	count := 0
 	topic := messanger.TopicData(name)
 	bme.AddPub(topic)
-	bme.Subscribe(topic, func(msg *message.Msg) {
+	bme.Subscribe(topic, func(msg *messanger.Msg) {
 		if msg.Topic != topic {
 			t.Errorf("expected topic (%s) got (%s)", topic, msg.Topic)
 			return
@@ -114,6 +113,6 @@ func TestBME280(t *testing.T) {
 		done <- true
 	}
 	if count != 5 {
-		t.Errorf("Expected to recieve messages expected (5) got (%d) ", count)
+		t.Errorf("Expected to recieve messanges expected (5) got (%d) ", count)
 	}
 }

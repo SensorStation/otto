@@ -27,6 +27,7 @@ const (
 )
 
 type Display struct {
+	*devices.I2CDevice
 	bus        string
 	addr       int
 	Dev        *ssd1306.Dev
@@ -36,15 +37,14 @@ type Display struct {
 	Background *image1bit.VerticalLSB
 }
 
-func NewDisplay(name string, width, height int) (*Display, error) {
+func New(name string, width, height int) (*Display, error) {
 	d := &Display{
 		Height: height,
 		Width:  width,
 		bus:    "/dev/i2c-1",
 		addr:   0x3c,
 	}
-
-	devices.NewI2CDevice(name, d.bus, d.addr)
+	d.I2CDevice = devices.NewI2CDevice(name, d.bus, d.addr)
 
 	// Load all the drivers:
 	if _, err := host.Init(); err != nil {

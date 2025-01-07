@@ -5,13 +5,13 @@ import (
 	"log/slog"
 	"math/rand/v2"
 
-	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 )
 
 // MsgMaker creates messages to be used by the mqtt blaster
 // for smoke testing the messaging subsystem
 type MsgMaker interface {
-	NewMsg() *message.Msg
+	NewMsg() *messanger.Msg
 }
 
 // WeatherData is the content contained in the message used by the blaster
@@ -21,7 +21,7 @@ type WeatherData struct {
 }
 
 // NewMsg will create a new message for testing
-func (w *WeatherData) NewMsg(topic string) *message.Msg {
+func (w *WeatherData) NewMsg(topic string) *messanger.Msg {
 	w.Tempc = rand.Float32()
 	w.Humidity = rand.Float32()
 
@@ -31,6 +31,6 @@ func (w *WeatherData) NewMsg(topic string) *message.Msg {
 		return nil
 	}
 
-	msg := message.New(topic, j, "weather-data")
+	msg := messanger.New(topic, j, "weather-data")
 	return msg
 }

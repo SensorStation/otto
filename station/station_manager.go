@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 )
 
 // StationManager keeps track of all the stations we have seen
@@ -48,7 +48,7 @@ func NewStationManager() (sm *StationManager) {
 	return sm
 }
 
-func (sm *StationManager) Callback(msg *message.Msg) {
+func (sm *StationManager) Callback(msg *messanger.Msg) {
 	sm.Update(msg)
 }
 
@@ -118,7 +118,7 @@ func (sm *StationManager) Add(st string) (station *Station, err error) {
 	return station, nil
 }
 
-func (sm *StationManager) Update(msg *message.Msg) (st *Station) {
+func (sm *StationManager) Update(msg *messanger.Msg) (st *Station) {
 
 	var err error
 

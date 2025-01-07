@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/sensorstation/otto/devices"
-	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 )
 
@@ -39,7 +38,7 @@ func TestButton(t *testing.T) {
 
 }
 
-func (b *Button) Callback(msg *message.Msg) {
+func (b *Button) Callback(msg *messanger.Msg) {
 	i, err := strconv.Atoi(msg.String())
 	if err != nil {
 		return

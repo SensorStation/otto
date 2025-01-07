@@ -6,12 +6,12 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 )
 
 type Websock struct {
-	msgQ chan *message.Msg
-	webQ map[chan *message.Msg]chan *message.Msg
+	msgQ chan *messanger.Msg
+	webQ map[chan *messanger.Msg]chan *messanger.Msg
 }
 
 var upgrader = websocket.Upgrader{
@@ -24,8 +24,8 @@ func checkOrigin(r *http.Request) bool {
 	return true
 }
 
-func (w *Websock) AddWebQ() chan *message.Msg {
-	c := make(chan *message.Msg)
+func (w *Websock) AddWebQ() chan *messanger.Msg {
+	c := make(chan *messanger.Msg)
 	w.webQ[c] = c
 	return c
 }
@@ -41,14 +41,14 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	if ws.webQ == nil {
-		ws.webQ = make(map[chan *message.Msg]chan *message.Msg)
+		ws.webQ = make(map[chan *messanger.Msg]chan *messanger.Msg)
 	}
 
 	go func() {
 		for {
 
-			println("reading a message")
-			// var message StationEvent
+			println("reading a messanger")
+			// var messanger StationEvent
 			mt, message, err := conn.ReadMessage()
 			if err != nil {
 				println("read error")

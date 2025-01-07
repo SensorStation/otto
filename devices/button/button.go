@@ -13,15 +13,21 @@ type Button struct {
 	*devices.GPIODevice
 }
 
-func New(name string, pin int) *Button {
+func New(name string, pin int, opts ...gpiocdev.LineReqOption) *Button {
 	b := &Button{}
-	b.GPIODevice = devices.NewGPIODevice(name, pin, devices.ModeInput,
+	bopts := []gpiocdev.LineReqOption{
 		gpiocdev.WithPullUp,
-		gpiocdev.WithFallingEdge,
-		gpiocdev.WithDebounce(10*time.Millisecond),
+		gpiocdev.WithDebounce(10 * time.Millisecond),
 		gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
 			b.EvtQ <- evt
-		}))
+		}),
+	}
+
+	for _, o := range opts {
+		bopts = append(bopts, o)
+	}
+
+	b.GPIODevice = devices.NewGPIODevice(name, pin, devices.ModeInput, bopts...)
 	return b
 }
 

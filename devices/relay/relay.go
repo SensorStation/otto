@@ -2,7 +2,7 @@ package relay
 
 import (
 	"github.com/sensorstation/otto/devices"
-	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -17,13 +17,13 @@ func New(name string, offset int) *Relay {
 	return relay
 }
 
-func (r *Relay) Callback(msg *message.Msg) {
+func (r *Relay) Callback(msg *messanger.Msg) {
 	str := msg.String()
 	switch str {
-	case "off":
+	case "off", "0":
 		r.Off()
 
-	case "on":
+	case "on", "1":
 		r.On()
 	}
 	return

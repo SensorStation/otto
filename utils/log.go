@@ -1,4 +1,4 @@
-package logger
+package utils
 
 import (
 	"log/slog"
@@ -9,7 +9,10 @@ var (
 	logfile string = "otto.log"
 )
 
-func init() {
+func InitLogger(level slog.Level, lf string) {
+	if lf == "" {
+		lf = logfile
+	}
 	f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		slog.Error("error opening log ", "err", err)

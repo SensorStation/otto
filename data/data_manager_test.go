@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 )
 
 type InvValues struct {
@@ -34,7 +34,7 @@ func TestCallbackInts(t *testing.T) {
 	path := "ss/d/station1/test"
 
 	dm := GetDataManager()
-	msg := message.New(path, data, "data-manager-test")
+	msg := messanger.New(path, data, "data-manager-test")
 	dm.Callback(msg)
 
 }

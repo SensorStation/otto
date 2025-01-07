@@ -1,31 +1,48 @@
 /*
-The iote package was designed to help build IoT edge software for on
-premise edge devices managing a large number of IoT Stations.
+OttO is used to build IoT applications.
 
 # The package provides
 
-- MQTT messaging amoung IoT stations and control software
-- HTTP REST Server for data gathering and configuration
-- Websockets for realtime bidirectional communication with UI
-- Web server for mondern web based User Interface
-- Station manager to track a variety of IoT stations
+  - MQTT messaging amoung IoT stations and control software
+  - HTTP REST Server for data gathering and configuration
+  - Websockets for realtime bidirectional communication with a UI
+  - High performance Web server built in to serve interactive UI's
+    and modern API's
+  - Station manager to manage the stations that make up an entire
+    sensor network
+  - Data Manager for temporary data caching and interfaces to update
+    your favorite timeseries database
+  - A higher level device interface that is agnostic to the underlying
+    libraries.  Use your favorite gpiocdev, periph.io, tinygo, gobot,
+    etc.
+  - Message library for standardized messages built to be communicate
+    events and information between pacakges.
+  - Messanger (not to be confused with messages) implements a Pub/Sub
+    (MQTT or other) interface between components of your application
+  - Security Todo
 
-# Messaging Based
+# Message Based System
 
-The primary communication model for IoTe is a messaging system based
-on MQTT. These messages can be broke into the following categories
+The primary communication model for OttO is a messaging system based
+on the Pub/Sub model defaulting to MQTT. oTTo is also heavily invested
+in HTTP to implement user interfaces and REST/Graph APIs.
 
-- Meta Data that help describe the "network" infrastructure
-- Sensor Data that produces data gathered by sensors
-- Control Data that represents actions to be performed by stations
+Messaging and HTTP use paths to specify the subject of interest. These
+paths can be generically reduced to an ordered collection of strings
+seperated by slashes '/'.  Both MQTT topics, http URI's and UNIX
+filesystems use this same schema which we use the generalize the
+identity of the elements we are addressing.
 
-The topic format used by MQTT is flexible but generally follows the
-following formats:
+In other words we can generalize the following identities:
 
-## ss/m/<source>/<type> -> { station-informaiton }
+For example:
 
-Where ss/m == sensor station, <source> is the station Id or source
-of the message and type represents the specific type of information.
+	    File: /home/rusty/data/hb/temperature
+		HTTP: /api/data/hb/temperature
+		MQTT: ss/hb/temperature
+
+The data within the highest level topic temperature can be represented
+say by JSON `{ farenhiet: 100.07 }`
 
 ### Meta Data (Station Information)
 

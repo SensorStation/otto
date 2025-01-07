@@ -11,7 +11,7 @@ import (
 
 // BME280 is an i2c device that gathers air temp, humidity and pressure
 type BME280 struct {
-	devices.I2CDevice
+	*devices.I2CDevice
 	driver *bme280.Driver
 	Mock   bool
 }

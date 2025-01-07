@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 )
 
@@ -39,7 +38,7 @@ func NewDataManager() (dm *DataManager) {
 	return dm
 }
 
-func (dm *DataManager) Subscribe(topic string, c func(msg *message.Msg)) {
+func (dm *DataManager) Subscribe(topic string, c func(msg *messanger.Msg)) {
 	dm.Subs = append(dm.Subs, topic)
 	mqtt := messanger.GetMQTT()
 	if mqtt != nil {
@@ -71,10 +70,10 @@ func (dm *DataManager) Dump(w io.Writer) {
 }
 
 // Callback is the callback used by the DataManager to receive
-// MQTT messages. TODO: move this call back to the stations because
+// MQTT messangers. TODO: move this call back to the stations because
 // the stations will have a better understanding of the data they
 // are subscribing to.
-func (dm *DataManager) Callback(msg *message.Msg) {
+func (dm *DataManager) Callback(msg *messanger.Msg) {
 	if msg.IsJSON() {
 		m, err := msg.Map()
 		if err != nil {

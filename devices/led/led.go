@@ -2,7 +2,7 @@ package led
 
 import (
 	"github.com/sensorstation/otto/devices"
-	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -17,12 +17,12 @@ func New(name string, offset int) *LED {
 	return led
 }
 
-func (l *LED) Callback(msg *message.Msg) {
+func (l *LED) Callback(msg *messanger.Msg) {
 	switch msg.String() {
-	case "off":
+	case "off", "0":
 		l.Off()
 
-	case "on":
+	case "on", "1":
 		l.On()
 	}
 	return

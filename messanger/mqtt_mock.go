@@ -6,10 +6,9 @@ import (
 	"time"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/sensorstation/otto/message"
 )
 
-type Callback func(msg *message.Msg)
+type Callback func(msg *Msg)
 
 type Sub struct {
 	ID    string

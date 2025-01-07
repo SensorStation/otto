@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sensorstation/otto/message"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
@@ -136,7 +136,7 @@ func TestPin(t *testing.T) {
 		t.Errorf("Error retrieving the value of pin[%d] expected(1) got (%d)", p.Offset(), v)
 	}
 
-	msg := message.New("ss/c/station/pin", []byte("off"), "test-pin")
+	msg := messanger.New("ss/c/station/pin", []byte("off"), "test-pin")
 	p.Callback(msg)
 	v, err = p.Get()
 	if err != nil {
@@ -147,7 +147,7 @@ func TestPin(t *testing.T) {
 		t.Errorf("Error retrieving the value of pin[%d] expected(1) got (%d)", p.Offset(), v)
 	}
 
-	msg = message.New("ss/c/station/pin", []byte("on"), "test-pin")
+	msg = messanger.New("ss/c/station/pin", []byte("on"), "test-pin")
 	p.Callback(msg)
 	v, err = p.Get()
 	if err != nil {

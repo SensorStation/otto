@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/sensorstation/otto/message"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
@@ -40,7 +39,7 @@ func (d *Device) AddPub(p string) {
 	d.Pub = p
 }
 
-func (d *Device) Subscribe(topic string, f func(*message.Msg)) {
+func (d *Device) Subscribe(topic string, f func(*messanger.Msg)) {
 	d.Subs = append(d.Subs, topic)
 	m := messanger.GetMQTT()
 	m.Subscribe(topic, f)
@@ -63,7 +62,7 @@ func (d *Device) Publish(data any) {
 		panic("unknown type: " + fmt.Sprintf("%T", data))
 	}
 
-	msg := message.New(d.Pub, buf, d.Name)
+	msg := messanger.New(d.Pub, buf, d.Name)
 	m := messanger.GetMQTT()
 	m.PublishMsg(msg)
 }
