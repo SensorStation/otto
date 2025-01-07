@@ -24,8 +24,8 @@ type FloatValues struct {
 
 func TestNewDataManager(t *testing.T) {
 	dm := GetDataManager()
-	if len(dm.dataMap) != 0 {
-		t.Errorf("Datamanger map not empty expected(0) got (%d)", len(dm.dataMap))
+	if len(dm.DataMap) != 0 {
+		t.Errorf("Datamanger map not empty expected(0) got (%d)", len(dm.DataMap))
 	}
 }
 

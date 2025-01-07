@@ -30,6 +30,7 @@ type controller struct {
 
 	*data.DataManager
 	*station.StationManager
+	*server.Server
 }
 
 func (c *controller) cleanup() {
@@ -45,15 +46,15 @@ func (c *controller) initDataManager() {
 	dm := data.GetDataManager()
 	dm.Subscribe("ss/d/#", dm.Callback)
 
-	srv := server.GetServer()
-	srv.Register("/api/data", dm)
+	c.Server.Register("/api/data", dm)
 	c.DataManager = dm
 }
 
 func (c *controller) initStations() {
-	st := station.GetStationManager()
-	st.Start()
-	c.StationManager = st
+	sm := station.GetStationManager()
+	sm.Start()
+	c.StationManager = sm
+	c.Server.Register("/api/stations", sm)
 }
 
 func (c *controller) initDevices(done chan bool) error {

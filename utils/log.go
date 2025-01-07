@@ -17,6 +17,6 @@ func InitLogger(level slog.Level, lf string) {
 	if err != nil {
 		slog.Error("error opening log ", "err", err)
 	}
-	l := slog.New(slog.NewTextHandler(f, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	l := slog.New(slog.NewTextHandler(f, &slog.HandlerOptions{Level: level}))
 	slog.SetDefault(l)
 }

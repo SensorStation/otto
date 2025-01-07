@@ -35,12 +35,12 @@ func main() {
 	flag.Parse()
 
 	done = make(chan bool)
-	initMock()
-	initApp()
 	initLogging()
+	initMock()
 
 	// TODO capture signals
 	c := &controller{}
+	c.initApp()
 	c.initSignals()
 	c.initStations()
 	c.initDataManager()
@@ -95,7 +95,7 @@ func initMock() {
 //go:embed app
 var content embed.FS
 
-func initApp() {
+func (c *controller) initApp() {
 	s := server.GetServer()
 
 	// The following line is commented out because
@@ -103,4 +103,5 @@ func initApp() {
 	s.EmbedTempl("/emb", data, content)
 	s.Appdir("/", "app")
 	go s.Start()
+	c.Server = s
 }
