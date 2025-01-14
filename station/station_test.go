@@ -32,9 +32,7 @@ func TestStation(t *testing.T) {
 }
 
 func TestStationManager(t *testing.T) {
-
 	count := 5
-
 	sm := NewStationManager()
 	sids := StationCreation(count)
 	for _, id := range sids {
@@ -52,7 +50,6 @@ func TestStationManager(t *testing.T) {
 			t.Errorf("Get station expected (%s) got nothing", id)
 		}
 	}
-
 }
 
 func TestStationJSON(t *testing.T) {

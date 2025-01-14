@@ -3,8 +3,6 @@ package main
 import (
 	"embed"
 	"flag"
-	"fmt"
-	"log/slog"
 
 	"github.com/sensorstation/otto/cmd"
 	"github.com/sensorstation/otto/devices"
@@ -56,26 +54,8 @@ func main() {
 
 func initLogging() {
 
-	level := slog.LevelWarn
+	level := loglevel
 	logfile := "otto.log"
-
-	switch loglevel {
-	case "debug":
-		level = slog.LevelDebug
-
-	case "info":
-		level = slog.LevelInfo
-
-	case "warn":
-		level = slog.LevelWarn
-
-	case "error":
-		level = slog.LevelError
-
-	default:
-		fmt.Printf("unknown loglevel %s sticking with warn", loglevel)
-	}
-
 	utils.InitLogger(level, logfile)
 }
 
