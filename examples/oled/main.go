@@ -43,7 +43,9 @@ func main() {
 func foo() {
 	display.Clear()
 	display.DrawString(10, 10, "whoops")
-	display.Diagonal(20, 10, 100, 20, oled.On)
+	display.Diagonal(0, 30, 128, 30, oled.On)
+	display.Diagonal(60, 0, 60, 64, oled.On)
+
 	// display.Diagonal(60, 20, 60, 60, oled.On)
 
 	// display.Diagonal(10, 30, 110, 50, oled.On)

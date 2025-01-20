@@ -101,20 +101,10 @@ func (d *OLED) Line(x0, y0, len, width int, value Bit) {
 	d.Rectangle(x0, y0, x1, y1, value)
 }
 
-func (d *OLED) oDiagonal(x0, y0, x1, y1 int, value Bit) {
-	d.Clip(&x0, &y0, &x1, &y1)
-
-	// l = x1 - x0
-	// h = y1 - y0
-	// for x := x0; x < x1; x++ {
-
-	// }
-
-}
-
 func (d *OLED) Diagonal(x0, y0, x1, y1 int, value Bit) {
 	d.Clip(&x0, &y0, &x1, &y1)
 
+	fmt.Printf("%d - %d - %d - %d\n", x0, y0, x1, y1)
 	xf0 := float64(x0)
 	xf1 := float64(x1)
 	yf0 := float64(y0)
@@ -129,13 +119,10 @@ func (d *OLED) Diagonal(x0, y0, x1, y1 int, value Bit) {
 	} else {
 		slope = l / h
 	}
-	if (xf1 - xf0) == 0 {
-		slope = 1
-	}
 
 	fmt.Printf("%4.2f, %4.2f, %4.2f, %4.2f, %4.2f\n", xf0, yf0, xf1, yf1, slope)
 
-	if l > h {
+	if l >= h {
 		for x := xf0; x < xf1; x++ {
 			y := slope*(x-xf0) + yf0
 			fmt.Printf(">>> %4.2f (%v), %4.2f (%v)\n", x, int(math.Round(x)), y, int(math.Round(y)))
@@ -144,8 +131,8 @@ func (d *OLED) Diagonal(x0, y0, x1, y1 int, value Bit) {
 	} else {
 		for y := yf0; y < yf1; y++ {
 			x := slope*(y-yf0) + xf0
-			fmt.Printf(">>> %4.2f (%v), %4.2f (%v)\n", x, int(x), y, int(y))
-			d.SetBit(int(x), int(y), value)
+			fmt.Printf("^^^ %4.2f (%v), %4.2f (%v)\n", x, int(x), y, int(y))
+			d.SetBit(int(math.Round(x)), int(math.Round(y)), value)
 		}
 	}
 }
