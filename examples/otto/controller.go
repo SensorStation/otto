@@ -11,8 +11,8 @@ import (
 	"github.com/sensorstation/otto/devices/bme280"
 	"github.com/sensorstation/otto/devices/button"
 	"github.com/sensorstation/otto/devices/led"
+	"github.com/sensorstation/otto/devices/oled"
 	"github.com/sensorstation/otto/devices/relay"
-	"github.com/sensorstation/otto/devices/ssd1306"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
 	"github.com/sensorstation/otto/station"
@@ -23,7 +23,7 @@ type controller struct {
 	*led.LED
 	*relay.Relay
 	*bme280.BME280
-	*ssd1306.Display
+	*oled.OLED
 
 	onButton  *button.Button
 	offButton *button.Button
@@ -120,7 +120,7 @@ func (c *controller) initBME280(bus string, addr int, done chan bool) (bme *bme2
 
 func (c *controller) initOLED(done chan bool) {
 
-	display, err := ssd1306.New("oled", 128, 64)
+	display, err := oled.New("oled", 128, 64)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -171,7 +171,7 @@ func (c *controller) initOLED(done chan bool) {
 		dispvals.relay = msg.String()
 	})
 
-	c.Display = display
+	c.OLED = display
 }
 
 func (c *controller) buttonCallback(msg *messanger.Msg) {

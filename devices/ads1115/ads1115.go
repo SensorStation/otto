@@ -1,13 +1,16 @@
 package ads1115
 
 import (
-	"fmt"
+	"encoding/json"
+	"errors"
 
 	"github.com/sensorstation/otto/devices"
+	"periph.io/x/conn/v3/analog"
 	"periph.io/x/conn/v3/i2c/i2creg"
 	"periph.io/x/conn/v3/physic"
 	"periph.io/x/devices/v3/ads1x15"
 	"periph.io/x/host/v3"
+	"periph.io/x/periph/experimental/conn/analog"
 )
 
 type ADS1115 struct {
@@ -39,7 +42,6 @@ func (a *ADS1115) Init() error {
 		return err
 	}
 	defer bus.Close()
-	fmt.Printf("bus: %+v\n", bus)
 
 	// Create a new ADS1115 ADC.
 	adc, err := ads1x15.NewADS1115(bus, &ads1x15.DefaultOpts)
@@ -55,40 +57,31 @@ func (a *ADS1115) Init() error {
 	return nil
 }
 
-func (a *ADS1115) Read() error {
+func (a *ADS1115) Read() (analog.Sample, error) {
 
 	// Read values from ADC.
-	fmt.Println("Single reading")
-	fmt.Printf("pin %+v\n", a.pin)
-	// reading, err := a.pin.Read()
-	// if err != nil {
-	// 	return err
-	// }
-
-	// fmt.Println("R: ", reading)
-
-	// Read values continuously from ADC.
-	fmt.Println("Continuous reading")
-	c := a.pin.ReadContinuous()
-
-	for reading := range c {
-		fmt.Println("RC: ", reading)
+	reading, err := a.pin.Read()
+	if err != nil {
+		return reading, err
 	}
-	return nil
+	return reading, err
+}
+
+func (a *ADS1115) ReadContinous() (<-chan analog.Sample, error) {
+	// Read values continuously from ADC.
+	c := a.pin.ReadContinuous()
+	return c, nil
 }
 
 func (a *ADS1115) ReadPub() error {
-	// readQ, err := a.Read()
-	// if err != nil {
-	// 	return errors.New("Failed to read bme280: " + err.Error())
-	// }
-
-	// jb, err := json.Marshal(vals)
-	// if err != nil {
-	// 	return errors.New("BME280 failed marshal read response" + err.Error())
-	// }
-	// a.Publish(jb)
-	// return nil
+	readQ := a.pin.ReadContinuous()
+	for vals := range readQ {
+		jb, err := json.Marshal(vals)
+		if err != nil {
+			return errors.New("BME280 failed marshal read response" + err.Error())
+		}
+		a.Publish(jb)
+	}
 	return nil
 }
 

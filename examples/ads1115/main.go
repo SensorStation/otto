@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/sensorstation/otto/data"
-	"github.com/sensorstation/otto/devices/ads1115"
-	"github.com/sensorstation/otto/messanger"
 	"periph.io/x/conn/v3/i2c/i2creg"
 	"periph.io/x/conn/v3/physic"
 	"periph.io/x/devices/v3/ads1x15"
@@ -64,34 +61,4 @@ func main() {
 		// fmt.Printf("Temp in Celsius: %0.2f\n", tempC)
 		fmt.Println(reading)
 	}
-}
-
-func omain() {
-	// create the topic the bme will publish to and the DataManager
-	// will subscribe to
-	topic := messanger.TopicData("ads1115")
-
-	// Set the BME i2c device and address Initialize the bme to use
-	// the i2c bus
-	ads := ads1115.New("ads1115", "/dev/i2c-1", 0x48)
-	ads.AddPub(topic)
-	err := ads.Init()
-	if err != nil {
-		panic(err)
-	}
-
-	err = ads.Read()
-	if err != nil {
-		panic(err)
-	}
-
-	// Before we start reading temp, etc. let's subscribe to
-	// the messages we are going to publish.
-	dm := data.GetDataManager()
-	dm.Subscribe(topic, dm.Callback)
-
-	// start reading in a loop and publish the results via MQTT
-	done := make(chan bool)
-	go ads.TimerLoop(done, ads.ReadPub)
-	<-done
 }
