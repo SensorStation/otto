@@ -18,16 +18,26 @@ const (
 	ModePWM
 )
 
+// Device is an abstract
 type Device struct {
+	// Name of the device human readable
 	Name string
-	Pub  string
+	// Suffix to be appended to the base topic for mqtt publications
+	Pub string
+	// Subscription this device will listen to
 	Subs []string
+	// Input, Output, PWM, I2C, SPI, UART, etc
 	Mode
 
+	// Period for repititive timed tasks like collecting and
+	// publishing data
 	Period time.Duration
-	EvtQ   chan gpiocdev.LineEvent
+
+	// EventQ for devices that are interupt driven
+	EvtQ chan gpiocdev.LineEvent
 }
 
+// NewDevice creates a new device with the given name
 func NewDevice(name string) *Device {
 	d := &Device{
 		Name: name,
@@ -35,6 +45,7 @@ func NewDevice(name string) *Device {
 	return d
 }
 
+// AddPub adds a publication
 func (d *Device) AddPub(p string) {
 	d.Pub = p
 }
@@ -68,7 +79,8 @@ func (d *Device) Publish(data any) {
 }
 
 func (d *Device) Shutdown() {
-	GetGPIO().Shutdown()
+	// XXX = this is not right
+	// GetGPIO().Shutdown()
 }
 
 func (d *Device) EventLoop(done chan bool, readpub func() error) {

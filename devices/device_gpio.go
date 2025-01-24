@@ -35,23 +35,3 @@ func NewGPIODevice(name string, idx int, mode Mode, opts ...gpiocdev.LineReqOpti
 	d.Pin = gpio.Pin(name, idx, opts...)
 	return d
 }
-
-// On sets the output state of the Pin to ON (1)
-func (d *GPIODevice) On() {
-	d.Set(1)
-}
-
-// Off sets the output state of the Pin to OFF (0)
-func (d *GPIODevice) Off() {
-	d.Set(0)
-}
-
-// Set the output state of the pin to the value of v Off(0) or On != 0
-func (d *GPIODevice) Set(v int) {
-	d.Pin.Set(v)
-	val := "off"
-	if v > 0 {
-		val = "on"
-	}
-	d.Publish(val)
-}
