@@ -2,6 +2,7 @@ package devices
 
 import (
 	"fmt"
+	"log"
 
 	"periph.io/x/conn/v3/analog"
 	"periph.io/x/conn/v3/i2c"
@@ -27,7 +28,6 @@ var (
 func GetADS1115() *ADS1115 {
 	if ads1115 == nil {
 		ads1115 = NewADS1115("ads1115", "/dev/i2c-1", 0x48)
-		ads1115.Init()
 	}
 	return ads1115
 }
@@ -36,24 +36,28 @@ func NewADS1115(name string, bus string, addr int) *ADS1115 {
 	a := &ADS1115{
 		I2CDevice: NewI2CDevice(name, bus, addr),
 	}
+	a.Init()
 	return a
 }
 
 func (a *ADS1115) Init() (err error) {
 	// Make sure periph is initialized.
 	if _, err := host.Init(); err != nil {
+		log.Printf("device_ads1115: host init failed: %s", err)
 		return err
 	}
 
 	// Open default I²C bus.
 	a.bus, err = i2creg.Open("")
 	if err != nil {
+		log.Printf("device_ads1115: i2c open failed: %s", err)
 		return err
 	}
 
 	// Create a new ADS1115 ADC.
 	a.adc, err = ads1x15.NewADS1115(a.bus, &ads1x15.DefaultOpts)
 	if err != nil {
+		log.Printf("device_ads1115: new ads failed: %s", err)
 		return err
 	}
 	return nil
@@ -78,6 +82,7 @@ func (a *ADS1115) Pin(name string, ch int, opts any) (pin AnalogPin, err error) 
 	}
 
 	pin = AnalogPin{}
+	fmt.Printf("PIN ADC: %+v\n", a.adc)
 	pin.PinADC, err = a.adc.PinForChannel(c, 3300*physic.MilliVolt, 1*physic.Hertz, ads1x15.SaveEnergy)
 	if err != nil {
 		return pin, err

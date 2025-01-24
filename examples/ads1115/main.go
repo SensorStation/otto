@@ -40,7 +40,6 @@ func main() {
 		}
 		time.Sleep(2 * time.Second)
 	}
-	ads.Close()
 
 	var val float64
 	for {
@@ -52,5 +51,6 @@ func main() {
 		}
 	}
 	fmt.Printf("VAL: %5.2f\n", val)
+	ads.Close()
 
 }

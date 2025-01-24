@@ -10,7 +10,7 @@ type VH400 struct {
 
 func New(name string, pin int) *VH400 {
 	v := &VH400{
-		AnalogDevice: devices.NewAnalogDevice("vh400", 0, nil),
+		AnalogDevice: devices.NewAnalogDevice("vh400", pin, nil),
 	}
 	return v
 }
