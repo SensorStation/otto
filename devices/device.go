@@ -9,6 +9,9 @@ import (
 	"github.com/warthog618/go-gpiocdev"
 )
 
+type DeviceIntf interface {
+}
+
 type Mode int
 
 const (

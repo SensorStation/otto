@@ -12,19 +12,26 @@ import (
 	"periph.io/x/host/v3"
 )
 
+// ADS1115 is an i2c ADC chip that will use the i2c device type
+// to provide 4 single analog pins to be used by the raspberry
+// pi to access analog sensors via the i2c bus.  In a sense this
+// device is a higher level device than the device_i2c.
 type ADS1115 struct {
 	*I2CDevice
 	Mock bool
-
-	bus  i2c.BusCloser
-	adc  *ads1x15.Dev
 	pins [4]*AnalogPin
+
+	bus i2c.BusCloser
+	adc *ads1x15.Dev
 }
 
 var (
 	ads1115 *ADS1115
 )
 
+// GetADS1115 will return the default ads1115 struct singleton. The
+// first time GetADS1115 is called it will create a new device.
+// Subsequent calls will return the global variable.
 func GetADS1115() *ADS1115 {
 	if ads1115 == nil {
 		ads1115 = NewADS1115("ads1115", "/dev/i2c-1", 0x48)
@@ -32,6 +39,8 @@ func GetADS1115() *ADS1115 {
 	return ads1115
 }
 
+// NewADS creates a new ADS1115 giving it the provided name,
+// I2C bus (default /dev/i2c-1) and address (default 0x48).
 func NewADS1115(name string, bus string, addr int) *ADS1115 {
 	a := &ADS1115{
 		I2CDevice: NewI2CDevice(name, bus, addr),
@@ -40,6 +49,7 @@ func NewADS1115(name string, bus string, addr int) *ADS1115 {
 	return a
 }
 
+// Init prepares the chip for usage
 func (a *ADS1115) Init() (err error) {
 	// Make sure periph is initialized.
 	if _, err := host.Init(); err != nil {
@@ -63,6 +73,7 @@ func (a *ADS1115) Init() (err error) {
 	return nil
 }
 
+// Pin allocates and prepares one of the ads1115 pins (0 - 3) for use.
 func (a *ADS1115) Pin(name string, ch int, opts any) (pin AnalogPin, err error) {
 	// Obtain an analog pin from the ADC.
 	if ch < 0 || ch > 3 {
@@ -90,20 +101,23 @@ func (a *ADS1115) Pin(name string, ch int, opts any) (pin AnalogPin, err error) 
 	return pin, err
 }
 
+// Close the ads1115 and shutdown all the pins
 func (a *ADS1115) Close() {
 	a.bus.Close()
 	for i := 0; i < 4; i++ {
 		if a.pins[i] != nil {
-			a.pins[i].Halt()
+			a.pins[i].Close()
 		}
 	}
 }
 
+// AnalogPin is the analog equivalent of a digital gpio pin
 type AnalogPin struct {
 	ads1x15.PinADC
 	lastread analog.Sample
 }
 
+// Get returns a single float64 reading from the pin
 func (p AnalogPin) Get() (float64, error) {
 	reading, err := p.Read()
 	if err != nil {
@@ -115,6 +129,9 @@ func (p AnalogPin) Get() (float64, error) {
 	return val, err
 }
 
+// ReadContinous returns a channel that will continually read
+// data from respective ads1115 pin and make the float64 values
+// available as soon as the data is ready.
 func (p AnalogPin) ReadContinuous() <-chan float64 {
 	// Read values continuously from ADC.
 	c := p.PinADC.ReadContinuous()
@@ -137,32 +154,8 @@ func (p AnalogPin) ReadContinuous() <-chan float64 {
 	return floatQ
 }
 
+// Close the pin and set it back to it's defaults. TODO
+// set the pin back to its defaults
 func (a AnalogPin) Close() {
 	a.Halt()
 }
-
-// func (a *ADS1115) Read() (analog.Sample, error) {
-
-// 	// Read values from ADC.
-// 	reading, err := a.pin.Read()
-// 	if err != nil {
-// 		return reading, err
-// 	}
-// 	return reading, err
-// }
-
-// func (a *ADS1115) ReadPub() error {
-// 	readQ := a.pin.ReadContinuous()
-// 	for vals := range readQ {
-// 		jb, err := json.Marshal(vals)
-// 		if err != nil {
-// 			return errors.New("BME280 failed marshal read response" + err.Error())
-// 		}
-// 		a.Publish(jb)
-// 	}
-// 	return nil
-// }
-
-// func (a *ADS1115) Halt() {
-// 	a.pin.Halt()
-// }
