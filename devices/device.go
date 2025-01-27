@@ -9,59 +9,63 @@ import (
 	"github.com/warthog618/go-gpiocdev"
 )
 
-type DeviceIntf interface {
+type Device interface {
+	Name() string
 }
 
-type Mode int
-
-const (
-	ModeNone Mode = iota
-	ModeInput
-	ModeOutput
-	ModePWM
-)
-
 // Device is an abstract
-type Device struct {
+type BaseDevice struct {
 	// Name of the device human readable
-	Name string
+	name string
+
 	// Suffix to be appended to the base topic for mqtt publications
-	Pub string
+	pub string
+
 	// Subscription this device will listen to
-	Subs []string
-	// Input, Output, PWM, I2C, SPI, UART, etc
-	Mode
+	subs []string
 
 	// Period for repititive timed tasks like collecting and
 	// publishing data
-	Period time.Duration
+	period time.Duration
 
 	// EventQ for devices that are interupt driven
-	EvtQ chan gpiocdev.LineEvent
+	evtQ chan gpiocdev.LineEvent
 }
 
 // NewDevice creates a new device with the given name
-func NewDevice(name string) *Device {
-	d := &Device{
-		Name: name,
+func NewDevice(name string) *BaseDevice {
+	d := &BaseDevice{
+		name: name,
 	}
 	return d
 }
 
-// AddPub adds a publication
-func (d *Device) AddPub(p string) {
-	d.Pub = p
+func (d BaseDevice) Name() string {
+	return d.name
 }
 
-func (d *Device) Subscribe(topic string, f func(*messanger.Msg)) {
-	d.Subs = append(d.Subs, topic)
+// AddPub adds a publication
+func (d *BaseDevice) AddPub(p string) {
+	d.pub = p
+}
+
+func (d *BaseDevice) Subscribe(topic string, f func(*messanger.Msg)) {
+	d.subs = append(d.subs, topic)
 	m := messanger.GetMQTT()
 	m.Subscribe(topic, f)
 }
 
-func (d *Device) Publish(data any) {
-	if d.Pub == "" {
-		slog.Error("Device.Publish failed has no pub", "name", d.Name)
+func (d *BaseDevice) GetSubs() []string {
+	return d.subs
+}
+
+func (d *BaseDevice) GetPub() string {
+	return d.pub
+}
+
+func (d *BaseDevice) Publish(data any) {
+	if d.pub == "" {
+		slog.Error("BaseDevice.Publish failed has no pub", "name", d.Name)
 		return
 	}
 	var buf []byte
@@ -76,21 +80,33 @@ func (d *Device) Publish(data any) {
 		panic("unknown type: " + fmt.Sprintf("%T", data))
 	}
 
-	msg := messanger.New(d.Pub, buf, d.Name)
+	msg := messanger.New(d.pub, buf, d.name)
 	m := messanger.GetMQTT()
 	m.PublishMsg(msg)
 }
 
-func (d *Device) Shutdown() {
+func (d *BaseDevice) String() string {
+	return d.Name() + ": todo finish String()"
+}
+
+func (d *BaseDevice) JSON() []byte {
+	panic("todo finish BaseDevice.JSON()")
+}
+
+func (d *BaseDevice) Shutdown() {
 	// XXX = this is not right
 	// GetGPIO().Shutdown()
 }
 
-func (d *Device) EventLoop(done chan bool, readpub func() error) {
+func (d *BaseDevice) EvtQ(evt gpiocdev.LineEvent) {
+	d.evtQ <- evt
+}
+
+func (d *BaseDevice) EventLoop(done chan any, readpub func() error) {
 	running := true
 	for running {
 		select {
-		case evt := <-d.EvtQ:
+		case evt := <-d.evtQ:
 			evtype := "falling"
 			switch evt.Type {
 			case gpiocdev.LineEventFallingEdge:
@@ -118,12 +134,13 @@ func (d *Device) EventLoop(done chan bool, readpub func() error) {
 	}
 }
 
-func (d *Device) TimerLoop(done chan bool, readpub func() error) {
+func (d *BaseDevice) TimerLoop(period time.Duration, done chan any, readpub func() error) {
 	// No need to loop if we don't have a ticker period
-	if d.Period <= 0 {
+	d.period = period
+	if d.period <= 0 {
 		return
 	}
-	ticker := time.NewTicker(d.Period)
+	ticker := time.NewTicker(d.period)
 
 	running := true
 	for running {

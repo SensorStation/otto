@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/sensorstation/otto/data"
 	"github.com/sensorstation/otto/devices/bme280"
 	"github.com/sensorstation/otto/messanger"
@@ -26,7 +28,7 @@ func main() {
 	dm.Subscribe(topic, dm.Callback)
 
 	// start reading in a loop and publish the results via MQTT
-	done := make(chan bool)
-	go bme.TimerLoop(done, bme.ReadPub)
+	done := make(chan any)
+	go bme.TimerLoop(5*time.Second, done, bme.ReadPub)
 	<-done
 }

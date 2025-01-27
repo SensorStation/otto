@@ -10,7 +10,7 @@ import (
 )
 
 type Button struct {
-	*devices.GPIODevice
+	*devices.DigitalDevice
 }
 
 func New(name string, pin int, opts ...gpiocdev.LineReqOption) *Button {
@@ -19,7 +19,7 @@ func New(name string, pin int, opts ...gpiocdev.LineReqOption) *Button {
 		gpiocdev.WithPullUp,
 		gpiocdev.WithDebounce(10 * time.Millisecond),
 		gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
-			b.EvtQ <- evt
+			b.EvtQ(evt)
 		}),
 	}
 
@@ -27,7 +27,7 @@ func New(name string, pin int, opts ...gpiocdev.LineReqOption) *Button {
 		bopts = append(bopts, o)
 	}
 
-	b.GPIODevice = devices.NewGPIODevice(name, pin, devices.ModeInput, bopts...)
+	b.DigitalDevice = devices.NewDigitalDevice(name, pin, bopts...)
 	return b
 }
 

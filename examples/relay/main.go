@@ -22,7 +22,7 @@ import (
 var content embed.FS
 
 type relay struct {
-	*devices.Pin
+	*devices.DigitalPin
 }
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 	// Get the GPIO driver
 	g := devices.GetGPIO()
 	defer func() {
-		g.Shutdown()
+		g.Close()
 	}()
 
 	// capture exit signals to ensure pin is reverted to input on exit.

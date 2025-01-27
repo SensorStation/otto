@@ -7,12 +7,12 @@ import (
 )
 
 type Relay struct {
-	*devices.GPIODevice
+	*devices.DigitalDevice
 }
 
 func New(name string, offset int) *Relay {
 	relay := &Relay{
-		GPIODevice: devices.NewGPIODevice(name, offset, devices.ModeOutput, gpiocdev.AsOutput(0)),
+		DigitalDevice: devices.NewDigitalDevice(name, offset, gpiocdev.AsOutput(0)),
 	}
 	return relay
 }

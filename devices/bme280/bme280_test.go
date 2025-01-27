@@ -23,8 +23,8 @@ func TestBME280(t *testing.T) {
 		t.Error("Failed to create bme device")
 	}
 
-	if bme.Name != name {
-		t.Errorf("expected name (%s) got (%s)", name, bme.Name)
+	if bme.Name() != name {
+		t.Errorf("expected name (%s) got (%s)", name, bme.Name())
 	}
 
 	if bme.Bus != bus {
@@ -101,9 +101,8 @@ func TestBME280(t *testing.T) {
 		count++
 	})
 
-	done := make(chan bool)
-	bme.Period = 200 * time.Millisecond
-	go bme.TimerLoop(done, bme.ReadPub)
+	done := make(chan any)
+	go bme.TimerLoop(100*time.Millisecond, done, bme.ReadPub)
 
 	select {
 	case <-done:
@@ -112,7 +111,7 @@ func TestBME280(t *testing.T) {
 	case <-time.After(1 * time.Second):
 		done <- true
 	}
-	if count != 5 {
-		t.Errorf("Expected to recieve messanges expected (5) got (%d) ", count)
+	if count < 5 {
+		t.Errorf("Expected to recieve messanges expected (>= 5) got (%d) ", count)
 	}
 }

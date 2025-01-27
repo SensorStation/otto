@@ -11,7 +11,7 @@ import (
 )
 
 type VH400 struct {
-	*devices.AnalogDevice // i2c device
+	devices.AnalogDevice
 }
 
 func New(name string, pin int) *VH400 {
@@ -21,18 +21,24 @@ func New(name string, pin int) *VH400 {
 	return v
 }
 
+func (v VH400) Name() string {
+	return v.AnalogDevice.Name()
+}
+
 func (v *VH400) Get() float64 {
 	volts := v.Get()
 	vwc := v.vwc(volts)
-	if v.Pub != "" {
-		v.Publish(vwc)
-	}
-
 	return vwc
 }
 
 func (v *VH400) ReadPub() error {
-	v.Pub = messanger.TopicData("vh100/" + v.Name)
+	vwc := v.Get()
+	v.Publish(vwc)
+	return nil
+}
+
+func (v *VH400) ReadContinousPub() error {
+	v.AddPub(messanger.TopicData("vh100/" + v.Name()))
 	q := v.AnalogDevice.ReadContinuous()
 	go func() {
 		for {

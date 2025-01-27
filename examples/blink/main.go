@@ -35,29 +35,27 @@ func main() {
 	led, done := initLED("led", pinid)
 	if useMQTT {
 		domqtt(led)
-		fmt.Println("LED is subscribed to ", led.Subs[0])
 	} else {
-		led.Period = 1 * time.Second
-		dotimer(led, done)
+		dotimer(led, 1*time.Second, done)
 		fmt.Println("LED will blink every second")
 	}
 	<-done
 }
 
-func initLED(name string, pin int) (*led.LED, chan bool) {
+func initLED(name string, pin int) (*led.LED, chan any) {
 	led := led.New(name, pin)
-	led.AddPub(messanger.TopicData(led.Name))
-	done := make(chan bool)
+	led.AddPub(messanger.TopicData(led.Name()))
+	done := make(chan any)
 	return led, done
 }
 
 func domqtt(led *led.LED) {
-	led.Subscribe(messanger.TopicControl(led.Name), led.Callback)
+	led.Subscribe(messanger.TopicControl(led.Name()), led.Callback)
 }
 
-func dotimer(led *led.LED, done chan bool) {
+func dotimer(led *led.LED, period time.Duration, done chan any) {
 	count = 0
-	led.TimerLoop(done, func() error {
+	led.TimerLoop(period, done, func() error {
 		led.Set(count % 2)
 		count++
 		return nil
