@@ -35,7 +35,7 @@ type controller struct {
 
 func (c *controller) cleanup() {
 	g := devices.GetGPIO()
-	g.Shutdown()
+	g.Close()
 }
 
 func (c *controller) initSignals() {
@@ -57,7 +57,7 @@ func (c *controller) initStations() {
 	c.Server.Register("/api/stations", sm)
 }
 
-func (c *controller) initDevices(done chan bool) error {
+func (c *controller) initDevices(done chan any) error {
 	c.initRelay(22)
 	c.initLED(6)
 	c.initButton("on", 23, gpiocdev.WithRisingEdge)
@@ -94,7 +94,7 @@ func (c *controller) initButton(name string, idx int, opts ...gpiocdev.LineReqOp
 	}
 }
 
-func (c *controller) initBME280(bus string, addr int, done chan bool) (bme *bme280.BME280, err error) {
+func (c *controller) initBME280(bus string, addr int, done chan any) (bme *bme280.BME280, err error) {
 	bme = bme280.New("bme280", "/dev/i2c-1", 0x76)
 	if bme == nil {
 		return nil, fmt.Errorf("Failed initialize BME280 %s %d", "/dev/i2c-1", 0x76)
@@ -111,14 +111,13 @@ func (c *controller) initBME280(bus string, addr int, done chan bool) (bme *bme2
 		return nil, err
 	}
 	bme.AddPub(messanger.TopicData("bme280"))
-	bme.Period = 10 * time.Second
-	go bme.TimerLoop(done, bme.ReadPub)
+	go bme.TimerLoop(10*time.Second, done, bme.ReadPub)
 	c.BME280 = bme
 
 	return bme, nil
 }
 
-func (c *controller) initOLED(done chan bool) {
+func (c *controller) initOLED(done chan any) {
 
 	display, err := oled.New("oled", 128, 64)
 	if err != nil {
@@ -144,7 +143,6 @@ func (c *controller) initOLED(done chan bool) {
 	}
 
 	m := messanger.GetMQTT()
-	// m.Subscribe(messanger.TopicData("bme280"), func(msg *messanger.Msg) {
 	display.Subscribe(messanger.TopicData("bme280"), func(msg *messanger.Msg) {
 		mm, err := msg.Map()
 		if err != nil {
@@ -175,9 +173,8 @@ func (c *controller) initOLED(done chan bool) {
 }
 
 func (c *controller) buttonCallback(msg *messanger.Msg) {
-	m := messanger.GetMQTT()
 	cmd := msg.String()
-	m.Publish(c.LED.Subs[0], cmd)
-	m.Publish(c.Relay.Subs[0], cmd)
+	c.LED.Publish(cmd)
+	c.Relay.Publish(cmd)
 	return
 }

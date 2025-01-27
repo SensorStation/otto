@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	done     chan bool
+	done     chan any
 	loglevel string
 	mock     bool
 	mockMQTT bool
@@ -32,7 +32,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	done = make(chan bool)
+	done = make(chan any)
 	initLogging()
 	initMock()
 

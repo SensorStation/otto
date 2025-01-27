@@ -20,7 +20,7 @@ func main() {
 	// Get the GPIO driver
 	g := devices.GetGPIO()
 	defer func() {
-		g.Shutdown()
+		g.Close()
 	}()
 
 	done := make(chan bool, 0)

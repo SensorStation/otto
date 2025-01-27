@@ -7,12 +7,12 @@ import (
 )
 
 type LED struct {
-	*devices.GPIODevice
+	*devices.DigitalDevice
 }
 
 func New(name string, offset int) *LED {
 	led := &LED{
-		GPIODevice: devices.NewGPIODevice(name, offset, devices.ModeOutput, gpiocdev.AsOutput(0)),
+		DigitalDevice: devices.NewDigitalDevice(name, offset, gpiocdev.AsOutput(0)),
 	}
 	return led
 }

@@ -18,7 +18,7 @@ func main() {
 	ads.Init()
 
 	var err error
-	var pins [4]devices.APin
+	var pins [4]*devices.AnalogPin
 	var chans4 [4]<-chan float64
 	for i := 0; i < 4; i++ {
 		pname := fmt.Sprintf("pin%d", i)

@@ -13,7 +13,7 @@ var (
 )
 
 func TestButton(t *testing.T) {
-	done := make(chan bool)
+	done := make(chan any)
 
 	c := messanger.GetMockClient()
 	m := messanger.SetMQTTClient(c)

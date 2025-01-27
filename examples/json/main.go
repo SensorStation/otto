@@ -7,7 +7,6 @@ package main
 
 import (
 	"log/slog"
-	"time"
 
 	"encoding/json"
 
@@ -41,12 +40,13 @@ func main() {
 	}
 
 	defer func() {
-		g.Shutdown()
+		g.Close()
 	}()
 
-	led := g.Pins[6]
-	for {
-		led.Toggle()
-		time.Sleep(1 * time.Second)
-	}
+	// TODO
+	// led := g.pins[6]
+	// for {
+	// 	led.Toggle()
+	// 	time.Sleep(1 * time.Second)
+	// }
 }
