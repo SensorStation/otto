@@ -21,7 +21,7 @@ func New(name string, pin int) *VH400 {
 	return v
 }
 
-func (v VH400) Name() string {
+func (v *VH400) Name() string {
 	return v.AnalogDevice.Name()
 }
 

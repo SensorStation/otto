@@ -34,11 +34,6 @@ func main() {
 		return
 	}
 
-	if err := g.Init(); err != nil {
-		slog.Error(err.Error())
-		return
-	}
-
 	defer func() {
 		g.Close()
 	}()

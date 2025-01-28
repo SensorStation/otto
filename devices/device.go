@@ -9,8 +9,22 @@ import (
 	"github.com/warthog618/go-gpiocdev"
 )
 
+var mock bool = false
+
+func Mock(val bool) {
+    mock = val
+}
+
 type Device interface {
 	Name() string
+    AddPub(topic string)
+    GetPub() string
+    Publish(val any)
+
+    GetSubs() []string
+    Subscribe(string, func(*messanger.Msg))
+
+    TimerLoop(time.Duration, chan any, func() error)
 }
 
 // Device is an abstract
@@ -49,16 +63,6 @@ func (d *BaseDevice) AddPub(p string) {
 	d.pub = p
 }
 
-func (d *BaseDevice) Subscribe(topic string, f func(*messanger.Msg)) {
-	d.subs = append(d.subs, topic)
-	m := messanger.GetMQTT()
-	m.Subscribe(topic, f)
-}
-
-func (d *BaseDevice) GetSubs() []string {
-	return d.subs
-}
-
 func (d *BaseDevice) GetPub() string {
 	return d.pub
 }
@@ -83,6 +87,17 @@ func (d *BaseDevice) Publish(data any) {
 	msg := messanger.New(d.pub, buf, d.name)
 	m := messanger.GetMQTT()
 	m.PublishMsg(msg)
+}
+
+
+func (d *BaseDevice) GetSubs() []string {
+	return d.subs
+}
+
+func (d *BaseDevice) Subscribe(topic string, f func(*messanger.Msg)) {
+	d.subs = append(d.subs, topic)
+	m := messanger.GetMQTT()
+	m.Subscribe(topic, f)
 }
 
 func (d *BaseDevice) String() string {

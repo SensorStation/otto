@@ -13,7 +13,6 @@ import (
 type BME280 struct {
 	*devices.I2CDevice
 	driver *bme280.Driver
-	Mock   bool
 }
 
 type Response bme280.Response
@@ -28,7 +27,7 @@ func New(name, bus string, addr int) *BME280 {
 // Init opens the i2c bus at the specified address and gets the device
 // read for reading
 func (b *BME280) Init() error {
-	if b.Mock {
+	if mock {
 		return nil
 	}
 

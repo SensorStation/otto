@@ -11,6 +11,12 @@ import (
 	"periph.io/x/host/v3"
 )
 
+// AnalogDevice is an instatiation of the GPIO device
+type AnalogADS1115 struct {
+	*BaseDevice
+	*AnalogPin
+}
+
 // ADS1115 is an i2c ADC chip that will use the i2c device type
 // to provide 4 single analog pins to be used by the raspberry
 // pi to access analog sensors via the i2c bus.  In a sense this
@@ -27,6 +33,10 @@ type ADS1115 struct {
 var (
 	ads1115 *ADS1115
 )
+
+func (a AnalogADS1115) Name() string {
+	return a.BaseDevice.Name()
+}
 
 // GetADS1115 will return the default ads1115 struct singleton. The
 // first time GetADS1115 is called it will create a new device.
