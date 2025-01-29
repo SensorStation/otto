@@ -25,7 +25,7 @@ var gpioStr = `
 `
 
 func TestFromJSON(t *testing.T) {
-    Mock(true)
+	Mock = true
 	gpio := GetGPIO()
 	if err := json.Unmarshal([]byte(gpioStr), &gpio); err != nil {
 		t.Error(err)
@@ -168,7 +168,7 @@ func TestPin(t *testing.T) {
 }
 
 func TestGPIO(t *testing.T) {
-    Mock(true)
+	Mock = true
 	g := GetGPIO()
 	if len(g.pins) > 0 {
 		t.Errorf("Pins are defined expected (0) got (%d)", len(g.pins))

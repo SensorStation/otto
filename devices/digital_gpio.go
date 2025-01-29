@@ -22,14 +22,14 @@ var (
 // GetGPIO returns the GPIO singleton for the Raspberry PI
 func GetGPIO() *GPIO {
 	if gpio != nil {
-        return gpio
-    }
-    
-    gpio = &GPIO{
-        Chipname: "gpiochip4", // raspberry pi-5
-        Mock: mock,
-    }
-    gpio.pins = make(map[int]*DigitalPin)
+		return gpio
+	}
+
+	gpio = &GPIO{
+		Chipname: "gpiochip4", // raspberry pi-5
+		Mock:     Mock,
+	}
+	gpio.pins = make(map[int]*DigitalPin)
 	for _, pin := range gpio.pins {
 		if err := pin.Init(); err != nil {
 			slog.Error("Error initializing pin ", "offset", pin.offset)

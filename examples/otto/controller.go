@@ -99,10 +99,6 @@ func (c *controller) initBME280(bus string, addr int, done chan any) (bme *bme28
 	if bme == nil {
 		return nil, fmt.Errorf("Failed initialize BME280 %s %d", "/dev/i2c-1", 0x76)
 	}
-
-	if mockGPIO {
-		bme.Mock = true
-	}
 	err = bme.Init()
 	if err != nil {
 		return nil, err

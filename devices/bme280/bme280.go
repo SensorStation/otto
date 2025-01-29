@@ -27,7 +27,7 @@ func New(name, bus string, addr int) *BME280 {
 // Init opens the i2c bus at the specified address and gets the device
 // read for reading
 func (b *BME280) Init() error {
-	if mock {
+	if devices.Mock == true {
 		return nil
 	}
 
@@ -51,7 +51,7 @@ func (b *BME280) Init() error {
 }
 
 func (b *BME280) Read() (*bme280.Response, error) {
-	if b.Mock {
+	if devices.Mock {
 		return &bme280.Response{
 			Temperature: 20.33,
 			Pressure:    1027.33,

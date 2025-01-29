@@ -1,9 +1,9 @@
 package devices
 
 type AnalogDevice interface {
-    Device
-    Name() string
-    ReadContinuous() <-chan float64
+	Device
+	Name() string
+	ReadContinuous() <-chan float64
 }
 
 // NewAnalogDevice creates a analog device with the given name and ads1115
@@ -11,11 +11,11 @@ type AnalogDevice interface {
 // library provided by
 func NewAnalogDevice(name string, offset int, opts any) (ad AnalogDevice) {
 
-    if mock {
-        return &AnalogMock{}
-    }
+	if Mock {
+		return &AnalogMock{}
+	}
 
-    dev := &AnalogADS1115{}
+	dev := &AnalogADS1115{}
 	dev.BaseDevice = NewDevice(name)
 
 	var err error
@@ -27,4 +27,3 @@ func NewAnalogDevice(name string, offset int, opts any) (ad AnalogDevice) {
 	}
 	return dev
 }
-
