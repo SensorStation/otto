@@ -5,13 +5,16 @@ import (
 	"errors"
 
 	"github.com/maciej/bme280"
-	"github.com/sensorstation/otto/devices"
-	"golang.org/x/exp/io/i2c"
+	"github.com/sensorstation/otto/device"
 )
 
+// XXX - Maybe move this over to periph.io implementation?
 // BME280 is an i2c device that gathers air temp, humidity and pressure
 type BME280 struct {
-	*devices.I2CDevice
+	*device.Device
+
+	bus    string
+	addr   int
 	driver *bme280.Driver
 }
 
@@ -19,7 +22,9 @@ type Response bme280.Response
 
 func New(name, bus string, addr int) *BME280 {
 	b := &BME280{
-		I2CDevice: devices.NewI2CDevice(name, bus, addr),
+		Device: device.NewDevice(name),
+		bus:    bus,
+		addr:   addr,
 	}
 	return b
 }
@@ -27,11 +32,12 @@ func New(name, bus string, addr int) *BME280 {
 // Init opens the i2c bus at the specified address and gets the device
 // read for reading
 func (b *BME280) Init() error {
-	if devices.Mock == true {
+	if device.IsMock() == true {
 		return nil
 	}
 
-	device, err := i2c.Open(&i2c.Devfs{Dev: b.Bus}, b.Addr)
+	// device, err := i2c.Open(&i2c.Devfs{Dev: b.Bus}, b.Addr)
+	device, err := device.GetI2CDriver(b.bus, b.addr)
 	if err != nil {
 		return err
 	}
@@ -51,7 +57,7 @@ func (b *BME280) Init() error {
 }
 
 func (b *BME280) Read() (*bme280.Response, error) {
-	if devices.Mock {
+	if device.IsMock() {
 		return &bme280.Response{
 			Temperature: 20.33,
 			Pressure:    1027.33,

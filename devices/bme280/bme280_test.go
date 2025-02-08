@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 )
 
@@ -19,7 +19,7 @@ func TestBME280(t *testing.T) {
 	bus := "/dev/i2c-fake"
 	addr := 0x76
 
-	devices.Mock = true
+	device.Mock(true)
 	bme := New(name, bus, addr)
 	if bme == nil {
 		t.Error("Failed to create bme device")
@@ -29,11 +29,11 @@ func TestBME280(t *testing.T) {
 		t.Errorf("expected name (%s) got (%s)", name, bme.Name())
 	}
 
-	if bme.Bus != bus {
-		t.Errorf("expected bus (%s) got (%s)", bus, bme.Bus)
+	if bme.bus != bus {
+		t.Errorf("expected bus (%s) got (%s)", bus, bme.bus)
 	}
-	if bme.Addr != addr {
-		t.Errorf("expected addr (%x) got (%x)", addr, bme.Addr)
+	if bme.addr != addr {
+		t.Errorf("expected addr (%x) got (%x)", addr, bme.addr)
 	}
 
 	err := bme.Init()

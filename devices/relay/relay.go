@@ -1,19 +1,22 @@
 package relay
 
 import (
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
 
 type Relay struct {
-	*devices.DigitalDevice
+	*device.Device
+	*device.DigitalPin
 }
 
 func New(name string, offset int) *Relay {
 	relay := &Relay{
-		DigitalDevice: devices.NewDigitalDevice(name, offset, gpiocdev.AsOutput(0)),
+		Device: device.NewDevice(name),
 	}
+	g := device.GetGPIO()
+	relay.DigitalPin = g.Pin(name, offset, gpiocdev.AsOutput(0))
 	return relay
 }
 

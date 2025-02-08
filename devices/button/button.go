@@ -2,42 +2,49 @@ package button
 
 import (
 	"errors"
-	"strconv"
+	"log/slog"
 	"time"
 
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/warthog618/go-gpiocdev"
 )
 
 type Button struct {
-	*devices.DigitalDevice
+	*device.Device
+	*device.DigitalPin
 }
 
-func New(name string, pin int, opts ...gpiocdev.LineReqOption) *Button {
-	b := &Button{}
+func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
+	b := &Button{
+		Device: device.NewDevice(name),
+	}
+	var evtQ chan<- gpiocdev.LineEvent
+
 	bopts := []gpiocdev.LineReqOption{
 		gpiocdev.WithPullUp,
 		gpiocdev.WithDebounce(10 * time.Millisecond),
 		gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
-			b.EvtQ(evt)
+			evtQ <- evt
 		}),
 	}
 
 	for _, o := range opts {
 		bopts = append(bopts, o)
 	}
-
-	b.DigitalDevice = devices.NewDigitalDevice(name, pin, bopts...)
+	g := device.GetGPIO()
+	p := g.Pin(name, offset, opts...)
+	b.DigitalPin = p
 	return b
 }
 
-func (b *Button) ReadPub() error {
-	v, err := b.Get()
+func (b *Button) Pub() error {
+	var buf []byte
+	n, err := b.Read(buf)
 	if err != nil {
 		return errors.New("Failed to read buttons value: " + err.Error())
 	}
-
-	val := strconv.Itoa(v)
-	b.Publish(val)
+	slog.Debug("read", "device", "button", "bytes", n)
+	// val := strconv.Itoa(v)
+	b.Publish(buf)
 	return nil
 }

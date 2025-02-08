@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 )
 
 type GTU7 struct {
-	*devices.SerialDevice
+	*device.Device
 	lastGPS GPS
 
 	scanner *bufio.Scanner
@@ -18,15 +18,14 @@ type GTU7 struct {
 
 func NewGTU7(devname string) *GTU7 {
 	g := &GTU7{}
-	g.SerialDevice = devices.NewSerialDevice("gt-u7", devname, 9600)
+	g.Device = device.NewSerialDevice("gt-u7", devname, 9600)
 	return g
 }
 
 func (g *GTU7) Open() error {
-
-	err := g.SerialDevice.Open()
+	err := g.Device.Open()
 	if err != nil {
-		fmt.Printf("Failed to open serial port %s - %v\n", g.PortName, err)
+		fmt.Printf("Failed to open serial port %s - %v\n", g.String(), err)
 		return err
 	}
 	return nil
@@ -37,7 +36,7 @@ func (g *GTU7) OpenRead() error {
 	if err != nil {
 		return err
 	}
-	g.scanner = bufio.NewScanner(g.Port)
+	g.scanner = bufio.NewScanner(g)
 	return nil
 }
 

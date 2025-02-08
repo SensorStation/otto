@@ -5,7 +5,7 @@ import (
 	"flag"
 
 	"github.com/sensorstation/otto/cmd"
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
 	"github.com/sensorstation/otto/utils"
@@ -68,7 +68,7 @@ func initMock() {
 		messanger.SetMQTTClient(messanger.GetMockClient())
 	}
 	if mockGPIO {
-		devices.GetGPIO().Mock = true
+		device.GetGPIO().Mock = true
 	}
 }
 

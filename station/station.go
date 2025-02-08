@@ -4,17 +4,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 )
 
 // Station is the primary structure that holds an array of
 // Sensors which in turn hold a timeseries of datapoints.
 type Station struct {
-	ID                    string        `json:"id"`
-	LastHeard             time.Time     `json:"last-heard"`
-	Expiration            time.Duration `json:"expiration"` // how long to timeout a station
-	devices.DeviceManager `json:"devices"`
+	ID                   string        `json:"id"`
+	LastHeard            time.Time     `json:"last-heard"`
+	Expiration           time.Duration `json:"expiration"` // how long to timeout a station
+	device.DeviceManager `json:"devices"`
 
 	ticker *time.Ticker `json:"-"`
 	quit   chan bool    `json:"-"`
@@ -48,6 +48,6 @@ func (s *Station) Stop() {
 	s.quit <- true
 }
 
-func (s *Station) AddDevice(device devices.Device) {
+func (s *Station) AddDevice(device device.Device) {
 	s.DeviceManager.Add(device)
 }

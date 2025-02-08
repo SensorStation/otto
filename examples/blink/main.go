@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/devices/led"
 	"github.com/sensorstation/otto/messanger"
 )
@@ -56,7 +56,7 @@ func domqtt(led *led.LED) {
 func dotimer(led *led.LED, period time.Duration, done chan any) {
 	count = 0
 	led.TimerLoop(period, done, func() error {
-		led.Set(count % 2)
+		// led.Set(count % 2)
 		count++
 		return nil
 	})
@@ -68,11 +68,11 @@ func domock() {
 		messanger.SetMQTTClient(messanger.GetMockClient())
 
 	case "gpio":
-		devices.GetGPIO().Mock = true
+		device.GetGPIO().Mock = true
 
 	case "both":
 		messanger.SetMQTTClient(messanger.GetMockClient())
-		devices.GetGPIO().Mock = true
+		device.GetGPIO().Mock = true
 
 	default:
 		return

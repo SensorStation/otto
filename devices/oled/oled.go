@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/nfnt/resize"
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"periph.io/x/conn/v3/i2c/i2creg"
 	"periph.io/x/devices/v3/ssd1306"
 	"periph.io/x/devices/v3/ssd1306/image1bit"
@@ -29,7 +29,7 @@ const (
 )
 
 type OLED struct {
-	*devices.I2CDevice
+	*device.Device
 	Dev        *ssd1306.Dev
 	Height     int
 	Width      int
@@ -47,7 +47,10 @@ func New(name string, width, height int) (*OLED, error) {
 		bus:    "/dev/i2c-1",
 		addr:   0x3c,
 	}
-	d.I2CDevice = devices.NewI2CDevice(name, d.bus, d.addr)
+	d.Device = device.NewDevice(name)
+	if device.IsMock() {
+		return d, nil
+	}
 
 	// Load all the drivers:
 	if _, err := host.Init(); err != nil {

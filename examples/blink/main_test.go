@@ -4,12 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 )
 
 func TestBlink(t *testing.T) {
-	devices.GetGPIO().Mock = true
+	device.GetGPIO().Mock = true
 	messanger.SetMQTTClient(messanger.GetMockClient())
 
 	led, done := initLED("test-led", 13)

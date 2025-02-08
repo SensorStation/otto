@@ -5,44 +5,66 @@ package vh400
 
 import (
 	"log"
+	"log/slog"
 
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 )
 
 type VH400 struct {
-	devices.AnalogDevice
+	*device.Device
+	*device.AnalogPin
 }
 
 func New(name string, pin int) *VH400 {
+	d := device.NewDevice("vh400")
+	if d.Error != nil {
+		log.Printf("VH400 - Failed to open %s ]%d[ - %v", name, pin, d.Error)
+		return nil
+	}
+	ads := device.GetADS1115()
+	p, err := ads.Pin(name, pin, nil)
+	if err != nil {
+		slog.Error("vh400.New", "name", name, "pin", pin, "error", err)
+		return nil
+	}
+
 	v := &VH400{
-		AnalogDevice: devices.NewAnalogDevice("vh400", pin, nil),
+		Device:    d,
+		AnalogPin: p,
 	}
 	return v
 }
 
 func (v *VH400) Name() string {
-	return v.AnalogDevice.Name()
+	return v.Device.Name()
 }
 
-func (v *VH400) Get() float64 {
-	volts := v.Get()
+func (v *VH400) Get() (float64, error) {
+	volts, err := v.Get()
+	if err != nil {
+		return volts, err
+	}
 	vwc := v.vwc(volts)
-	return vwc
+	return vwc, nil
 }
 
 func (v *VH400) ReadPub() error {
-	vwc := v.Get()
+	vwc, err := v.Get()
+	if err != nil {
+		return err
+	}
 	v.Publish(vwc)
 	return nil
 }
 
 func (v *VH400) ReadContinousPub() error {
 	v.AddPub(messanger.TopicData("vh100/" + v.Name()))
-	q := v.AnalogDevice.ReadContinuous()
+	q := v.AnalogPin.ReadContinuous()
 	go func() {
 		for {
-			volts := <-q
+			vbytes := <-q
+			volts := vbytes
 			vwc := v.vwc(volts)
 			v.Publish(vwc)
 		}

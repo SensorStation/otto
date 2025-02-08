@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto/data"
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/devices/bme280"
 	"github.com/sensorstation/otto/devices/button"
 	"github.com/sensorstation/otto/devices/led"
@@ -34,7 +34,7 @@ type controller struct {
 }
 
 func (c *controller) cleanup() {
-	g := devices.GetGPIO()
+	g := device.GetGPIO()
 	g.Close()
 }
 

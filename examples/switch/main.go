@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sensorstation/otto/devices"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
@@ -18,7 +18,7 @@ func main() {
 	mqtt = messanger.GetMQTT()
 
 	// Get the GPIO driver
-	g := devices.GetGPIO()
+	g := device.GetGPIO()
 	defer func() {
 		g.Close()
 	}()
@@ -30,7 +30,7 @@ func main() {
 	<-done
 }
 
-func startSwitchToggler(g *devices.GPIO, done chan bool) {
+func startSwitchToggler(g *device.GPIO, done chan bool) {
 	on := false
 	r := g.Pin("reader", 23, gpiocdev.AsOutput(1))
 	for {
@@ -45,7 +45,7 @@ func startSwitchToggler(g *devices.GPIO, done chan bool) {
 	}
 }
 
-func startSwitchHandler(g *devices.GPIO, done chan bool) {
+func startSwitchHandler(g *device.GPIO, done chan bool) {
 	evtQ := make(chan gpiocdev.LineEvent)
 	sw := g.Pin("switch", 24, gpiocdev.WithPullUp, gpiocdev.WithBothEdges, gpiocdev.WithEventHandler(func(evt gpiocdev.LineEvent) {
 		evtQ <- evt
