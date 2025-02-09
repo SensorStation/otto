@@ -48,6 +48,6 @@ func (s *Station) Stop() {
 	s.quit <- true
 }
 
-func (s *Station) AddDevice(device device.Device) {
+func (s *Station) AddDevice(device device.Name) {
 	s.DeviceManager.Add(device)
 }

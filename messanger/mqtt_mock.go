@@ -3,6 +3,7 @@ package messanger
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
@@ -67,6 +68,10 @@ func (m *MockClient) Publish(topic string, qos byte, retained bool, payload inte
 
 	case string:
 		mm.payload = []byte(payload.(string))
+
+	case int:
+		val := strconv.Itoa(payload.(int))
+		mm.payload = []byte(val)
 
 	default:
 		t.Err = fmt.Errorf("unhandled payload type %s", typ)

@@ -10,16 +10,12 @@ import (
 )
 
 type Button struct {
-	*device.Device
-	*device.DigitalPin
+	*device.DigitalDevice
 }
 
 func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
-	b := &Button{
-		Device: device.NewDevice(name),
-	}
-	var evtQ chan<- gpiocdev.LineEvent
-
+	var evtQ chan gpiocdev.LineEvent
+	evtQ = make(chan gpiocdev.LineEvent)
 	bopts := []gpiocdev.LineReqOption{
 		gpiocdev.WithPullUp,
 		gpiocdev.WithDebounce(10 * time.Millisecond),
@@ -27,13 +23,13 @@ func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
 			evtQ <- evt
 		}),
 	}
-
 	for _, o := range opts {
 		bopts = append(bopts, o)
 	}
-	g := device.GetGPIO()
-	p := g.Pin(name, offset, opts...)
-	b.DigitalPin = p
+	b := &Button{
+		DigitalDevice: device.NewDigitalDevice(name, offset, bopts...),
+	}
+	b.EvtQ = evtQ
 	return b
 }
 

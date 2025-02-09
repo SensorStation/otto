@@ -4,9 +4,9 @@ func NewSerialDevice(name string, port string, opts any) *Device {
 	d := NewDevice(name)
 	sp := GetSerialPort(name, port, opts)
 	err := sp.Open()
-	if err == nil {
-		d.ReadWriteCloser = sp
-	}
+	// if err == nil {
+	// 	d.ReadWriteCloser = sp
+	// }
 	d.Error = err
 	return d
 }

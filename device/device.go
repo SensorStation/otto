@@ -29,6 +29,10 @@ func IsMock() bool {
 	return mock
 }
 
+type Name interface {
+	Name() string
+}
+
 type Device struct {
 	// Name of the device human readable
 	name string
@@ -44,7 +48,7 @@ type Device struct {
 	period time.Duration
 
 	// EventQ for devices that are interupt driven
-	evtQ chan gpiocdev.LineEvent
+	EvtQ chan gpiocdev.LineEvent
 
 	// for mocking
 	val any
@@ -52,9 +56,8 @@ type Device struct {
 	// Last Error encountered
 	Error error
 
-	io.ReadWriteCloser
 	Opener
-	OnOff
+	io.ReadWriter
 }
 
 // NewDevice creates a new device with the given name
@@ -79,7 +82,7 @@ func (d *Device) GetPub() string {
 }
 
 func (d *Device) EventQ() (evtQ chan<- gpiocdev.LineEvent) {
-	return d.evtQ
+	return d.EvtQ
 }
 
 func (d *Device) Publish(data any) {
@@ -88,6 +91,8 @@ func (d *Device) Publish(data any) {
 		return
 	}
 	var buf []byte
+
+	m := messanger.GetMQTT()
 	switch data.(type) {
 	case []byte:
 		buf = data.([]byte)
@@ -95,12 +100,15 @@ func (d *Device) Publish(data any) {
 	case string:
 		buf = []byte(data.(string))
 
+	case int:
+		m.Publish(d.pub, data)
+		return
+
 	default:
 		panic("unknown type: " + fmt.Sprintf("%T", data))
 	}
 
 	msg := messanger.New(d.pub, buf, d.name)
-	m := messanger.GetMQTT()
 	m.PublishMsg(msg)
 }
 
@@ -114,23 +122,15 @@ func (d *Device) Subscribe(topic string, f func(*messanger.Msg)) {
 	m.Subscribe(topic, f)
 }
 
-func (d *Device) ReadPub() error {
-	var buf []byte
-	n, err := d.Read(buf)
-	if err != nil {
-		return err
-	}
-	slog.Debug("device read", "device", d.Name, "count", n)
-	d.Publish(buf)
-	return nil
-}
-
-func (d *Device) EventLoop(done chan any, readpub func() error) {
+func (d *Device) EventLoop(done chan any, readpub func()) {
 	running := true
 	for running {
+		fmt.Printf("waiting on event %p\n", d.EvtQ)
 		select {
-		case evt := <-d.evtQ:
+		case evt := <-d.EvtQ:
 			evtype := "falling"
+			fmt.Printf("\tgoot event %p\n", d.EvtQ)
+
 			switch evt.Type {
 			case gpiocdev.LineEventFallingEdge:
 				evtype = "falling"
@@ -146,10 +146,7 @@ func (d *Device) EventLoop(done chan any, readpub func() error) {
 			slog.Info("GPIO edge", "device", d.Name, "direction", evtype,
 				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
 
-			err := readpub()
-			if err != nil {
-				slog.Error("Failed to read and publish", "device", d.Name, "error", err)
-			}
+			readpub()
 
 		case <-done:
 			running = false
@@ -180,21 +177,21 @@ func (d *Device) TimerLoop(period time.Duration, done chan any, readpub func() e
 	}
 }
 
-func (d *Device) ReadContinuous() <-chan any {
-	q := make(chan any)
-	func() {
-		for {
-			var buf []byte
-			_, err := d.Read(buf)
-			if err != nil {
-				slog.Error("ReadContinuous - Failed to read", "device", d.Name, "error", err.Error())
-				continue
-			}
-			q <- buf
-		}
-	}()
-	return nil
-}
+// func (d *Device) ReadContinuous() <-chan any {
+// 	q := make(chan any)
+// 	func() {
+// 		for {
+// 			var buf []byte
+// 			_, err := d.Read(buf)
+// 			if err != nil {
+// 				slog.Error("ReadContinuous - Failed to read", "device", d.Name, "error", err.Error())
+// 				continue
+// 			}
+// 			q <- buf
+// 		}
+// 	}()
+// 	return nil
+// }
 
 func (d *Device) String() string {
 	return d.Name() + ": todo finish String()"

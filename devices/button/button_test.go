@@ -31,14 +31,9 @@ func TestButton(t *testing.T) {
 	b.Subscribe(messanger.TopicControl("button"), b.Callback)
 	go b.EventLoop(done, b.ReadPub)
 
-	msg := messanger.New(messanger.TopicControl("button"), []byte("0"), "test")
-	b.Callback(msg)
+	b.MockHWInput(0)
+	b.MockHWInput(1)
 
-	msg.Data = []byte("1")
-	b.Callback(msg)
-
-	// b.MockHWInput(0)
-	// b.MockHWInput(1)
 	done <- true
 
 	if !gotit[0] || !gotit[1] {

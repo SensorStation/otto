@@ -23,3 +23,4 @@ mock/mock
 gpio/gpio
 station/station
 otto.log
+debug*

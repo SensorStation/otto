@@ -203,15 +203,14 @@ func (pin *DigitalPin) Toggle() error {
 func (pin DigitalPin) Callback(msg *messanger.Msg) {
 	cmd := msg.String()
 	switch cmd {
-	case "on":
+	case "on", "1":
 		pin.On()
 
-	case "off":
+	case "off", "0":
 		pin.Off()
 
 	case "toggle":
 		pin.Toggle()
-
 	}
 	return
 }
@@ -323,6 +322,11 @@ func (m *MockLine) Callback(msg *messanger.Msg) {
 		return
 	}
 	return
+}
+
+func (d *DigitalPin) MockHWInput(v int) {
+	m := d.Line.(*MockLine)
+	m.MockHWInput(v)
 }
 
 func (m *MockLine) MockHWInput(v int) {
