@@ -11,8 +11,8 @@ import (
 
 type GTU7 struct {
 	*device.Device
+	*device.Serial
 	lastGPS GPS
-
 	scanner *bufio.Scanner
 }
 

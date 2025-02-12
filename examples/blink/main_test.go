@@ -13,8 +13,8 @@ func TestBlink(t *testing.T) {
 	messanger.SetMQTTClient(messanger.GetMockClient())
 
 	led, done := initLED("test-led", 13)
-	if led.Name() != "test-led" {
-		t.Errorf("name expected (%s) got (%s)", "test-led", led.Name())
+	if led.Device.Name() != "test-led" {
+		t.Errorf("name expected (%s) got (%s)", "test-led", led.Device.Name())
 	}
 
 	domqtt(led)
@@ -25,6 +25,4 @@ func TestBlink(t *testing.T) {
 	if count != 10 {
 		t.Errorf("count expected (%d) got (%d)", 10, count)
 	}
-
-	_ = done
 }

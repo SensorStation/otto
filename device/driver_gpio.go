@@ -1,14 +1,11 @@
 package device
 
 import (
-	"bytes"
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"strconv"
 	"time"
-	"unsafe"
 
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
@@ -105,10 +102,6 @@ type Line interface {
 	Value() (int, error)
 }
 
-type Pin interface {
-	Name() string
-}
-
 type DigitalPin struct {
 	name string
 	opts []gpiocdev.LineReqOption
@@ -117,6 +110,18 @@ type DigitalPin struct {
 	offset int
 	val    int
 	mock   bool
+
+	gpiocdev.EventHandler `json:"event-handler"`
+	EvtQ                  chan gpiocdev.LineEvent
+}
+
+func NewDigitalPin(name string, offset int, opts ...gpiocdev.LineReqOption) *DigitalPin {
+	gpio := GetGPIO()
+	return gpio.Pin(name, offset, opts...)
+}
+
+func (p *DigitalPin) PinName() string {
+	return p.name
 }
 
 // Init the pin from the offset and mode
@@ -215,32 +220,34 @@ func (pin DigitalPin) Callback(msg *messanger.Msg) {
 	return
 }
 
-func (p *DigitalPin) Read(b []byte) (n int, err error) {
-	v, err := p.Get()
-	if err != nil {
-		return n, err
+func (d *DigitalPin) EventLoop(done chan any, readpub func()) {
+	running := true
+	for running {
+		select {
+		case evt := <-d.EvtQ:
+			evtype := "falling"
+
+			switch evt.Type {
+			case gpiocdev.LineEventFallingEdge:
+				evtype = "falling"
+
+			case gpiocdev.LineEventRisingEdge:
+				evtype = "raising"
+
+			default:
+				slog.Warn("Unknown event type ", "type", evt.Type)
+				continue
+			}
+
+			slog.Info("GPIO edge", "device", d.PinName(), "direction", evtype,
+				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
+
+			readpub()
+
+		case <-done:
+			running = false
+		}
 	}
-
-	// Use binary.Write to encode the float64 into the buffer
-	buf := new(bytes.Buffer)
-	err = binary.Write(buf, binary.NativeEndian, v)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	// Get the byte array from the buffer
-	b = buf.Bytes()
-	return n, err
-}
-
-func (a *DigitalPin) Write(b []byte) (n int, err error) {
-
-	var val int
-	r := bytes.NewReader(b)
-	err = binary.Read(r, binary.NativeEndian, &val)
-	n = int(unsafe.Sizeof(val))
-	return n, err
 }
 
 // MockGPIO fakes the Line interface on computers that don't

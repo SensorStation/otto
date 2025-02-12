@@ -36,7 +36,6 @@ func (b *BME280) Init() error {
 		return nil
 	}
 
-	// device, err := i2c.Open(&i2c.Devfs{Dev: b.Bus}, b.Addr)
 	device, err := device.GetI2CDriver(b.bus, b.addr)
 	if err != nil {
 		return err

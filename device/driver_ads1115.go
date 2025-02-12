@@ -1,8 +1,6 @@
 package device
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"log"
@@ -177,32 +175,4 @@ func (p AnalogPin) ReadContinuous() <-chan float64 {
 // set the pin back to its defaults
 func (a AnalogPin) Close() error {
 	return a.Halt()
-}
-
-func (a *AnalogPin) Read(b []byte) (n int, err error) {
-	v, err := a.Get()
-	if err != nil {
-		return n, err
-	}
-
-	// Use binary.Write to encode the float64 into the buffer
-	buf := new(bytes.Buffer)
-	err = binary.Write(buf, binary.NativeEndian, v)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	// Get the byte array from the buffer
-	b = buf.Bytes()
-	return n, err
-}
-
-func (a *AnalogPin) Write(b []byte) (n int, err error) {
-
-	var val float64
-	r := bytes.NewReader(b)
-	err = binary.Read(r, binary.NativeEndian, &val)
-	n = 8
-	return n, err
 }

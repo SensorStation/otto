@@ -44,13 +44,13 @@ func main() {
 
 func initLED(name string, pin int) (*led.LED, chan any) {
 	led := led.New(name, pin)
-	led.AddPub(messanger.TopicData(led.Name()))
+	led.AddPub(messanger.TopicData(led.Device.Name()))
 	done := make(chan any)
 	return led, done
 }
 
 func domqtt(led *led.LED) {
-	led.Subscribe(messanger.TopicControl(led.Name()), led.Callback)
+	led.Subscribe(messanger.TopicControl(led.Device.Name()), led.Callback)
 }
 
 func dotimer(led *led.LED, period time.Duration, done chan any) {

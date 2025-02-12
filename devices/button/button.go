@@ -1,7 +1,6 @@
 package button
 
 import (
-	"errors"
 	"log/slog"
 	"time"
 
@@ -10,7 +9,8 @@ import (
 )
 
 type Button struct {
-	*device.DigitalDevice
+	*device.Device
+	*device.DigitalPin
 }
 
 func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
@@ -27,20 +27,20 @@ func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
 		bopts = append(bopts, o)
 	}
 	b := &Button{
-		DigitalDevice: device.NewDigitalDevice(name, offset, bopts...),
+		Device:     device.NewDevice(name),
+		DigitalPin: device.NewDigitalPin(name, offset, bopts...),
 	}
 	b.EvtQ = evtQ
 	return b
 }
 
-func (b *Button) Pub() error {
-	var buf []byte
-	n, err := b.Read(buf)
+func (b *Button) ReadPub() {
+	val, err := b.Get()
 	if err != nil {
-		return errors.New("Failed to read buttons value: " + err.Error())
+		slog.Error("Failed to read buttons value: ", "error", err.Error())
+		return
 	}
-	slog.Debug("read", "device", "button", "bytes", n)
+	slog.Debug("read", "device", "button", "val", val)
 	// val := strconv.Itoa(v)
-	b.Publish(buf)
-	return nil
+	b.Publish(val)
 }

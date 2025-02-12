@@ -2,12 +2,10 @@ package device
 
 import (
 	"fmt"
-	"io"
 	"log/slog"
 	"time"
 
 	"github.com/sensorstation/otto/messanger"
-	"github.com/warthog618/go-gpiocdev"
 )
 
 type Opener interface {
@@ -48,7 +46,7 @@ type Device struct {
 	period time.Duration
 
 	// EventQ for devices that are interupt driven
-	EvtQ chan gpiocdev.LineEvent
+	// EvtQ chan gpiocdev.LineEvent
 
 	// for mocking
 	val any
@@ -57,7 +55,6 @@ type Device struct {
 	Error error
 
 	Opener
-	io.ReadWriter
 }
 
 // NewDevice creates a new device with the given name
@@ -81,9 +78,9 @@ func (d *Device) GetPub() string {
 	return d.pub
 }
 
-func (d *Device) EventQ() (evtQ chan<- gpiocdev.LineEvent) {
-	return d.EvtQ
-}
+// func (d *Device) EventQ() (evtQ chan<- gpiocdev.LineEvent) {
+// 	return d.EvtQ
+// }
 
 func (d *Device) Publish(data any) {
 	if d.pub == "" {
@@ -122,38 +119,6 @@ func (d *Device) Subscribe(topic string, f func(*messanger.Msg)) {
 	m.Subscribe(topic, f)
 }
 
-func (d *Device) EventLoop(done chan any, readpub func()) {
-	running := true
-	for running {
-		fmt.Printf("waiting on event %p\n", d.EvtQ)
-		select {
-		case evt := <-d.EvtQ:
-			evtype := "falling"
-			fmt.Printf("\tgoot event %p\n", d.EvtQ)
-
-			switch evt.Type {
-			case gpiocdev.LineEventFallingEdge:
-				evtype = "falling"
-
-			case gpiocdev.LineEventRisingEdge:
-				evtype = "raising"
-
-			default:
-				slog.Warn("Unknown event type ", "type", evt.Type)
-				continue
-			}
-
-			slog.Info("GPIO edge", "device", d.Name, "direction", evtype,
-				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
-
-			readpub()
-
-		case <-done:
-			running = false
-		}
-	}
-}
-
 func (d *Device) TimerLoop(period time.Duration, done chan any, readpub func() error) {
 	// No need to loop if we don't have a ticker period
 	d.period = period
@@ -176,22 +141,6 @@ func (d *Device) TimerLoop(period time.Duration, done chan any, readpub func() e
 		}
 	}
 }
-
-// func (d *Device) ReadContinuous() <-chan any {
-// 	q := make(chan any)
-// 	func() {
-// 		for {
-// 			var buf []byte
-// 			_, err := d.Read(buf)
-// 			if err != nil {
-// 				slog.Error("ReadContinuous - Failed to read", "device", d.Name, "error", err.Error())
-// 				continue
-// 			}
-// 			q <- buf
-// 		}
-// 	}()
-// 	return nil
-// }
 
 func (d *Device) String() string {
 	return d.Name() + ": todo finish String()"

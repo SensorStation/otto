@@ -2,13 +2,13 @@ package device
 
 import "github.com/tarm/serial"
 
-type SerialPort struct {
+type Serial struct {
 	portName string
 	Baud     int
 	*serial.Port
 }
 
-func GetSerialPort(name, port string, opts any) *SerialPort {
+func GetSerial(name, port string, opts any) *Serial {
 
 	var baud int
 	switch opts.(type) {
@@ -16,11 +16,11 @@ func GetSerialPort(name, port string, opts any) *SerialPort {
 		baud = opts.(int)
 	}
 
-	sd := &SerialPort{portName: port, Baud: baud}
+	sd := &Serial{portName: port, Baud: baud}
 	return sd
 }
 
-func (s *SerialPort) Open() (err error) {
+func (s *Serial) Open() (err error) {
 	c := &serial.Config{Name: s.portName, Baud: s.Baud}
 	s.Port, err = serial.OpenPort(c)
 	if err != nil {
@@ -29,14 +29,14 @@ func (s *SerialPort) Open() (err error) {
 	return nil
 }
 
-func (d *SerialPort) PortName() string {
+func (d *Serial) PortName() string {
 	return d.portName
 }
 
-func (s SerialPort) Write(buf []byte) (int, error) {
+func (s Serial) Write(buf []byte) (int, error) {
 	return s.Port.Write(buf)
 }
 
-func (s SerialPort) Read(buf []byte) (int, error) {
+func (s Serial) Read(buf []byte) (int, error) {
 	return s.Port.Read(buf)
 }
