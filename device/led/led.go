@@ -23,10 +23,10 @@ func New(name string, offset int) *LED {
 
 func (l *LED) Callback(msg *messanger.Msg) {
 	switch msg.String() {
-	case "off", "0":
+	case "off", "OFF", "Off", "0":
 		l.Off()
 
-	case "on", "1":
+	case "on", "ON", "On", "1":
 		l.On()
 	}
 	return
