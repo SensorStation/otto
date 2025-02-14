@@ -18,11 +18,11 @@ import (
 // pi to access analog sensors via the i2c bus.  In a sense this
 // device is a higher level device than the device_i2c.
 type ADS1115 struct {
-	Mock bool
 	pins [4]*AnalogPin
 
-	bus i2c.BusCloser
-	adc *ads1x15.Dev
+	bus  i2c.BusCloser
+	adc  *ads1x15.Dev
+	mock bool
 }
 
 var (
@@ -42,6 +42,11 @@ func GetADS1115() *ADS1115 {
 // NewADS creates a new ADS1115 giving it the provided name,
 // I2C bus (default /dev/i2c-1) and address (default 0x48).
 func NewADS1115(name string, bus string, addr int) *ADS1115 {
+	if mock {
+		a.mock = true
+		return a
+	}
+
 	a := &ADS1115{}
 	a.Init()
 	return a
@@ -176,3 +181,5 @@ func (p AnalogPin) ReadContinuous() <-chan float64 {
 func (a AnalogPin) Close() error {
 	return a.Halt()
 }
+
+// MockAnalogPin
