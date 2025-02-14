@@ -8,31 +8,31 @@ import (
 	"log/slog"
 
 	"github.com/sensorstation/otto/device"
+	"github.com/sensorstation/otto/device/drivers"
 	"github.com/sensorstation/otto/messanger"
 )
 
 type VH400 struct {
 	*device.Device
-	*device.AnalogPin
+	*drivers.AnalogPin
 }
 
 func New(name string, pin int) *VH400 {
 	d := device.NewDevice("vh400")
-	if d.Error != nil {
-		log.Printf("VH400 - Failed to open %s ]%d[ - %v", name, pin, d.Error)
-		return nil
+	v := &VH400{
+		Device: d,
 	}
-	ads := device.GetADS1115()
+	if device.IsMock() {
+		return v
+	}
+
+	ads := drivers.GetADS1115()
 	p, err := ads.Pin(name, pin, nil)
 	if err != nil {
 		slog.Error("vh400.New", "name", name, "pin", pin, "error", err)
 		return nil
 	}
-
-	v := &VH400{
-		Device:    d,
-		AnalogPin: p,
-	}
+	v.AnalogPin = p
 	return v
 }
 
@@ -41,7 +41,7 @@ func (v *VH400) Name() string {
 }
 
 func (v *VH400) Get() (float64, error) {
-	volts, err := v.Get()
+	volts, err := v.AnalogPin.Get()
 	if err != nil {
 		return volts, err
 	}

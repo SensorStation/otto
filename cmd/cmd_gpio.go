@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/sensorstation/otto/device"
+	"github.com/sensorstation/otto/device/drivers"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +14,7 @@ var (
 		Long:  "Configure, read and set GPIO pins on a Raspberry Pi",
 		Run:   gpioRun,
 	}
-	g *device.GPIO
+	g *drivers.GPIO
 )
 
 func init() {
@@ -22,7 +22,7 @@ func init() {
 }
 
 func gpioRun(cmd *cobra.Command, args []string) {
-	g = device.GetGPIO()
+	g = drivers.GetGPIO()
 	str := g.String()
 	if str == "" {
 		str = "GPIO has not been configured"

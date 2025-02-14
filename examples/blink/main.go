@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sensorstation/otto/device"
-	"github.com/sensorstation/otto/devices/led"
+	"github.com/sensorstation/otto/device/drivers"
+	"github.com/sensorstation/otto/device/led"
 	"github.com/sensorstation/otto/messanger"
 )
 
@@ -68,11 +68,11 @@ func domock() {
 		messanger.SetMQTTClient(messanger.GetMockClient())
 
 	case "gpio":
-		device.GetGPIO().Mock = true
+		drivers.GetGPIO().Mock = true
 
 	case "both":
 		messanger.SetMQTTClient(messanger.GetMockClient())
-		device.GetGPIO().Mock = true
+		drivers.GetGPIO().Mock = true
 
 	default:
 		return

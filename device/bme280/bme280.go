@@ -6,6 +6,7 @@ import (
 
 	"github.com/maciej/bme280"
 	"github.com/sensorstation/otto/device"
+	"github.com/sensorstation/otto/device/drivers"
 )
 
 // XXX - Maybe move this over to periph.io implementation?
@@ -36,12 +37,12 @@ func (b *BME280) Init() error {
 		return nil
 	}
 
-	device, err := device.GetI2CDriver(b.bus, b.addr)
+	i2c, err := drivers.GetI2CDriver(b.bus, b.addr)
 	if err != nil {
 		return err
 	}
 
-	b.driver = bme280.New(device)
+	b.driver = bme280.New(i2c)
 	err = b.driver.InitWith(bme280.ModeForced, bme280.Settings{
 		Filter:                  bme280.FilterOff,
 		Standby:                 bme280.StandByTime1000ms,

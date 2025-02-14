@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sensorstation/otto/device"
+	"github.com/sensorstation/otto/device/drivers"
 	"periph.io/x/conn/v3/physic"
 )
 
@@ -14,11 +14,11 @@ const (
 )
 
 func main() {
-	ads := device.NewADS1115("ADS1115", "/dev/i2c-1", 0x48)
+	ads := drivers.NewADS1115("ADS1115", "/dev/i2c-1", 0x48)
 	ads.Init()
 
 	var err error
-	var pins [4]*device.AnalogPin
+	var pins [4]*drivers.AnalogPin
 	var chans4 [4]<-chan float64
 	for i := 0; i < 4; i++ {
 		pname := fmt.Sprintf("pin%d", i)

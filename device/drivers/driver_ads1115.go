@@ -1,10 +1,11 @@
-package device
+package drivers
 
 import (
 	"errors"
 	"fmt"
 	"log"
 
+	"github.com/sensorstation/otto/device"
 	"periph.io/x/conn/v3/analog"
 	"periph.io/x/conn/v3/i2c"
 	"periph.io/x/conn/v3/i2c/i2creg"
@@ -42,12 +43,12 @@ func GetADS1115() *ADS1115 {
 // NewADS creates a new ADS1115 giving it the provided name,
 // I2C bus (default /dev/i2c-1) and address (default 0x48).
 func NewADS1115(name string, bus string, addr int) *ADS1115 {
-	if mock {
+	a := &ADS1115{}
+	if device.IsMock() {
 		a.mock = true
 		return a
 	}
 
-	a := &ADS1115{}
 	a.Init()
 	return a
 }

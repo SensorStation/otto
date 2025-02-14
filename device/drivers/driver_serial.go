@@ -1,12 +1,65 @@
-package device
+package drivers
 
-func NewSerialDevice(name string, port string, opts any) *Device {
-	d := NewDevice(name)
-	sp := GetSerial(name, port, opts)
-	err := sp.Open()
-	d.Error = err
-	return d
+import (
+	"log/slog"
+
+	"github.com/sensorstation/otto/device"
+	"go.bug.st/serial"
+)
+
+type Serial struct {
+	PortName string
+	Baud     int
+	serial.Port
+	mock bool
 }
+
+var (
+	serialPorts map[string]*Serial
+)
+
+func init() {
+	serialPorts = make(map[string]*Serial)
+}
+
+func GetSerial(port string) *Serial {
+	if s, ex := serialPorts[port]; ex {
+		return s
+	}
+	s, err := NewSerial(port, 115200)
+	if err != nil {
+		slog.Error("Serial port", "port", port, "error", err)
+		return nil
+	}
+	return s
+}
+
+func NewSerial(port string, baud int) (s *Serial, err error) {
+	s = &Serial{
+		PortName: port,
+		Baud:     baud,
+	}
+
+	if device.IsMock() {
+		return s, nil
+	}
+
+	mode := &serial.Mode{
+		BaudRate: baud,
+	}
+	s.Port, err = serial.Open(port, mode)
+	if err != nil {
+		return nil, err
+	}
+	serialPorts[port] = s
+	return s, nil
+}
+
+// func NewSerial(name string, port string, opts any) *Device {
+// 	sp := GetSerial(name, port, opts)
+// 	err := sp.Open()
+// 	return sp
+// }
 
 // type SerialDevice interface {
 // 	Device

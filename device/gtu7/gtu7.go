@@ -7,18 +7,28 @@ import (
 	"strings"
 
 	"github.com/sensorstation/otto/device"
+	"github.com/sensorstation/otto/device/drivers"
 )
 
 type GTU7 struct {
 	*device.Device
-	*device.Serial
+	*drivers.Serial
 	lastGPS GPS
 	scanner *bufio.Scanner
 }
 
-func NewGTU7(devname string) *GTU7 {
-	g := &GTU7{}
-	g.Device = device.NewSerialDevice("gt-u7", devname, 9600)
+func NewGTU7(name string) *GTU7 {
+	device.Mock(true)
+
+	s, err := drivers.NewSerial(name, 9600)
+	if err != nil {
+		slog.Error("GTU7 failed to open", "error", err)
+		return nil
+	}
+	g := &GTU7{
+		Device: device.NewDevice(name),
+		Serial: s,
+	}
 	return g
 }
 

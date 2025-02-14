@@ -10,7 +10,7 @@ import (
 
 	"encoding/json"
 
-	"github.com/sensorstation/otto/device"
+	"github.com/sensorstation/otto/device/drivers"
 )
 
 var gpioStr = `
@@ -28,7 +28,7 @@ var gpioStr = `
 `
 
 func main() {
-	var g device.GPIO
+	var g drivers.GPIO
 	if err := json.Unmarshal([]byte(gpioStr), &g); err != nil {
 		slog.Error(err.Error())
 		return

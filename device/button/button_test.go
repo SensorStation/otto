@@ -3,6 +3,7 @@ package button
 import (
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
@@ -12,11 +13,8 @@ var (
 	gotit [2]bool
 )
 
-func init() {
-	device.Mock(true)
-}
-
 func TestButton(t *testing.T) {
+	device.Mock(true)
 	done := make(chan any)
 
 	c := messanger.GetMockClient()
@@ -33,7 +31,10 @@ func TestButton(t *testing.T) {
 
 	b.MockHWInput(0)
 	b.MockHWInput(1)
+	b.Close()
 
+	// This is weak figure out a better solution
+	time.Sleep(10 * time.Millisecond)
 	done <- true
 
 	if !gotit[0] || !gotit[1] {

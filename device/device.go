@@ -149,9 +149,3 @@ func (d *Device) String() string {
 func (d *Device) JSON() []byte {
 	panic("todo finish Device.JSON()")
 }
-
-func (d *Device) Close() error {
-	// XXX = this is not right
-	// GetGPIO().Shutdown()
-	return nil
-}

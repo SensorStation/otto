@@ -8,6 +8,10 @@ func TestGPS(t *testing.T) {
 	// need to add more tests
 	gotone := false
 	g := NewGTU7("fakedev")
+	if g == nil {
+		t.Fatalf("Expected GTU7 device but got (nil)")
+	}
+
 	g.OpenStrings(input)
 	gpsQ := g.StartReading()
 	for gps := range gpsQ {

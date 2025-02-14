@@ -1,4 +1,4 @@
-package device
+package drivers
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/warthog618/go-gpiocdev"
 )
@@ -30,7 +31,7 @@ func GetGPIO() *GPIO {
 
 	gpio = &GPIO{
 		Chipname: "gpiochip4", // raspberry pi-5
-		Mock:     mock,
+		Mock:     device.IsMock(),
 	}
 	gpio.pins = make(map[int]*DigitalPin)
 	for _, pin := range gpio.pins {
@@ -248,6 +249,12 @@ func (d *DigitalPin) EventLoop(done chan any, readpub func()) {
 			running = false
 		}
 	}
+}
+
+func (d *DigitalPin) Close() error {
+	close(d.EvtQ)
+	return d.Line.Close()
+
 }
 
 // MockGPIO fakes the Line interface on computers that don't

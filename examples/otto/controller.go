@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto/data"
-	"github.com/sensorstation/otto/device"
-	"github.com/sensorstation/otto/devices/bme280"
-	"github.com/sensorstation/otto/devices/button"
-	"github.com/sensorstation/otto/devices/led"
-	"github.com/sensorstation/otto/devices/oled"
-	"github.com/sensorstation/otto/devices/relay"
+	"github.com/sensorstation/otto/device/bme280"
+	"github.com/sensorstation/otto/device/button"
+	"github.com/sensorstation/otto/device/drivers"
+	"github.com/sensorstation/otto/device/led"
+	"github.com/sensorstation/otto/device/oled"
+	"github.com/sensorstation/otto/device/relay"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
 	"github.com/sensorstation/otto/station"
@@ -34,7 +34,7 @@ type controller struct {
 }
 
 func (c *controller) cleanup() {
-	g := device.GetGPIO()
+	g := drivers.GetGPIO()
 	g.Close()
 }
 

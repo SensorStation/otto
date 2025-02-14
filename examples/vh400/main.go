@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/sensorstation/otto/devices/vh400"
+	"github.com/sensorstation/otto/device/vh400"
 )
 
 func main() {

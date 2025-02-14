@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto/device"
+	"github.com/sensorstation/otto/device/drivers"
 	"github.com/warthog618/go-gpiocdev"
 )
 
 type Button struct {
 	*device.Device
-	*device.DigitalPin
+	*drivers.DigitalPin
 }
 
 func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
@@ -28,7 +29,7 @@ func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
 	}
 	b := &Button{
 		Device:     device.NewDevice(name),
-		DigitalPin: device.NewDigitalPin(name, offset, bopts...),
+		DigitalPin: drivers.NewDigitalPin(name, offset, bopts...),
 	}
 	b.EvtQ = evtQ
 	return b

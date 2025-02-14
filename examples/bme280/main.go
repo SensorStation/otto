@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto/data"
-	"github.com/sensorstation/otto/devices/bme280"
+	"github.com/sensorstation/otto/device/bme280"
 	"github.com/sensorstation/otto/messanger"
 )
 
