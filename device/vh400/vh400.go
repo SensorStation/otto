@@ -14,7 +14,7 @@ import (
 
 type VH400 struct {
 	*device.Device
-	*drivers.AnalogPin
+	drivers.AnalogPin
 }
 
 func New(name string, pin int) *VH400 {
@@ -23,6 +23,7 @@ func New(name string, pin int) *VH400 {
 		Device: d,
 	}
 	if device.IsMock() {
+		v.AnalogPin = drivers.NewMockAnalogPin(name, pin, nil)
 		return v
 	}
 
@@ -40,8 +41,8 @@ func (v *VH400) Name() string {
 	return v.Device.Name()
 }
 
-func (v *VH400) Get() (float64, error) {
-	volts, err := v.AnalogPin.Get()
+func (v *VH400) Read() (float64, error) {
+	volts, err := v.AnalogPin.Read()
 	if err != nil {
 		return volts, err
 	}
@@ -50,7 +51,7 @@ func (v *VH400) Get() (float64, error) {
 }
 
 func (v *VH400) ReadPub() error {
-	vwc, err := v.Get()
+	vwc, err := v.Read()
 	if err != nil {
 		return err
 	}

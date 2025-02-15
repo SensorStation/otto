@@ -18,7 +18,7 @@ func main() {
 	ads.Init()
 
 	var err error
-	var pins [4]*drivers.AnalogPin
+	var pins [4]drivers.AnalogPin
 	var chans4 [4]<-chan float64
 	for i := 0; i < 4; i++ {
 		pname := fmt.Sprintf("pin%d", i)
@@ -31,7 +31,7 @@ func main() {
 
 	for j := 0; j < 4; j++ {
 		for i := 0; i < 4; i++ {
-			val, err := pins[i].Get()
+			val, err := pins[i].Read()
 			if err != nil {
 				fmt.Printf("failed to read pin[%d] = %s\n", i, err)
 				continue

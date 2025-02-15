@@ -93,41 +93,41 @@ func (d *BaseDevice) Shutdown() {
 	// GetGPIO().Shutdown()
 }
 
-func (d *BaseDevice) EvtQ(evt gpiocdev.LineEvent) {
-	d.evtQ <- evt
-}
+// func (d *BaseDevice) EvtQ(evt gpiocdev.LineEvent) {
+// 	d.evtQ <- evt
+// }
 
-func (d *BaseDevice) EventLoop(done chan any, readpub func() error) {
-	running := true
-	for running {
-		select {
-		case evt := <-d.evtQ:
-			evtype := "falling"
-			switch evt.Type {
-			case gpiocdev.LineEventFallingEdge:
-				evtype = "falling"
+// func (d *BaseDevice) EventLoop(done chan any, readpub func() error) {
+// 	running := true
+// 	for running {
+// 		select {
+// 		case evt := <-d.evtQ:
+// 			evtype := "falling"
+// 			switch evt.Type {
+// 			case gpiocdev.LineEventFallingEdge:
+// 				evtype = "falling"
 
-			case gpiocdev.LineEventRisingEdge:
-				evtype = "raising"
+// 			case gpiocdev.LineEventRisingEdge:
+// 				evtype = "raising"
 
-			default:
-				slog.Warn("Unknown event type ", "type", evt.Type)
-				continue
-			}
+// 			default:
+// 				slog.Warn("Unknown event type ", "type", evt.Type)
+// 				continue
+// 			}
 
-			slog.Info("GPIO edge", "device", d.Name, "direction", evtype,
-				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
+// 			slog.Info("GPIO edge", "device", d.Name, "direction", evtype,
+// 				"seqno", evt.Seqno, "lineseq", evt.LineSeqno)
 
-			err := readpub()
-			if err != nil {
-				slog.Error("Failed to read and publish", "device", d.Name, "error", err)
-			}
+// 			err := readpub()
+// 			if err != nil {
+// 				slog.Error("Failed to read and publish", "device", d.Name, "error", err)
+// 			}
 
-		case <-done:
-			running = false
-		}
-	}
-}
+// 		case <-done:
+// 			running = false
+// 		}
+// 	}
+// }
 
 func (d *BaseDevice) TimerLoop(period time.Duration, done chan any, readpub func() error) {
 	// No need to loop if we don't have a ticker period

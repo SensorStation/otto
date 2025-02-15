@@ -236,7 +236,7 @@ func (d *DigitalPin) EventLoop(done chan any, readpub func()) {
 				evtype = "raising"
 
 			default:
-				slog.Warn("Unknown event type ", "type", evt.Type)
+				slog.Warn("GPIO EventLoop - unknown event type ", "type", evt.Type)
 				continue
 			}
 

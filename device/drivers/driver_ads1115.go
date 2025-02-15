@@ -19,8 +19,7 @@ import (
 // pi to access analog sensors via the i2c bus.  In a sense this
 // device is a higher level device than the device_i2c.
 type ADS1115 struct {
-	pins [4]*AnalogPin
-
+	pins [4]*ADS1115Pin
 	bus  i2c.BusCloser
 	adc  *ads1x15.Dev
 	mock bool
@@ -78,7 +77,7 @@ func (a *ADS1115) Init() (err error) {
 }
 
 // Pin allocates and prepares one of the ads1115 pins (0 - 3) for use.
-func (a *ADS1115) Pin(name string, ch int, opts any) (pin *AnalogPin, err error) {
+func (a *ADS1115) Pin(name string, ch int, opts any) (pin *ADS1115Pin, err error) {
 	// Obtain an analog pin from the ADC.
 	if ch < 0 || ch > 3 {
 		return pin, fmt.Errorf("PinInit Invalid channel %d", ch)
@@ -96,7 +95,7 @@ func (a *ADS1115) Pin(name string, ch int, opts any) (pin *AnalogPin, err error)
 		c = ads1x15.Channel3
 	}
 
-	pin = &AnalogPin{}
+	pin = &ADS1115Pin{}
 	pin.PinADC, err = a.adc.PinForChannel(c, 3300*physic.MilliVolt, 1*physic.Hertz, ads1x15.SaveEnergy)
 	if err != nil {
 		return pin, err
@@ -124,39 +123,40 @@ func (a *ADS1115) JSON() []byte {
 	return nil
 }
 
-// AnalogPin is the analog equivalent of a digital gpio pin
-type AnalogPin struct {
+// ADS1115Pin is the analog equivalent of a digital gpio pin
+type ADS1115Pin struct {
 	name string
 	ads1x15.PinADC
 }
 
-func (p *AnalogPin) Name() string {
+func (p *ADS1115Pin) Name() string {
 	return p.name
 }
 
-func (p *AnalogPin) String() string {
+func (p *ADS1115Pin) String() string {
 	return p.name + ": todo write String() function"
 }
 
 // Get returns a single float64 reading from the pin
-func (p AnalogPin) Get() (float64, error) {
+func (p ADS1115Pin) Read() (float64, error) {
 	reading, err := p.PinADC.Read()
 	if err != nil {
 		return 0.0, err
 	}
 	var val float64
-	fmt.Sscanf(reading.V.String(), "%f", &val)
+	// fmt.Sscanf(reading.V.String(), "%f", &val)
+	val = float64(reading.V)
 	return val, err
 }
 
-func (p AnalogPin) Set(val float64) error {
+func (p ADS1115Pin) Set(val float64) error {
 	return errors.New("Analog Pin ads1115 can not be set")
 }
 
 // ReadContinous returns a channel that will continually read
 // data from respective ads1115 pin and make the float64 values
 // available as soon as the data is ready.
-func (p AnalogPin) ReadContinuous() <-chan float64 {
+func (p ADS1115Pin) ReadContinuous() <-chan float64 {
 	// Read values continuously from ADC.
 	c := p.PinADC.ReadContinuous()
 	floatQ := make(chan float64)
@@ -179,8 +179,6 @@ func (p AnalogPin) ReadContinuous() <-chan float64 {
 
 // Close the pin and set it back to it's defaults. TODO
 // set the pin back to its defaults
-func (a AnalogPin) Close() error {
+func (a ADS1115Pin) Close() error {
 	return a.Halt()
 }
-
-// MockAnalogPin

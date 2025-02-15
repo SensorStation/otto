@@ -70,7 +70,7 @@ func startSwitchHandler(g *drivers.GPIO, done chan bool) {
 				mqtt.Publish("ss/d/station/switch", val)
 
 			default:
-				slog.Warn("Unknown event type ", "type", evt.Type)
+				slog.Warn("Switch unknown event type ", "type", evt.Type)
 			}
 
 		case <-done:
