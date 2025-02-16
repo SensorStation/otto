@@ -15,7 +15,7 @@ jobs:
     - name: Install dependencies
       run: make
     - name: Upload OttO and Plugins
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: OttO
         path: examples
