@@ -149,7 +149,6 @@ func OttO() {
 	server := server.GetServer()
 	go server.Start()
 	if Interactive {
-		println("go cleanup")
 		go Cleanup()
 	} else {
 		Cleanup()

@@ -18,7 +18,7 @@ type VH400 struct {
 }
 
 func New(name string, pin int) *VH400 {
-	d := device.NewDevice("vh400")
+	d := device.NewDevice(name)
 	v := &VH400{
 		Device: d,
 	}
