@@ -120,7 +120,7 @@ var (
 
 func init() {
 	StationName = "station"
-	Version = "0.0.8"
+	Version = "0.0.9"
 }
 
 func Cleanup() {
