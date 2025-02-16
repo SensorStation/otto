@@ -2,6 +2,7 @@ package button
 
 import (
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 
 var (
 	gotit [2]bool
+	wg    sync.WaitGroup
 )
 
 func TestButton(t *testing.T) {
@@ -29,10 +31,11 @@ func TestButton(t *testing.T) {
 	b.Subscribe(messanger.TopicControl("button"), b.Callback)
 	go b.EventLoop(done, b.ReadPub)
 
+	wg.Add(2)
 	b.MockHWInput(0)
 	b.MockHWInput(1)
 
-	// This is weak figure out a better solution
+	wg.Wait()
 	time.Sleep(10 * time.Millisecond)
 	b.Close()
 	done <- true
@@ -49,5 +52,6 @@ func (b *Button) Callback(msg *messanger.Msg) {
 		return
 	}
 	gotit[i] = true
+	wg.Done()
 	return
 }
