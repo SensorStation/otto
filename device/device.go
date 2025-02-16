@@ -98,8 +98,12 @@ func (d *Device) Publish(data any) {
 		buf = []byte(data.(string))
 
 	case int:
-		m.Publish(d.pub, data)
-		return
+		str := fmt.Sprintf("%d", data.(int))
+		buf = []byte(str)
+
+	case float64:
+		str := fmt.Sprintf("%5.2f", data.(float64))
+		buf = []byte(str)
 
 	default:
 		panic("unknown type: " + fmt.Sprintf("%T", data))

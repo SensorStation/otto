@@ -51,3 +51,8 @@ func (s *Station) Stop() {
 func (s *Station) AddDevice(device device.Name) {
 	s.DeviceManager.Add(device)
 }
+
+func (s *Station) GetDevice(name string) any {
+	d, _ := s.DeviceManager.Get(name)
+	return d
+}
