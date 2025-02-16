@@ -112,7 +112,7 @@ import (
 
 // global variables and structures
 var (
-	Done        chan bool
+	Done        chan any
 	StationName string
 	Version     string
 	Interactive bool
@@ -139,7 +139,7 @@ func OttO() {
 		fmt.Println("Server has already been started")
 		return
 	}
-	Done = make(chan bool)
+	Done = make(chan any)
 
 	// Allocate and start the station manager
 	stations := station.GetStationManager()
@@ -147,7 +147,7 @@ func OttO() {
 
 	// start web server / rest server
 	server := server.GetServer()
-	go server.Start()
+	go server.Start(Done)
 	if Interactive {
 		go Cleanup()
 	} else {

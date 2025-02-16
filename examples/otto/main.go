@@ -76,12 +76,15 @@ func initMock() {
 var content embed.FS
 
 func (c *controller) initApp() {
+	done := make(chan any)
+
 	s := server.GetServer()
 
 	// The following line is commented out because
 	var data any
 	s.EmbedTempl("/emb", data, content)
 	s.Appdir("/", "app")
-	go s.Start()
+	s.Start(done)
 	c.Server = s
+	<-done
 }

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -55,13 +56,15 @@ func (s *Server) Register(p string, h http.Handler) {
 
 // Start the HTTP server after registering REST API callbacks
 // and initializing the Web application directory
-func (s *Server) Start() {
+func (s *Server) Start(done chan any) {
 	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
 	s.Register("/api", s)
 
 	slog.Info("Starting hub Web and REST server on ", "addr", s.Addr)
-	http.ListenAndServe(s.Addr, s.ServeMux)
+	go http.ListenAndServe(s.Addr, s.ServeMux)
+	<-done
+	s.Shutdown(context.Background())
 	return
 }
 

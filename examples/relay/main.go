@@ -27,10 +27,12 @@ type relay struct {
 
 func main() {
 	// var data any
+	done := make(chan any)
+
 	s := server.GetServer()
 	// s.EmbedTempl("/", data, content)
 	s.Appdir("/", "app")
-	go s.Start()
+	go s.Start(done)
 
 	// Get the GPIO driver
 	g := drivers.GetGPIO()
