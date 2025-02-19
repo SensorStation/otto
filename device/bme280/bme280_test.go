@@ -48,13 +48,13 @@ func TestBME280(t *testing.T) {
 
 	// XXX these values are hard coded in the bme280 device mock read
 	// may change to random values or other
-	if resp.Temperature != 20.33 {
+	if resp.Temperature == 0.0 {
 		t.Errorf("Failed to read temperature")
 	}
-	if resp.Pressure != 1027.33 {
+	if resp.Pressure == 0.0 {
 		t.Errorf("Failed to read temperature")
 	}
-	if resp.Humidity != 74.33 {
+	if resp.Humidity == 0.0 {
 		t.Errorf("Failed to read temperature")
 	}
 
@@ -77,20 +77,20 @@ func TestBME280(t *testing.T) {
 		for key, val := range mmm {
 			switch key {
 			case "Temperature":
-				if val != 20.33 {
-					t.Errorf("%s expected (20.33) got (%f)", key, val)
+				if val == 0.0 {
+					t.Errorf("%s expected (rand) got (%4.2f)", key, val)
 					return
 				}
 
 			case "Humidity":
-				if val != 74.33 {
-					t.Errorf("%s expected (74.33) got (%4.2f)", key, val)
+				if val == 0.0 {
+					t.Errorf("%s expected (rand) got (%4.2f)", key, val)
 					return
 				}
 
 			case "Pressure":
-				if val != 1027.33 {
-					t.Errorf("%s expected (1027.33) got (%4.2f)", key, val)
+				if val == 0.0 {
+					t.Errorf("%s expected (rand) got (%4.2f)", key, val)
 					return
 				}
 

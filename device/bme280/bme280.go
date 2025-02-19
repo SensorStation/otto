@@ -3,6 +3,7 @@ package bme280
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 
 	"github.com/maciej/bme280"
 	"github.com/sensorstation/otto/device"
@@ -59,9 +60,9 @@ func (b *BME280) Init() error {
 func (b *BME280) Read() (*bme280.Response, error) {
 	if device.IsMock() {
 		return &bme280.Response{
-			Temperature: 20.33,
-			Pressure:    1027.33,
-			Humidity:    74.33,
+			Temperature: rand.Float64() * 100,
+			Pressure:    rand.Float64() * 100,
+			Humidity:    rand.Float64() * 100,
 		}, nil
 	}
 

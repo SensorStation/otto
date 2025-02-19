@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"sync"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -24,6 +25,7 @@ type MQTT struct {
 	Subscribers map[string][]MsgHandle `json:"subscribers"`
 	Publishers  map[string]int         `json:"publishers"`
 
+	sync.Mutex    `json:"-"`
 	gomqtt.Client `json:"-"`
 }
 
@@ -40,7 +42,7 @@ func NewMQTT() *MQTT {
 }
 
 func SetMQTTClient(c gomqtt.Client) *MQTT {
-	mqtt = NewMQTT()
+	mqtt = GetMQTT()
 	mqtt.Client = c
 	return mqtt
 }
@@ -107,7 +109,10 @@ func (m MQTT) Publish(topic string, value interface{}) {
 		panic("topic is nil")
 	}
 
-	m.Publishers[topic] += 1
+	m.Lock()
+	// m.Publishers[topic] += 1
+	m.Unlock()
+
 	if m.Client == nil {
 		slog.Warn("MQTT Client is not connected to a broker")
 		return
@@ -164,12 +169,16 @@ func (mqtt MQTT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Broker: mqtt.Broker,
 		Debug:  mqtt.Debug,
 	}
+
 	for s, _ := range mqtt.Subscribers {
 		mq.Subscribers = append(mq.Subscribers, s)
 	}
+
+	mqtt.Lock()
 	for p, _ := range mqtt.Publishers {
 		mq.Publishers = append(mq.Publishers, p)
 	}
+	mqtt.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(mq)
