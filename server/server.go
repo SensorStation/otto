@@ -71,7 +71,19 @@ func (s *Server) Appdir(path, file string) {
 	s.Register(path, http.FileServer(http.Dir(file)))
 }
 
-func (s *Server) EmbedTempl(path string, data any, content embed.FS) {
+func (s *Server) AppTempl(path string, templ string, data any) {
+	slog.Info("AppTempl", "path", path, "template", templ)
+	tmpl, err := template.ParseFiles(templ)
+	if err != nil {
+		slog.Error("Failed to parse web template: ", "error", err.Error())
+	}
+
+	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Execute(w, data)
+	})
+}
+
+func (s *Server) EmbedTempl(path string, content embed.FS, data any) {
 	slog.Info("embedTempl", "path", path)
 	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFS(content, "app/*.html")

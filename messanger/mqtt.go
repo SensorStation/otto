@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"os"
 	"sync"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
@@ -75,6 +76,10 @@ func (m *MQTT) Connect() error {
 		gomqtt.ERROR = log.Default()
 	}
 
+	broker := os.Getenv("MQTT_BROKER")
+	if broker != "" {
+		m.Broker = broker
+	}
 	m.Broker = "tcp://" + m.Broker + ":1883"
 
 	// connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.ID).SetCleanSession(true)

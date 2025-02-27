@@ -3,22 +3,40 @@ OttO is used to build IoT applications.
 
 # The package provides
 
-  - MQTT messaging amoung IoT stations and control software
-  - HTTP REST Server for data gathering and configuration
-  - Websockets for realtime bidirectional communication with a UI
-  - High performance Web server built in to serve interactive UI's
-    and modern API's
-  - Station manager to manage the stations that make up an entire
-    sensor network
-  - Data Manager for temporary data caching and interfaces to update
-    your favorite timeseries database
+  - Drivers for a few different breakout boards meant to run on the
+    Raspberry Pi.
+
   - A higher level device interface that is agnostic to the underlying
     libraries.  Use your favorite gpiocdev, periph.io, tinygo, gobot,
     etc.
-  - Message library for standardized messages built to be communicate
-    events and information between pacakges.
+
+  - For exaple GPIO handled by gpiocdev library, new handler for Linux GPIOs.
+
+  - I2C handled by periph.io drivers
+
+  - Serial devices handled by the serial library
+
+  - MQTT messaging amoung IoT stations and control software
+
   - Messanger (not to be confused with messages) implements a Pub/Sub
     (MQTT or other) interface between components of your application
+
+  - HTTP REST Server for data gathering and configuration
+
+  - Websockets for realtime bidirectional communication with a UI
+
+  - High performance Web server built in to serve interactive UI's
+    and modern API's
+
+  - Station manager to manage the stations that make up an entire
+    sensor network
+
+  - Data Manager for temporary data caching and interfaces to update
+    your favorite cloud based timeseries database
+
+  - Message library for standardized messages built to be communicate
+    events and information between pacakges.
+
   - Security Todo
 
 # Message Based System
@@ -39,7 +57,7 @@ For example:
 
 	    File: /home/rusty/data/hb/temperature
 		HTTP: /api/data/hb/temperature
-		MQTT: ss/hb/temperature
+		MQTT: ss/station/hb/temperature
 
 The data within the highest level topic temperature can be represented
 say by JSON `{ farenhiet: 100.07 }`
@@ -77,7 +95,7 @@ this:
 
 Sensor data takes on the form:
 
-	```ss/d/<source>/<sensor>/<index>```
+	```ss/d/<station>/<sensor>/<index>```
 
 Where the source is the Station ID publishing the respective data.
 The sensor is the type of data being produced (temp, humidity,
@@ -105,7 +123,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
 	"github.com/sensorstation/otto/station"
 )
@@ -127,8 +144,12 @@ func Cleanup() {
 	<-Done
 	slog.Info("Done, cleaning up()")
 
-	messanger.GetMQTT().Disconnect(1000)
-	server.GetServer().Close()
+	// if err := messanger.GetMQTT().Disconnect(1000); err != nil {
+	// 	slog.Error("Failed to disconnect MQTT", "error", err)
+	// }
+	if err := server.GetServer().Close(); err != nil {
+		slog.Error("Failed to close server", "error", err)
+	}
 }
 
 // OttO is a convinience function starting the MQTT and HTTP servers,

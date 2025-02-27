@@ -30,7 +30,8 @@ func GetGPIO() *GPIO {
 	}
 
 	gpio = &GPIO{
-		Chipname: "gpiochip4", // raspberry pi-5
+		// Chipname: "gpiochip4", // raspberry pi-5
+		Chipname: "gpiochip0", // raspberry pi zero
 		Mock:     device.IsMock(),
 	}
 	gpio.pins = make(map[int]*DigitalPin)
