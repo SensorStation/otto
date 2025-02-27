@@ -23,7 +23,6 @@ func GetI2CDriver(bus string, addr int) (device *i2c.Device, err error) {
 	if b == nil {
 		return device, fmt.Errorf("failed to get I2C bus %s", bus)
 	}
-
 	var ex bool
 	if device, ex = b.devices[addr]; !ex {
 		device, err = b.open(addr)
@@ -38,10 +37,11 @@ func GetI2CDriver(bus string, addr int) (device *i2c.Device, err error) {
 func getI2CBus(bus string) (b *i2cbus) {
 	var ex bool
 	if b, ex = i2cbuses[bus]; !ex {
-		i2cbuses[bus] = &i2cbus{
+		b = &i2cbus{
 			bus:     bus,
 			devices: make(map[int]*i2c.Device),
 		}
+		i2cbuses[bus] = b
 	}
 	return b
 }
