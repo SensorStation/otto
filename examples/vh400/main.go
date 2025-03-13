@@ -2,30 +2,31 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/sensorstation/otto/device/vh400"
 )
 
 func main() {
-	var readQ [4]<-chan float64
-	for i := 0; i < 4; i++ {
-		s := vh400.New("vh400", i)
-		readQ[i] = s.AnalogPin.ReadContinuous()
+	var err error
+	pin := 0
+
+	if len(os.Args) > 1 {
+		pin, err = strconv.Atoi(os.Args[1])
+		if err != nil {
+			fmt.Printf("Bad argument %s - expected integers for adc\n", os.Args[1])
+		}
 	}
 
+	readQ := make(<-chan float64)
+	s := vh400.New("vh400", pin)
+	readQ = s.AnalogPin.ReadContinuous()
+
 	for {
-		var val any
-		var idx int
 		select {
-		case val = <-readQ[0]:
-			idx = 0
-		case val = <-readQ[1]:
-			idx = 1
-		case val = <-readQ[2]:
-			idx = 2
-		case val = <-readQ[3]:
-			idx = 3
+		case val := <-readQ:
+			fmt.Printf("adc: %d: %5.2f\n", pin, val)
 		}
-		fmt.Printf("%d: %5.2f\n", idx, val.(float64))
 	}
 }

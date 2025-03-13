@@ -11,9 +11,12 @@ import (
 // Station is the primary structure that holds an array of
 // Sensors which in turn hold a timeseries of datapoints.
 type Station struct {
-	ID                   string        `json:"id"`
-	LastHeard            time.Time     `json:"last-heard"`
-	Expiration           time.Duration `json:"expiration"` // how long to timeout a station
+	ID         string        `json:"id"`
+	LastHeard  time.Time     `json:"last-heard"`
+	Expiration time.Duration `json:"expiration"` // how long to timeout a station
+	IPAddr     string        `json:"ipaddr"`
+	MACAddr    string        `json:"macaddr"`
+
 	device.DeviceManager `json:"devices"`
 
 	ticker *time.Ticker `json:"-"`
