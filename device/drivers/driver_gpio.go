@@ -166,7 +166,11 @@ func (pin *DigitalPin) Get() (int, error) {
 	if pin.Line == nil {
 		return 0, fmt.Errorf("GPIO not active")
 	}
-	return pin.Line.Value()
+	val, err := pin.Line.Value()
+	if err != nil {
+		slog.Error("Failed to read PIN", "name", pin.name)
+	}
+	return val, err
 }
 
 // Set the value of the pin. Note: you can NOT set the value

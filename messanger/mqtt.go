@@ -114,9 +114,9 @@ func (m MQTT) Publish(topic string, value interface{}) {
 		panic("topic is nil")
 	}
 
-	m.Lock()
-	// m.Publishers[topic] += 1
-	m.Unlock()
+	// m.Lock()
+	// // m.Publishers[topic] += 1
+	// m.Unlock()
 
 	if m.Client == nil {
 		slog.Warn("MQTT Client is not connected to a broker")

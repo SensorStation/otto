@@ -78,10 +78,6 @@ func (d *Device) GetPub() string {
 	return d.pub
 }
 
-// func (d *Device) EventQ() (evtQ chan<- gpiocdev.LineEvent) {
-// 	return d.EvtQ
-// }
-
 func (d *Device) Publish(data any) {
 	if d.pub == "" {
 		slog.Error("Device.Publish failed has no pub", "name", d.Name)

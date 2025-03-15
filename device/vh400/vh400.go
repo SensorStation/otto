@@ -46,7 +46,7 @@ func (v *VH400) Read() (float64, error) {
 	if err != nil {
 		return volts, err
 	}
-	vwc := v.vwc(volts)
+	vwc := vwc(volts)
 	return vwc, nil
 }
 
@@ -66,7 +66,7 @@ func (v *VH400) ReadContinousPub() error {
 		for {
 			vbytes := <-q
 			volts := vbytes
-			vwc := v.vwc(volts)
+			vwc := vwc(volts)
 			v.Publish(vwc)
 		}
 	}()
@@ -81,7 +81,8 @@ y= m*x-b,
 
 where m is the slope of the line
 
-The VH400's Voltage to VWC curve can be approximated with 4 segents of the form:
+The VH400's Voltage to VWC curve can be approximated with 4 segments
+of the form:
 
 VWC= m*V-b
 
@@ -89,14 +90,13 @@ where V is voltage.
 
 m = (VWC2 - VWC1) / (V2-V1)
 
-where V1 and V2 are voltages recorded at the respective VWC levels
-of VWC1 and VWC2. After m is determined, the y-axis intercept
-coefficient b can be found by inserting one of the end points into
-the equation:
+where V1 and V2 are voltages recorded at the respective VWC levels of
+VWC1 and VWC2. After m is determined, the y-axis intercept coefficient
+b can be found by inserting one of the end points into the equation:
 
 b= m*v-VWC
 */
-func (v *VH400) vwc(volts float64) float64 {
+func vwc(volts float64) float64 {
 	var coef float64
 	var rem float64
 

@@ -30,5 +30,6 @@ func main() {
 	// start reading in a loop and publish the results via MQTT
 	done := make(chan any)
 	go bme.TimerLoop(5*time.Second, done, bme.ReadPub)
+
 	<-done
 }

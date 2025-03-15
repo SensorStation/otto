@@ -29,6 +29,10 @@ var (
 	ads1115 *ADS1115
 )
 
+func sample2Volts(val int64) float64 {
+	return float64(val) / (1000 * 1000 * 1000)
+}
+
 // GetADS1115 will return the default ads1115 struct singleton. The
 // first time GetADS1115 is called it will create a new device.
 // Subsequent calls will return the global variable.
@@ -143,10 +147,8 @@ func (p ADS1115Pin) Read() (float64, error) {
 	if err != nil {
 		return 0.0, err
 	}
-	var val float64
-	// fmt.Sscanf(reading.V.String(), "%f", &val)
-	val = float64(reading.V)
-	return val, err
+	volts := sample2Volts(int64(reading.V))
+	return volts, err
 }
 
 func (p ADS1115Pin) Set(val float64) error {
@@ -161,16 +163,12 @@ func (p ADS1115Pin) ReadContinuous() <-chan float64 {
 	c := p.PinADC.ReadContinuous()
 	floatQ := make(chan float64)
 	go func() {
-		var val float64
 		var vsamp analog.Sample
 
 		for {
 			vsamp = <-c
-			_, err := fmt.Sscanf(vsamp.V.String(), "%f", &val)
-			if err != nil {
-				panic(err)
-			}
-			floatQ <- val
+			volts := sample2Volts(int64(vsamp.V))
+			floatQ <- volts
 		}
 	}()
 
