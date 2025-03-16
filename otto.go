@@ -124,6 +124,7 @@ import (
 	"log/slog"
 
 	"github.com/sensorstation/otto/data"
+	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
 	"github.com/sensorstation/otto/station"
@@ -133,21 +134,23 @@ import (
 // with the application.
 type Controller interface {
 	Init()
-	Start()
+	Start() error
 	Stop()
 	SetOttO(o *OttO)
-	MsgHandler() func(messanger.Msg)
+	MsgHandler(m *messanger.Msg)
 }
 
 // OttO is a large wrapper around the Station, Server,
 // DataManager and Messanger, including some convenience functions.
 type OttO struct {
 	Name string
+
 	*station.Station
 	*station.StationManager
 	*server.Server
 	*data.DataManager
-	messanger.Messanger
+	*messanger.Messanger
+
 	Controller
 
 	mock bool
@@ -165,7 +168,12 @@ func init() {
 	Version = "0.0.9"
 }
 
-func (o *OttO) Mock(m bool) {
+func (o *OttO) Mock() bool {
+	return o.mock
+}
+
+func (o *OttO) SetMock(m bool) {
+	device.Mock(true)
 	o.mock = m
 }
 
@@ -188,20 +196,30 @@ func (o *OttO) Init() {
 	}
 	o.done = make(chan any)
 
-	// Setup the otto station
-	o.Station = station.NewStation(o.Name)
-	if o.hub {
-		// Allocate and start the station manager
-		o.StationManager = station.GetStationManager()
-		// Subscribe for station announcements
+	if o.Messanger == nil {
+		o.Messanger = messanger.NewMessanger("otto", messanger.TopicData("station"))
+		ms := messanger.GetMsgSaver()
+		ms.Saving = true
 	}
 
-	o.DataManager = data.NewDataManager()
+	if o.Station == nil {
+		o.Station = station.NewStation(o.Name)
+	}
 
-	// start web server / rest server
-	o.Server = server.GetServer()
+	if o.Server == nil {
+		o.Server = server.GetServer()
+	}
+
+	if o.DataManager == nil {
+		o.DataManager = data.NewDataManager()
+	}
+
+	if o.hub {
+		o.StationManager = station.GetStationManager()
+	}
 
 	if o.Controller != nil {
+		o.Controller.SetOttO(o)
 		o.Controller.Init()
 	}
 }
