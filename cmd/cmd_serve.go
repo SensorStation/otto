@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/sensorstation/otto"
 	"github.com/spf13/cobra"
 )
 
@@ -22,5 +21,5 @@ func init() {
 }
 
 func serveRun(cmd *cobra.Command, args []string) {
-	otto.OttO()
+	// otto.OttO()
 }

@@ -62,7 +62,7 @@ func TestBME280(t *testing.T) {
 	// stop the loop
 	count := 0
 	topic := messanger.TopicData(name)
-	bme.AddPub(topic)
+	bme.Topic = topic
 	bme.Subscribe(topic, func(msg *messanger.Msg) {
 		if msg.Topic != topic {
 			t.Errorf("expected topic (%s) got (%s)", topic, msg.Topic)

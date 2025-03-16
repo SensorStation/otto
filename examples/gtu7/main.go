@@ -7,6 +7,6 @@ func main() {
 	gpsQ := g.StartReading()
 
 	for gps := range gpsQ {
-		g.Publish(gps)
+		g.PubData(gps)
 	}
 }

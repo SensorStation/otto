@@ -44,7 +44,7 @@ func main() {
 
 func initLED(name string, pin int) (*led.LED, chan any) {
 	led := led.New(name, pin)
-	led.AddPub(messanger.TopicData(led.Device.Name()))
+	led.Topic = messanger.TopicData(led.Device.Name())
 	done := make(chan any)
 	return led, done
 }

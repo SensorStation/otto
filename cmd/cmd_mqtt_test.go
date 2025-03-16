@@ -31,8 +31,10 @@ func TestMqttRun(t *testing.T) {
 	mqttRun(cmd, args)
 
 	m := messanger.GetMQTT()
-	if m.Broker != "localhost" {
-		t.Errorf("expected Broker to be 'localhost', got %s", m.Broker)
+	// url := "tcp://localhost:1883"
+	url := "localhost"
+	if m.Broker != url {
+		t.Errorf("expected Broker (%s) got (%s)", url, m.Broker)
 	}
 	if !m.IsConnected() {
 		t.Error("expected MQTT to be connected")

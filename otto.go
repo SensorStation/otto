@@ -123,9 +123,33 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/sensorstation/otto/data"
+	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
 	"github.com/sensorstation/otto/station"
 )
+
+// Controller is a message handler that oversees all interactions
+// with the application.
+type Controller interface {
+	Init()
+	Start()
+	Stop()
+	MsgHandler() func(messanger.Msg)
+}
+
+// OttO is a large wrapper around the Station, Server,
+// DataManager and Messanger, including some convenience functions.
+type OttO struct {
+	*station.Station
+	*server.Server
+	*data.DataManager
+	messanger.Messanger
+	Controller
+
+	mock bool
+	done chan any
+}
 
 // global variables and structures
 var (
@@ -140,27 +164,23 @@ func init() {
 	Version = "0.0.9"
 }
 
-func Cleanup() {
-	<-Done
-	slog.Info("Done, cleaning up()")
+func (o *OttO) Mock(m bool) {
+	o.mock = m
+}
 
-	// if err := messanger.GetMQTT().Disconnect(1000); err != nil {
-	// 	slog.Error("Failed to disconnect MQTT", "error", err)
-	// }
-	if err := server.GetServer().Close(); err != nil {
-		slog.Error("Failed to close server", "error", err)
-	}
+func (o *OttO) Done() chan any {
+	return o.done
 }
 
 // OttO is a convinience function starting the MQTT and HTTP servers,
 // the station manager and other stuff.
-func OttO() {
-	if Done != nil {
+func (o *OttO) Init() {
+	if o.done != nil {
 		// server has already been started
 		fmt.Println("Server has already been started")
 		return
 	}
-	Done = make(chan any)
+	o.done = make(chan any)
 
 	// Allocate and start the station manager
 	stations := station.GetStationManager()
@@ -168,10 +188,29 @@ func OttO() {
 
 	// start web server / rest server
 	server := server.GetServer()
-	go server.Start(Done)
+	go server.Start(o.done)
 	if Interactive {
-		go Cleanup()
+		go o.Stop()
 	} else {
-		Cleanup()
+		o.Stop()
+	}
+}
+
+func (o *OttO) Start() error {
+
+	<-o.done
+	o.Stop()
+	return nil
+}
+
+func (o *OttO) Stop() {
+	<-o.done
+	slog.Info("Done, cleaning up()")
+
+	// if err := messanger.GetMQTT().Disconnect(1000); err != nil {
+	// 	slog.Error("Failed to disconnect MQTT", "error", err)
+	// }
+	if err := server.GetServer().Close(); err != nil {
+		slog.Error("Failed to close server", "error", err)
 	}
 }

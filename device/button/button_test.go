@@ -27,7 +27,7 @@ func TestButton(t *testing.T) {
 	}
 
 	b := New("button", 23)
-	b.AddPub(messanger.TopicControl("button"))
+	b.Topic = messanger.TopicControl("button")
 	b.Subscribe(messanger.TopicControl("button"), b.Callback)
 	go b.EventLoop(done, b.ReadPub)
 
@@ -46,7 +46,7 @@ func TestButton(t *testing.T) {
 
 }
 
-func (b *Button) Callback(msg *messanger.Msg) {
+func (b *Button) MsgHandler(msg *messanger.Msg) {
 	i, err := strconv.Atoi(msg.String())
 	if err != nil {
 		return

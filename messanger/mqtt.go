@@ -1,13 +1,10 @@
 package messanger
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
-	"sync"
 
 	gomqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -23,10 +20,6 @@ type MQTT struct {
 	Broker string `json:"broker"`
 	Debug  bool   `json:"debug"`
 
-	Subscribers map[string][]MsgHandle `json:"subscribers"`
-	Publishers  map[string]int         `json:"publishers"`
-
-	sync.Mutex    `json:"-"`
 	gomqtt.Client `json:"-"`
 }
 
@@ -36,9 +29,6 @@ func NewMQTT() *MQTT {
 		ID:     "otto",
 		Broker: "localhost",
 	}
-	mqtt.Subscribers = make(map[string][]MsgHandle)
-	mqtt.Publishers = make(map[string]int)
-
 	return mqtt
 }
 
@@ -101,46 +91,9 @@ func (m *MQTT) Connect() error {
 	return nil
 }
 
-// Publish messanger will publish a messanger
-func (m MQTT) PublishMsg(msg *Msg) {
-	m.Publish(msg.Topic, msg.Data)
-}
-
-// Publish will publish a value to the given channel
-func (m MQTT) Publish(topic string, value interface{}) {
-	var t gomqtt.Token
-
-	if topic == "" {
-		panic("topic is nil")
-	}
-
-	// m.Lock()
-	// // m.Publishers[topic] += 1
-	// m.Unlock()
-
-	if m.Client == nil {
-		slog.Warn("MQTT Client is not connected to a broker")
-		return
-	}
-
-	if t = m.Client.Publish(topic, byte(0), false, value); t == nil {
-		if false {
-			slog.Info("MQTT Pub NULL token: ", "topic", topic, "value", value)
-		}
-		return
-	}
-
-	t.Wait()
-	if t.Error() != nil {
-		slog.Error("MQTT Publish token: ", "error", t.Error())
-	}
-
-}
-
 // Subscribe will cause messangers to the given topic to be passed along to the
 // MsgHandle f
-func (m *MQTT) Subscribe(topic string, f MsgHandle) error {
-	m.Subscribers[topic] = append(m.Subscribers[topic], f)
+func (m *MQTT) Subscribe(topic string, f MsgHandler) error {
 	if m.Client == nil {
 		slog.Error("MQTT Client is not connected to a broker")
 		return fmt.Errorf("MQTT Client is not connected to broker: %s", m.Broker)
@@ -161,45 +114,29 @@ func (m *MQTT) Subscribe(topic string, f MsgHandle) error {
 	return err
 }
 
-func (mqtt MQTT) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	mq := struct {
-		ID     string `json:"id"`
-		Broker string `json:"broker"`
-		Debug  bool   `json:"debug"`
+// Publish will publish a value to the given topic
+func (m *MQTT) Publish(topic string, value any) {
+	var t gomqtt.Token
 
-		Subscribers []string
-		Publishers  []string
-	}{
-		ID:     mqtt.ID,
-		Broker: mqtt.Broker,
-		Debug:  mqtt.Debug,
+	if topic == "" {
+		panic("topic is nil")
 	}
 
-	for s, _ := range mqtt.Subscribers {
-		mq.Subscribers = append(mq.Subscribers, s)
+	if m.Client == nil {
+		slog.Warn("MQTT Client is not connected to a broker")
+		return
 	}
 
-	mqtt.Lock()
-	for p, _ := range mqtt.Publishers {
-		mq.Publishers = append(mq.Publishers, p)
+	if t = m.Client.Publish(topic, byte(0), false, value); t == nil {
+		if false {
+			slog.Info("MQTT Pub NULL token: ", "topic", topic, "value", value)
+		}
+		return
 	}
-	mqtt.Unlock()
 
-	w.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(w).Encode(mq)
-	if err != nil {
-		slog.Error("MQTT.ServeHTTP failed to encode", "error", err)
+	t.Wait()
+	if t.Error() != nil {
+		slog.Error("MQTT Publish token: ", "error", t.Error())
 	}
-}
 
-// MQTTPrinter defines the struct that simply prints what ever
-// message is sent to a given topic
-type MQTTPrinter struct {
-}
-
-// Callback will print out all messages sent to the given topic
-// from the MQTTPrinter
-func (mp *MQTTPrinter) Callback(msg *Msg) {
-	fmt.Printf("%+v\n", msg)
-	return
 }

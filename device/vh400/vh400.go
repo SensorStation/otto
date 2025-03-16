@@ -55,19 +55,19 @@ func (v *VH400) ReadPub() error {
 	if err != nil {
 		return err
 	}
-	v.Publish(vwc)
+	v.PubData(vwc)
 	return nil
 }
 
 func (v *VH400) ReadContinousPub() error {
-	v.AddPub(messanger.TopicData("vh100/" + v.Name()))
+	v.Topic = messanger.TopicData("vh100/" + v.Name())
 	q := v.AnalogPin.ReadContinuous()
 	go func() {
 		for {
 			vbytes := <-q
 			volts := vbytes
 			vwc := vwc(volts)
-			v.Publish(vwc)
+			v.PubData(vwc)
 		}
 	}()
 

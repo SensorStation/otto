@@ -51,12 +51,7 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 // messages.
 func (mb *MQTTBlasters) Blast() error {
 
-	mqtt := messanger.GetMQTT()
-	mqtt.Connect()
-	if !mqtt.IsConnected() {
-		return fmt.Errorf("MQTT Client is not connected to a broker")
-	}
-
+	m := messanger.NewMessanger("blaster")
 	wd := &WeatherData{}
 
 	// now start blasting
@@ -65,7 +60,7 @@ func (mb *MQTTBlasters) Blast() error {
 		for i := 0; i < mb.Count; i++ {
 			b := mb.Blasters[i]
 			msg := wd.NewMsg(b.Topic)
-			mqtt.PublishMsg(msg)
+			m.PubMsg(msg)
 		}
 		time.Sleep(time.Duration(mb.Wait) * time.Millisecond)
 	}

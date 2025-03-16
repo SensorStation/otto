@@ -14,8 +14,8 @@ import (
 // a specific station. The timeseries for each station are
 // differentiated by the timeseries labels.
 type DataManager struct {
-	DataMap map[string]map[string]*Timeseries `json:"datamap"`
-	Subs    []string
+	DataMap              map[string]map[string]*Timeseries `json:"datamap"`
+	*messanger.Messanger `json:"-"`
 }
 
 var (
@@ -33,17 +33,10 @@ func GetDataManager() *DataManager {
 // by NewStation()
 func NewDataManager() (dm *DataManager) {
 	dm = &DataManager{
-		DataMap: make(map[string]map[string]*Timeseries),
+		DataMap:   make(map[string]map[string]*Timeseries),
+		Messanger: messanger.NewMessanger("DataManager"),
 	}
 	return dm
-}
-
-func (dm *DataManager) Subscribe(topic string, c func(msg *messanger.Msg)) {
-	dm.Subs = append(dm.Subs, topic)
-	mqtt := messanger.GetMQTT()
-	if mqtt != nil {
-		mqtt.Subscribe(topic, c)
-	}
 }
 
 // Add will add data according to station and label

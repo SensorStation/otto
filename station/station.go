@@ -17,8 +17,7 @@ type Station struct {
 	IPAddr     string        `json:"ipaddr"`
 	MACAddr    string        `json:"macaddr"`
 
-	// Subscription this station will listen to
-	subs []string
+	*messanger.Messanger
 
 	device.DeviceManager `json:"devices"`
 
@@ -33,6 +32,7 @@ func NewStation(id string) (st *Station) {
 	st = &Station{
 		ID:         id,
 		Expiration: 30 * time.Second,
+		Messanger:  messanger.NewMessanger(id),
 	}
 	return st
 }
@@ -61,15 +61,4 @@ func (s *Station) AddDevice(device device.Name) {
 func (s *Station) GetDevice(name string) any {
 	d, _ := s.DeviceManager.Get(name)
 	return d
-}
-
-func (s *Station) Publish(msg *messanger.Msg) {
-	mqtt := messanger.GetMQTT()
-	mqtt.PublishMsg(msg)
-}
-
-func (s *Station) Subscribe(topic string, f func(*messanger.Msg)) {
-	s.subs = append(s.subs, topic)
-	m := messanger.GetMQTT()
-	m.Subscribe(topic, f)
 }

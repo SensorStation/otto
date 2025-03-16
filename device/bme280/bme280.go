@@ -83,6 +83,6 @@ func (b *BME280) ReadPub() error {
 	if err != nil {
 		return errors.New("BME280 failed marshal read response" + err.Error())
 	}
-	b.Publish(jb)
+	b.PubData(jb)
 	return nil
 }

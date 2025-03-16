@@ -71,21 +71,21 @@ func (c *controller) initDevices(done chan any) error {
 
 func (c *controller) initRelay(idx int) {
 	relay := relay.New("relay", idx)
-	relay.AddPub(messanger.TopicData("relay"))
+	relay.Topic = messanger.TopicData("relay")
 	relay.Subscribe(messanger.TopicControl("relay"), relay.Callback)
 	c.Relay = relay
 }
 
 func (c *controller) initLED(idx int) {
 	led := led.New("led", idx)
-	led.AddPub(messanger.TopicData("led"))
+	led.Topic = messanger.TopicData("led")
 	led.Subscribe(messanger.TopicControl("led"), led.Callback)
 	c.LED = led
 }
 
 func (c *controller) initButton(name string, idx int, opts ...gpiocdev.LineReqOption) {
 	but := button.New(name, idx, opts...)
-	but.AddPub(messanger.TopicControl("button"))
+	but.Topic = messanger.TopicControl("button")
 	go but.EventLoop(done, but.ReadPub)
 	if name == "on" {
 		c.onButton = but
@@ -106,7 +106,7 @@ func (c *controller) initBME280(bus string, addr int, done chan any) (bme *bme28
 	if err != nil {
 		return nil, err
 	}
-	bme.AddPub(messanger.TopicData("bme280"))
+	bme.Topic = messanger.TopicData("bme280")
 	go bme.TimerLoop(10*time.Second, done, bme.ReadPub)
 	c.BME280 = bme
 
@@ -164,13 +164,12 @@ func (c *controller) initOLED(done chan any) {
 	m.Subscribe(messanger.TopicData("relay"), func(msg *messanger.Msg) {
 		dispvals.relay = msg.String()
 	})
-
 	c.OLED = display
 }
 
 func (c *controller) buttonCallback(msg *messanger.Msg) {
 	cmd := msg.String()
-	c.LED.Publish(cmd)
-	c.Relay.Publish(cmd)
+	c.LED.PubData(cmd)
+	c.Relay.PubData(cmd)
 	return
 }

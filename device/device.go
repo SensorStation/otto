@@ -1,7 +1,6 @@
 package device
 
 import (
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -36,10 +35,7 @@ type Device struct {
 	name string
 
 	// Suffix to be appended to the base topic for mqtt publications
-	pub string
-
-	// Subscription this device will listen to
-	subs []string
+	*messanger.Messanger
 
 	// Period for repititive timed tasks like collecting and
 	// publishing data
@@ -60,63 +56,14 @@ type Device struct {
 // NewDevice creates a new device with the given name
 func NewDevice(name string) *Device {
 	d := &Device{
-		name: name,
+		name:      name,
+		Messanger: messanger.NewMessanger(name),
 	}
 	return d
 }
 
 func (d Device) Name() string {
 	return d.name
-}
-
-// AddPub adds a publication
-func (d *Device) AddPub(p string) {
-	d.pub = p
-}
-
-func (d *Device) GetPub() string {
-	return d.pub
-}
-
-func (d *Device) Publish(data any) {
-	if d.pub == "" {
-		slog.Error("Device.Publish failed has no pub", "name", d.Name)
-		return
-	}
-	var buf []byte
-
-	m := messanger.GetMQTT()
-	switch data.(type) {
-	case []byte:
-		buf = data.([]byte)
-
-	case string:
-		buf = []byte(data.(string))
-
-	case int:
-		str := fmt.Sprintf("%d", data.(int))
-		buf = []byte(str)
-
-	case float64:
-		str := fmt.Sprintf("%5.2f", data.(float64))
-		buf = []byte(str)
-
-	default:
-		panic("unknown type: " + fmt.Sprintf("%T", data))
-	}
-
-	msg := messanger.New(d.pub, buf, d.name)
-	m.PublishMsg(msg)
-}
-
-func (d *Device) GetSubs() []string {
-	return d.subs
-}
-
-func (d *Device) Subscribe(topic string, f func(*messanger.Msg)) {
-	d.subs = append(d.subs, topic)
-	m := messanger.GetMQTT()
-	m.Subscribe(topic, f)
 }
 
 func (d *Device) TimerLoop(period time.Duration, done chan any, readpub func() error) {

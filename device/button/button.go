@@ -43,5 +43,5 @@ func (b *Button) ReadPub() {
 	}
 	slog.Debug("read", "device", "button", "val", val)
 	// val := strconv.Itoa(v)
-	b.Publish(val)
+	b.PubData(val)
 }
