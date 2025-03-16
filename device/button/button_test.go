@@ -28,7 +28,7 @@ func TestButton(t *testing.T) {
 
 	b := New("button", 23)
 	b.Topic = messanger.TopicControl("button")
-	b.Subscribe(messanger.TopicControl("button"), b.Callback)
+	b.Subscribe(messanger.TopicControl("button"), b.MsgHandler)
 	go b.EventLoop(done, b.ReadPub)
 
 	wg.Add(2)
@@ -37,6 +37,7 @@ func TestButton(t *testing.T) {
 
 	wg.Wait()
 	time.Sleep(10 * time.Millisecond)
+	println("Test Buttons Before close")
 	b.Close()
 	done <- true
 
@@ -47,10 +48,13 @@ func TestButton(t *testing.T) {
 }
 
 func (b *Button) MsgHandler(msg *messanger.Msg) {
+	println("BUTTON MSG HANDLER")
 	i, err := strconv.Atoi(msg.String())
 	if err != nil {
+		println("button return error")
 		return
 	}
+	println("BUTTON MSG HANDLER")
 	gotit[i] = true
 	wg.Done()
 	return

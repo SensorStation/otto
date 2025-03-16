@@ -61,6 +61,4 @@ func TestConfigHTTP(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
-	fmt.Printf("datas: %+v\n", datas)
 }

@@ -138,5 +138,8 @@ func (m *MQTT) Publish(topic string, value any) {
 	if t.Error() != nil {
 		slog.Error("MQTT Publish token: ", "error", t.Error())
 	}
+}
 
+func (m *MQTT) Close() {
+	m.Client.Disconnect(1000)
 }

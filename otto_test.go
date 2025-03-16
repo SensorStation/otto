@@ -1,4 +1,0 @@
-package otto
-
-func init() {
-}

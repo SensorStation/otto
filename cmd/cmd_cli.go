@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/sensorstation/otto"
 	"github.com/spf13/cobra"
 )
 
@@ -56,9 +55,9 @@ func cliRun(cmd *cobra.Command, args []string) {
 	running := true
 	for running {
 		running = cliLine()
-		if !running && otto.Done != nil {
-			otto.Done <- true
-		}
+		// if !running && otto.Done() != nil {
+		// 	otto.Done() <- true
+		// }
 	}
 	fmt.Println("Exiting, cleanup")
 	// otto.Cleanup()

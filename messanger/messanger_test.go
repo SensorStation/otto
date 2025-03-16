@@ -5,7 +5,7 @@ import "testing"
 func TestMessanger(t *testing.T) {
 	id := "testID"
 	topic := "testTopic"
-	m := NewMessanger("test", "test-topic")
+	m := NewMessanger(id, topic)
 	if m.ID != id {
 		t.Errorf("expected ID (%s) got (%s)", id, m.ID)
 	}

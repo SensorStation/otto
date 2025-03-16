@@ -135,32 +135,33 @@ type Controller interface {
 	Init()
 	Start()
 	Stop()
+	SetOttO(o *OttO)
 	MsgHandler() func(messanger.Msg)
 }
 
 // OttO is a large wrapper around the Station, Server,
 // DataManager and Messanger, including some convenience functions.
 type OttO struct {
+	Name string
 	*station.Station
+	*station.StationManager
 	*server.Server
 	*data.DataManager
 	messanger.Messanger
 	Controller
 
 	mock bool
+	hub  bool // maybe hub should be a different struct?
 	done chan any
 }
 
 // global variables and structures
 var (
-	Done        chan any
-	StationName string
 	Version     string
 	Interactive bool
 )
 
 func init() {
-	StationName = "station"
 	Version = "0.0.9"
 }
 
@@ -170,6 +171,11 @@ func (o *OttO) Mock(m bool) {
 
 func (o *OttO) Done() chan any {
 	return o.done
+}
+
+func (o *OttO) SetController(c Controller) {
+	o.Controller = c
+	c.SetOttO(o)
 }
 
 // OttO is a convinience function starting the MQTT and HTTP servers,
@@ -182,21 +188,35 @@ func (o *OttO) Init() {
 	}
 	o.done = make(chan any)
 
-	// Allocate and start the station manager
-	stations := station.GetStationManager()
-	stations.Start()
+	// Setup the otto station
+	o.Station = station.NewStation(o.Name)
+	if o.hub {
+		// Allocate and start the station manager
+		o.StationManager = station.GetStationManager()
+		// Subscribe for station announcements
+	}
+
+	o.DataManager = data.NewDataManager()
 
 	// start web server / rest server
-	server := server.GetServer()
-	go server.Start(o.done)
+	o.Server = server.GetServer()
+
+	if o.Controller != nil {
+		o.Controller.Init()
+	}
+}
+
+func (o *OttO) Start() error {
+	go o.Server.Start(o.done)
 	if Interactive {
 		go o.Stop()
 	} else {
 		o.Stop()
 	}
-}
 
-func (o *OttO) Start() error {
+	if o.StationManager != nil {
+		o.StationManager.Start()
+	}
 
 	<-o.done
 	o.Stop()
@@ -207,10 +227,9 @@ func (o *OttO) Stop() {
 	<-o.done
 	slog.Info("Done, cleaning up()")
 
-	// if err := messanger.GetMQTT().Disconnect(1000); err != nil {
-	// 	slog.Error("Failed to disconnect MQTT", "error", err)
-	// }
 	if err := server.GetServer().Close(); err != nil {
 		slog.Error("Failed to close server", "error", err)
 	}
+
+	o.Messanger.Close()
 }

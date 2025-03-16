@@ -26,6 +26,7 @@ type Publisher interface {
 type PubSub interface {
 	Publisher
 	Subscriber
+	Close()
 }
 
 // Messanger represents a type that can publish and subscribe to messages
