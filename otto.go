@@ -153,7 +153,7 @@ type OttO struct {
 
 	Controller
 
-	mock bool
+	Mock bool
 	hub  bool // maybe hub should be a different struct?
 	done chan any
 }
@@ -166,15 +166,6 @@ var (
 
 func init() {
 	Version = "0.0.9"
-}
-
-func (o *OttO) Mock() bool {
-	return o.mock
-}
-
-func (o *OttO) SetMock(m bool) {
-	device.Mock(true)
-	o.mock = m
 }
 
 func (o *OttO) Done() chan any {
@@ -196,6 +187,10 @@ func (o *OttO) Init() {
 	}
 	o.done = make(chan any)
 
+	if o.Mock {
+		device.Mock(true)
+	}
+
 	if o.Messanger == nil {
 		o.Messanger = messanger.NewMessanger("otto", messanger.TopicData("station"))
 		ms := messanger.GetMsgSaver()
@@ -206,16 +201,16 @@ func (o *OttO) Init() {
 		o.Station = station.NewStation(o.Name)
 	}
 
-	if o.Server == nil {
-		o.Server = server.GetServer()
-	}
-
 	if o.DataManager == nil {
 		o.DataManager = data.NewDataManager()
 	}
 
 	if o.hub {
 		o.StationManager = station.GetStationManager()
+	}
+
+	if o.Server == nil {
+		o.Server = server.GetServer()
 	}
 
 	if o.Controller != nil {

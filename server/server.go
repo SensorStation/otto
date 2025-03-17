@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 )
 
 // Server serves up HTTP on Addr (default 0.0.0.0:8011)
@@ -83,14 +84,30 @@ func (s *Server) AppTempl(path string, templ string, data any) {
 	})
 }
 
-func (s *Server) EmbedTempl(path string, content embed.FS, data any) {
-	slog.Info("embedTempl", "path", path)
+func (s *Server) EmbedTempl(path string, fsys embed.FS, data any) {
+
 	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.ParseFS(content, "app/*.html")
-		if err != nil {
-			slog.Error("Failed to parse web template: ", "error", err.Error())
+		url := r.URL.Path
+		ext := filepath.Ext(url)
+
+		switch ext {
+		case ".css":
+			w.Header().Set("Content-Type", "text/css")
+			http.ServeFileFS(w, r, fsys, "app"+url)
+			return
+
+		case ".js":
+			w.Header().Set("Content-Type", "application/javascript")
+			http.ServeFileFS(w, r, fsys, "app"+url)
+			return
+
+		default:
+			tmpl, err := template.ParseFS(fsys, "app/*.html")
+			if err != nil {
+				slog.Error("Failed to parse web template: ", "error", err.Error())
+			}
+			tmpl.Execute(w, data)
 		}
-		tmpl.Execute(w, data)
 	})
 }
 
