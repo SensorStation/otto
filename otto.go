@@ -136,7 +136,6 @@ type Controller interface {
 	Init()
 	Start() error
 	Stop()
-	SetOttO(o *OttO)
 	MsgHandler(m *messanger.Msg)
 }
 
@@ -150,8 +149,6 @@ type OttO struct {
 	*server.Server
 	*data.DataManager
 	*messanger.Messanger
-
-	Controller
 
 	Mock bool
 	hub  bool // maybe hub should be a different struct?
@@ -170,11 +167,6 @@ func init() {
 
 func (o *OttO) Done() chan any {
 	return o.done
-}
-
-func (o *OttO) SetController(c Controller) {
-	o.Controller = c
-	c.SetOttO(o)
 }
 
 // OttO is a convinience function starting the MQTT and HTTP servers,
@@ -212,20 +204,10 @@ func (o *OttO) Init() {
 	if o.Server == nil {
 		o.Server = server.GetServer()
 	}
-
-	if o.Controller != nil {
-		o.Controller.SetOttO(o)
-		o.Controller.Init()
-	}
 }
 
 func (o *OttO) Start() error {
 	go o.Server.Start(o.done)
-	if Interactive {
-		go o.Stop()
-	} else {
-		o.Stop()
-	}
 
 	if o.StationManager != nil {
 		o.StationManager.Start()

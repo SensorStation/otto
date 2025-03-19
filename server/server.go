@@ -16,6 +16,7 @@ import (
 type Server struct {
 	*http.Server
 	*http.ServeMux
+	*template.Template
 
 	EndPoints map[string]http.Handler
 }
@@ -72,19 +73,7 @@ func (s *Server) Appdir(path, file string) {
 	s.Register(path, http.FileServer(http.Dir(file)))
 }
 
-func (s *Server) AppTempl(path string, templ string, data any) {
-	slog.Info("AppTempl", "path", path, "template", templ)
-	tmpl, err := template.ParseFiles(templ)
-	if err != nil {
-		slog.Error("Failed to parse web template: ", "error", err.Error())
-	}
-
-	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		tmpl.Execute(w, data)
-	})
-}
-
-func (s *Server) EmbedTempl(path string, fsys embed.FS, data any) {
+func (s *Server) EmbedTempl(path string, fsys embed.FS) {
 
 	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		url := r.URL.Path
@@ -102,11 +91,30 @@ func (s *Server) EmbedTempl(path string, fsys embed.FS, data any) {
 			return
 
 		default:
-			tmpl, err := template.ParseFS(fsys, "app/*.html")
-			if err != nil {
-				slog.Error("Failed to parse web template: ", "error", err.Error())
+			var err error
+			if s.Template == nil {
+				s.Template, err = template.ParseFS(fsys, "app/*.html")
+				if err != nil {
+					slog.Error("Failed to parse web template: ", "error", err.Error())
+					return
+				}
 			}
-			tmpl.Execute(w, data)
+
+			titles := map[string]string{
+				"soil":        "Soil Moisture",
+				"temperature": "Temperature",
+				"humidity":    "Humidity",
+				"pressure":    "Pressure",
+				"pump":        "Pump",
+			}
+			data := struct {
+				Title  string
+				Titles map[string]string
+			}{
+				Title:  "Garden Station",
+				Titles: titles,
+			}
+			s.Template.Execute(w, data)
 		}
 	})
 }
