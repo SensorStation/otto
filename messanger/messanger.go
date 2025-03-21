@@ -34,9 +34,9 @@ type Messanger struct {
 	ID        string
 	Topic     string
 	Published int64
+	Subs      map[string][]MsgHandler `json:"subscribers"`
 	PubSub
 
-	Subs       map[string][]MsgHandler `json:"subscribers"`
 	sync.Mutex `json:"-"`
 }
 

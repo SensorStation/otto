@@ -70,11 +70,11 @@ func (m *MQTT) Connect() error {
 	if broker != "" {
 		m.Broker = broker
 	}
-	m.Broker = "tcp://" + m.Broker + ":1883"
+	broker = "tcp://" + m.Broker + ":1883"
 
 	// connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.ID).SetCleanSession(true)
 	opts := gomqtt.NewClientOptions()
-	opts.AddBroker(m.Broker)
+	opts.AddBroker(broker)
 	opts.SetClientID(m.ID)
 	opts.SetCleanSession(true)
 
