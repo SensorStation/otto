@@ -14,11 +14,11 @@ import (
 // It takes care of REST API, serving the web app if Appdir
 // does not equal nil and initial Websocket upgrade
 type Server struct {
-	*http.Server
-	*http.ServeMux
-	*template.Template
+	*http.Server       `json:"-"`
+	*http.ServeMux     `json:"-"`
+	*template.Template `json:"-"`
 
-	EndPoints map[string]http.Handler
+	EndPoints map[string]http.Handler `json:"routes"`
 }
 
 var (
@@ -123,10 +123,10 @@ func (s *Server) EmbedTempl(path string, fsys embed.FS) {
 
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ep := struct {
-		Endpoints []string
+		Routes []string
 	}{}
 	for e, _ := range s.EndPoints {
-		ep.Endpoints = append(ep.Endpoints, e)
+		ep.Routes = append(ep.Routes, e)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
