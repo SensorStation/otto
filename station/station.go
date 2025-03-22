@@ -21,7 +21,6 @@ type Station struct {
 	MACAddr    string        `json:"macaddr"`
 
 	*messanger.Messanger
-
 	device.DeviceManager `json:"devices"`
 
 	ticker *time.Ticker `json:"-"`
@@ -30,17 +29,21 @@ type Station struct {
 }
 
 // NewStation creates a new Station with an ID as provided
-// by the first parameter
+// by the first parameter. Here we need to detect a duplicate
+// station before trying to register another one.
 func NewStation(id string) (st *Station) {
 	st = &Station{
 		ID:         id,
 		Expiration: 30 * time.Second,
 		Messanger:  messanger.NewMessanger(id),
 	}
-	srv := server.GetServer()
-	srv.Register("/api/station/"+id, st)
-
 	return st
+}
+
+func (st *Station) Register() {
+	// this needs to move
+	srv := server.GetServer()
+	srv.Register("/api/station/"+st.ID, st)
 }
 
 // Start the station timeout timer or advertisement timer
@@ -60,15 +63,21 @@ func (s *Station) Stop() {
 	s.quit <- true
 }
 
+// AddDevice will do what it says by placing the device with a given
+// name in the stations device manager. This library is basically a
+// key value store, anything supporting the Name Interface:
+// i.e. Name() string.
 func (s *Station) AddDevice(device device.Name) {
 	s.DeviceManager.Add(device)
 }
 
+// GetDevice returns the device (anythig supporting the Name (Name()) interface)
 func (s *Station) GetDevice(name string) any {
 	d, _ := s.DeviceManager.Get(name)
 	return d
 }
 
+// Create an endpoint for this device to be queried.
 func (s Station) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	switch r.Method {

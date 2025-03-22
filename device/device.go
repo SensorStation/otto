@@ -7,9 +7,9 @@ import (
 	"github.com/sensorstation/otto/messanger"
 )
 
-// type Opener interface {
-// 	Open() error
-// }
+type Opener interface {
+	Open() error
+}
 
 type OnOff interface {
 	On()
@@ -50,7 +50,7 @@ type Device struct {
 	// Last Error encountered
 	Error error
 
-	// Opener
+	Opener
 }
 
 // NewDevice creates a new device with the given name
