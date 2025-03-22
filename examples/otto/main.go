@@ -81,8 +81,7 @@ func (c *controller) initApp() {
 	s := server.GetServer()
 
 	// The following line is commented out because
-	var data any
-	s.EmbedTempl("/emb", content, data)
+	s.EmbedTempl("/emb", content)
 	s.Appdir("/", "app")
 	s.Start(done)
 	c.Server = s
