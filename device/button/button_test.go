@@ -48,13 +48,11 @@ func TestButton(t *testing.T) {
 }
 
 func (b *Button) MsgHandler(msg *messanger.Msg) {
-	println("BUTTON MSG HANDLER")
 	i, err := strconv.Atoi(msg.String())
 	if err != nil {
 		println("button return error")
 		return
 	}
-	println("BUTTON MSG HANDLER")
 	gotit[i] = true
 	wg.Done()
 	return
