@@ -16,8 +16,8 @@ type MQTTBlaster struct {
 	Topic string
 }
 
-// MQTTBlasters is a collection of blaster stations that will spew
-// messages from each of the different stations.
+// MQTTBlasters is a collection of blaster to be used for testing
+// multiple stations
 type MQTTBlasters struct {
 	Count    int
 	Blasters []*MQTTBlaster
@@ -47,8 +47,10 @@ func NewMQTTBlasters(count int) *MQTTBlasters {
 	return mb
 }
 
-// Blast will start the configured blasters to start blasting
-// messages.
+// Blast will start the configured blasters to start blasting. TODO
+// add a function that can be used to generate packets based on
+// various configurations. TODO: allow the replay of a captured
+// Msg stream
 func (mb *MQTTBlasters) Blast() error {
 
 	m := messanger.NewMessanger("blaster")

@@ -1,7 +1,7 @@
 package device
 
 type DeviceManager struct {
-	devices map[string]Name
+	devices map[string]Name `json:"devices"`
 }
 
 var (

@@ -10,8 +10,8 @@ import (
 	"github.com/sensorstation/otto/device/drivers"
 )
 
-// XXX - Maybe move this over to periph.io implementation?
-// BME280 is an i2c device that gathers air temp, humidity and pressure
+// BME280 is an I2C temperature, humidity and pressure sensor. It
+// defaults to address 0x77
 type BME280 struct {
 	*device.Device
 
@@ -20,8 +20,12 @@ type BME280 struct {
 	driver *bme280.Driver
 }
 
+// Response returns values read from the sensor containing all three
+// values for temperature, humidity and pressure
 type Response bme280.Response
 
+// Create a new BME280 at the give bus and address. Defaults are
+// typically /dev/i2c-1 address 0x99
 func New(name, bus string, addr int) *BME280 {
 	b := &BME280{
 		Device: device.NewDevice(name),
@@ -32,7 +36,7 @@ func New(name, bus string, addr int) *BME280 {
 }
 
 // Init opens the i2c bus at the specified address and gets the device
-// read for reading
+// ready for reading
 func (b *BME280) Init() error {
 	if device.IsMock() == true {
 		return nil
@@ -57,6 +61,9 @@ func (b *BME280) Init() error {
 	return nil
 }
 
+// Read one Response from the sensor. If this device is being mocked
+// we will make up some random floating point numbers between 0 and
+// 100.
 func (b *BME280) Read() (*bme280.Response, error) {
 	if device.IsMock() {
 		return &bme280.Response{
@@ -73,6 +80,8 @@ func (b *BME280) Read() (*bme280.Response, error) {
 	return &response, err
 }
 
+// ReadPub reads the latest values from the sendsor then publishes
+// them on the MQTT topic assigned to this device.
 func (b *BME280) ReadPub() error {
 	vals, err := b.Read()
 	if err != nil {

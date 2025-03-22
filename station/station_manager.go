@@ -9,13 +9,14 @@ import (
 	"time"
 
 	"github.com/sensorstation/otto/messanger"
+	"github.com/sensorstation/otto/server"
 )
 
 // StationManager keeps track of all the stations we have seen
 type StationManager struct {
 	Stations map[string]*Station `json:"stations"`
 	Stale    map[string]*Station `json:"stale"`
-	EventQ   chan *StationEvent
+	EventQ   chan *StationEvent  `json:"-"`
 
 	ticker *time.Ticker `json:"-"`
 	mu     *sync.Mutex  `json:"-"`
@@ -53,6 +54,9 @@ func (sm *StationManager) Callback(msg *messanger.Msg) {
 }
 
 func (sm *StationManager) Start() {
+
+	srv := server.GetServer()
+	srv.Register("/api/stations", sm)
 
 	// Start a ticker to clean up stale entries
 	quit := make(chan struct{})

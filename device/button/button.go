@@ -9,11 +9,17 @@ import (
 	"github.com/warthog618/go-gpiocdev"
 )
 
+// Button is a simple momentary GPIO Device that can be detected with
+// the Button is pushed (rising edge) or when it is released (falling
+// edge). Low is open, high is closed.
 type Button struct {
 	*device.Device
 	*drivers.DigitalPin
 }
 
+// New creates a new button with the given name, offset represents the
+// pin number and a series of line options. Todo reference the gpiodev
+// manual for LineReq options
 func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
 	var evtQ chan gpiocdev.LineEvent
 	evtQ = make(chan gpiocdev.LineEvent)
@@ -24,9 +30,11 @@ func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
 			evtQ <- evt
 		}),
 	}
+
 	for _, o := range opts {
 		bopts = append(bopts, o)
 	}
+
 	b := &Button{
 		Device:     device.NewDevice(name),
 		DigitalPin: drivers.NewDigitalPin(name, offset, bopts...),
@@ -35,6 +43,7 @@ func New(name string, offset int, opts ...gpiocdev.LineReqOption) *Button {
 	return b
 }
 
+// ReadPub will read the value of the button and publish the results.
 func (b *Button) ReadPub() {
 	val, err := b.Get()
 	if err != nil {
@@ -42,6 +51,5 @@ func (b *Button) ReadPub() {
 		return
 	}
 	slog.Debug("read", "device", "button", "val", val)
-	// val := strconv.Itoa(v)
 	b.PubData(val)
 }

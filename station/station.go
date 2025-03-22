@@ -1,11 +1,14 @@
 package station
 
 import (
+	"encoding/json"
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
+	"github.com/sensorstation/otto/server"
 )
 
 // Station is the primary structure that holds an array of
@@ -34,6 +37,9 @@ func NewStation(id string) (st *Station) {
 		Expiration: 30 * time.Second,
 		Messanger:  messanger.NewMessanger(id),
 	}
+	srv := server.GetServer()
+	srv.Register("/api/station/"+id, st)
+
 	return st
 }
 
@@ -61,4 +67,15 @@ func (s *Station) AddDevice(device device.Name) {
 func (s *Station) GetDevice(name string) any {
 	d, _ := s.DeviceManager.Get(name)
 	return d
+}
+
+func (s Station) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	switch r.Method {
+	case "GET":
+		json.NewEncoder(w).Encode(s)
+
+	case "POST", "PUT":
+		http.Error(w, "Not Yet Supported", 401)
+	}
 }

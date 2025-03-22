@@ -46,6 +46,8 @@ func NewServer() *Server {
 // Register to handle HTTP requests for particular paths in the
 // URL or MQTT channel.
 func (s *Server) Register(p string, h http.Handler) {
+
+	// get this to log to a file (or syslog) by default
 	slog.Info("HTTP REST API Registered: ", "path", p)
 	if s.EndPoints == nil {
 		s.EndPoints = make(map[string]http.Handler)

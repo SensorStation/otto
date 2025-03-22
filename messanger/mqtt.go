@@ -68,13 +68,13 @@ func (m *MQTT) Connect() error {
 
 	broker := os.Getenv("MQTT_BROKER")
 	if broker != "" {
-		m.Broker = broker
+		mqtt.Broker = broker
+	} else {
+		mqtt.Broker = "10.11.1.11"
 	}
-	broker = "tcp://" + m.Broker + ":1883"
-
-	// connOpts := gomqtt.NewClientOptions().AddBroker(m.Broker).SetClientID(m.ID).SetCleanSession(true)
+	url := "tcp://" + mqtt.Broker + ":1883"
 	opts := gomqtt.NewClientOptions()
-	opts.AddBroker(broker)
+	opts.AddBroker(url)
 	opts.SetClientID(m.ID)
 	opts.SetCleanSession(true)
 

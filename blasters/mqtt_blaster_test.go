@@ -9,8 +9,19 @@ import (
 	"github.com/sensorstation/otto/messanger"
 )
 
+var (
+	blasters *MQTTBlasters
+)
+
+func init() {
+	// contrary to popular testing practices we are going to
+	// pre-register our end points here because the builtin go server
+	// mux does not support unregistering handlers.  So we will just
+	// share them between testso
+	blasters = NewMQTTBlasters(5)
+}
+
 func TestBlasters(t *testing.T) {
-	blasters := NewMQTTBlasters(5)
 	if blasters.Count != 5 {
 		t.Errorf("expected (5) blasters got (%d)", blasters.Count)
 	}
@@ -42,7 +53,6 @@ func TestBlasting(t *testing.T) {
 	m := messanger.SetMQTTClient(c)
 	m.Connect()
 
-	blasters := NewMQTTBlasters(5)
 	for _, bl := range blasters.Blasters {
 		m.Subscribe(bl.Topic, data.GetDataManager().Callback)
 	}
