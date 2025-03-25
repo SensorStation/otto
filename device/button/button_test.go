@@ -27,8 +27,8 @@ func TestButton(t *testing.T) {
 	}
 
 	b := New("button", 23)
-	b.Topic = messanger.TopicControl("button")
-	b.Subscribe(messanger.TopicControl("button"), b.MsgHandler)
+	b.Topic = messanger.GetTopics().Control("button")
+	b.Subscribe(messanger.GetTopics().Control("button"), b.MsgHandler)
 	go b.EventLoop(done, b.ReadPub)
 
 	wg.Add(2)
@@ -37,7 +37,6 @@ func TestButton(t *testing.T) {
 
 	wg.Wait()
 	time.Sleep(10 * time.Millisecond)
-	println("Test Buttons Before close")
 	b.Close()
 	done <- true
 

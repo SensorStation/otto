@@ -9,11 +9,12 @@ import (
 
 func TestMsgMaker(t *testing.T) {
 	wd := WeatherData{}
-	msg := wd.NewMsg(messanger.TopicData("weather"))
-	exp := []string{"ss", "d", "station", "weather"}
+	messanger.GetTopics().SetStationName("test-station")
+	msg := wd.NewMsg(messanger.GetTopics().Data("weather"))
+	exp := []string{"ss", "d", "test-station", "weather"}
 	for i := 0; i < len(exp); i++ {
 		if msg.Path[i] != exp[i] {
-			t.Errorf("expected path index[%d] to be (%s) got (%s)", i, msg.Path[i], exp[i])
+			t.Errorf("expected path index[%d] to be (%s) got (%s)", i, exp[i], msg.Path[i])
 		}
 	}
 

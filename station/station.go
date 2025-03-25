@@ -2,7 +2,12 @@ package station
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
+	"log/slog"
+	"net"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -19,13 +24,20 @@ type Station struct {
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
 	IPAddr     string        `json:"ipaddr"`
 	MACAddr    string        `json:"macaddr"`
+	Hostname   string        `json:"hostname"`
+	Addrs      []net.Addr    `json:"addrs"`
 
 	*messanger.Messanger
 	device.DeviceManager `json:"devices"`
 
-	ticker *time.Ticker `json:"-"`
-	quit   chan bool    `json:"-"`
-	mu     sync.Mutex   `json:"-"`
+	errq   chan error
+	errors []error `json:"errors"`
+
+	period time.Duration `json:"duration"`
+	ticker *time.Ticker  `json:"-"`
+
+	done chan bool  `json:"-"`
+	mu   sync.Mutex `json:"-"`
 }
 
 // NewStation creates a new Station with an ID as provided
@@ -37,17 +49,80 @@ func NewStation(id string) (st *Station) {
 		Expiration: 30 * time.Second,
 		Messanger:  messanger.NewMessanger(id),
 	}
+
+	st.errq = make(chan error)
+	go func() {
+		for {
+			select {
+			case <-st.done:
+				return
+
+			case err := <-st.errq:
+				st.errors = append(st.errors, err)
+			}
+		}
+	}()
+
 	return st
+}
+
+// Initialize the local station
+func (st *Station) Init() {
+	// get IP addresses
+	st.GetNetwork()
+
+	messanger.GetTopics().SetStationName(st.Hostname)
+
+	// start either an announcement timer or a timer to timeout
+	// stale stations
+	if st.period != 0 {
+		err := st.StartTicker(st.period)
+		if err != nil {
+			st.SaveError(err)
+			slog.Error("ticker failed", "error", err)
+		}
+	}
+}
+
+func (st *Station) SaveError(err error) {
+	st.errq <- err
+}
+
+// StartTicker will cause the station timer to go off at
+// st.Duration time periods to either perform an announcement
+// or in the case we are a hub we will time the station out after
+// station.Period * 3.
+func (st *Station) StartTicker(duration time.Duration) error {
+	if st.ticker != nil {
+		return errors.New("Station ticker is already running")
+	}
+	st.ticker = time.NewTicker(duration)
+	st.period = duration
+	return nil
+}
+
+// GetNetwork will set the IP addresses
+func (st *Station) GetNetwork() error {
+	h, err := os.Hostname()
+	if err != nil {
+		slog.Error("Failed to determine out hostname", "error", err)
+		st.errq <- err
+	}
+	st.Hostname = h
+
+	st.Addrs, err = net.InterfaceAddrs()
+	if err != nil {
+		st.SaveError(err)
+		slog.Error("getting interface addresses", "error", err)
+	}
+	fmt.Printf("ADDRS: %+v\n", st.Addrs)
+	return nil
 }
 
 func (st *Station) Register() {
 	// this needs to move
 	srv := server.GetServer()
 	srv.Register("/api/station/"+st.ID, st)
-}
-
-// Start the station timeout timer or advertisement timer
-func (s *Station) Start() {
 }
 
 // Update() will append a new data value to the series
@@ -59,8 +134,11 @@ func (s *Station) Update(msg *messanger.Msg) {
 }
 
 // Stop the station from advertising
-func (s *Station) Stop() {
-	s.quit <- true
+func (st *Station) Stop() {
+	if st.ticker != nil {
+		st.ticker.Stop()
+	}
+	st.done <- true
 }
 
 // AddDevice will do what it says by placing the device with a given

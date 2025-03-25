@@ -5,6 +5,8 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/sensorstation/otto/messanger"
 	"github.com/spf13/cobra"
@@ -25,11 +27,14 @@ var (
 		Long:  `This command can be used to interact and diagnose an MQTT broker`,
 		Run:   mqttRun,
 	}
+
+	cmdWriter io.Writer = os.Stdout
 )
 
 func init() {
 	rootCmd.AddCommand(mqttCmd)
 	mqttCmd.PersistentFlags().StringVar(&mqttConfig.Broker, "broker", "localhost", "Set the MQTT Broker")
+	cmdWriter = io.Discard
 }
 
 func mqttRun(cmd *cobra.Command, args []string) {
@@ -46,8 +51,8 @@ func mqttRun(cmd *cobra.Command, args []string) {
 		connected = m.IsConnected()
 	}
 
-	fmt.Printf("   Broker: %s\n", m.Broker)
-	fmt.Printf("Connected: %t\n", connected)
-	fmt.Printf("    Debug: %t\n", m.Debug)
-	fmt.Println("\nSubscriptions")
+	fmt.Fprintf(cmdWriter, "Broker: %s\n", m.Broker)
+	fmt.Fprintf(cmdWriter, "Connected: %t\n", connected)
+	fmt.Fprintf(cmdWriter, "Debug: %t\n", m.Debug)
+	fmt.Fprintln(cmdWriter, "\nSubscriptions")
 }

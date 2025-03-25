@@ -4,35 +4,57 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/sensorstation/otto/utils"
 )
 
-type TopicList map[string]int
+// Topics maintains the list of topics used by otto and the
+// applications. It maintains the topic format and a count for each
+// time the topic is used
+type Topics struct {
+	StationName string
+	TopicFmt    string
+	Topicmap    map[string]int
+}
 
 var (
-	Topics    TopicList
-	TopicBase string
+	topics *Topics
 )
 
 func init() {
-	TopicBase = "ss/%s/%s/%s"
-	Topics = make(map[string]int)
+	topics = &Topics{
+		TopicFmt:    "ss/%s/%s/%s",
+		Topicmap:    make(map[string]int),
+		StationName: "",
+	}
 }
 
-func TopicControl(topic string) string {
-	t := fmt.Sprintf(TopicBase, "c", utils.Station(), topic)
-	Topics[t]++
-	return t
+// GetTopics will return the Topics structure, one per application.
+func GetTopics() *Topics {
+	return topics
 }
 
-func TopicData(topic string) string {
-	t := fmt.Sprintf(TopicBase, "d", utils.Station(), topic)
-	Topics[t]++
-	return t
+// SetStationName will use the value to set the station that will be
+// used when publishing messages from this station.
+func (t *Topics) SetStationName(name string) {
+	t.StationName = name
 }
 
-func (t TopicList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// Control will return a control topic e.g. ss/c/station/foo
+func (t *Topics) Control(topic string) string {
+	top := fmt.Sprintf(t.TopicFmt, "c", t.StationName, topic)
+	t.Topicmap[top]++
+	return top
+}
+
+// Control will return a data topic e.g. ss/d/station/foo
+func (t *Topics) Data(topic string) string {
+	top := fmt.Sprintf(t.TopicFmt, "d", t.StationName, topic)
+	t.Topicmap[top]++
+	return top
+}
+
+// ServeHTTP is a JSON endpoint that returns all the topics used by
+// this station.
+func (t Topics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	jstr, err := json.Marshal(t)
 	if err != nil {

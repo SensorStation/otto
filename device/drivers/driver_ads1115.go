@@ -118,30 +118,35 @@ func (a *ADS1115) Close() error {
 	return nil
 }
 
+// String returns a string. Clean code!
 func (a *ADS1115) String() string {
 	return "ADS1115 todo write string function"
 }
 
+// JSON returns JSON more clean!
 func (a *ADS1115) JSON() []byte {
 	panic("write ads1115 JSON function")
 	return nil
 }
 
-// ADS1115Pin is the analog equivalent of a digital gpio pin
+// ADS1115Pin is an analog analagous to a digital pin
 type ADS1115Pin struct {
 	name string
 	ads1x15.PinADC
 }
 
+// Name is what we call this pin
 func (p *ADS1115Pin) Name() string {
 	return p.name
 }
 
+// String is written text to hopefully drop some old eyeball style of
+// knowledge.
 func (p *ADS1115Pin) String() string {
 	return p.name + ": todo write String() function"
 }
 
-// Get returns a single float64 reading from the pin
+// Read returns a single float64 reading from the pin
 func (p ADS1115Pin) Read() (float64, error) {
 	reading, err := p.PinADC.Read()
 	if err != nil {
@@ -151,6 +156,7 @@ func (p ADS1115Pin) Read() (float64, error) {
 	return volts, err
 }
 
+// Set the value on the PIN
 func (p ADS1115Pin) Set(val float64) error {
 	return errors.New("Analog Pin ads1115 can not be set")
 }

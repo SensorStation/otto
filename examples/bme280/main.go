@@ -11,7 +11,7 @@ import (
 func main() {
 	// create the topic the bme will publish to and the DataManager
 	// will subscribe to
-	topic := messanger.TopicData("bme280")
+	topic := messanger.GetTopics().Data("bme280")
 
 	// Set the BME i2c device and address Initialize the bme to use
 	// the i2c bus

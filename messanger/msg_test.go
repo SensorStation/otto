@@ -26,8 +26,6 @@ func TestStationMsg(t *testing.T) {
 	topic := "ss/d/be:ef:ca:fe:01/station"
 	omsg, _ := getMsg()
 	omsg.Source = "be:ef:ca:fe:01"
-
-	fmt.Printf("PATH: %+v\n", omsg.Path)
 	if omsg.Last() != "test" {
 		t.Errorf("Failed to get station")
 	}

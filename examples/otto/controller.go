@@ -65,27 +65,27 @@ func (c *controller) initDevices(done chan any) error {
 	c.initBME280("/dev/i2c-1", 0x76, done)
 	c.initOLED(done)
 
-	messanger.GetMQTT().Subscribe(messanger.TopicControl("button"), c.buttonCallback)
+	messanger.GetMQTT().Subscribe(messanger.GetTopics().Control("button"), c.buttonCallback)
 	return nil
 }
 
 func (c *controller) initRelay(idx int) {
 	relay := relay.New("relay", idx)
-	relay.Topic = messanger.TopicData("relay")
-	relay.Subscribe(messanger.TopicControl("relay"), relay.Callback)
+	relay.Topic = messanger.GetTopics().Data("relay")
+	relay.Subscribe(messanger.GetTopics().Control("relay"), relay.Callback)
 	c.Relay = relay
 }
 
 func (c *controller) initLED(idx int) {
 	led := led.New("led", idx)
-	led.Topic = messanger.TopicData("led")
-	led.Subscribe(messanger.TopicControl("led"), led.Callback)
+	led.Topic = messanger.GetTopics().Data("led")
+	led.Subscribe(messanger.GetTopics().Control("led"), led.Callback)
 	c.LED = led
 }
 
 func (c *controller) initButton(name string, idx int, opts ...gpiocdev.LineReqOption) {
 	but := button.New(name, idx, opts...)
-	but.Topic = messanger.TopicControl("button")
+	but.Topic = messanger.GetTopics().Control("button")
 	go but.EventLoop(done, but.ReadPub)
 	if name == "on" {
 		c.onButton = but
@@ -106,7 +106,7 @@ func (c *controller) initBME280(bus string, addr int, done chan any) (bme *bme28
 	if err != nil {
 		return nil, err
 	}
-	bme.Topic = messanger.TopicData("bme280")
+	bme.Topic = messanger.GetTopics().Data("bme280")
 	go bme.TimerLoop(10*time.Second, done, bme.ReadPub)
 	c.BME280 = bme
 
@@ -139,7 +139,7 @@ func (c *controller) initOLED(done chan any) {
 	}
 
 	m := messanger.GetMQTT()
-	display.Subscribe(messanger.TopicData("bme280"), func(msg *messanger.Msg) {
+	display.Subscribe(messanger.GetTopics().Data("bme280"), func(msg *messanger.Msg) {
 		mm, err := msg.Map()
 		if err != nil {
 			slog.Error("Failed top get map", "error", err)
@@ -161,7 +161,7 @@ func (c *controller) initOLED(done chan any) {
 		refresh()
 	})
 
-	m.Subscribe(messanger.TopicData("relay"), func(msg *messanger.Msg) {
+	m.Subscribe(messanger.GetTopics().Data("relay"), func(msg *messanger.Msg) {
 		dispvals.relay = msg.String()
 	})
 	c.OLED = display

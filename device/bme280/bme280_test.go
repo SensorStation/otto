@@ -61,7 +61,7 @@ func TestBME280(t *testing.T) {
 	// Set up for bme EventLoop run the loop every 200 milliseconds then
 	// stop the loop
 	count := 0
-	topic := messanger.TopicData(name)
+	topic := messanger.GetTopics().Data(name)
 	bme.Topic = topic
 	bme.Subscribe(topic, func(msg *messanger.Msg) {
 		if msg.Topic != topic {

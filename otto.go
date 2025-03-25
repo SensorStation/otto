@@ -184,21 +184,29 @@ func (o *OttO) Init() {
 	}
 
 	if o.Messanger == nil {
-		o.Messanger = messanger.NewMessanger("otto", messanger.TopicData("station"))
+		topic := messanger.GetTopics().Data("station")
+		o.Messanger = messanger.NewMessanger("otto", topic)
 		ms := messanger.GetMsgSaver()
 		ms.Saving = true
 	}
 
+	if o.StationManager == nil {
+		o.StationManager = station.GetStationManager()
+	}
+
+	var err error
 	if o.Station == nil {
-		o.Station = station.NewStation(o.Name)
+		o.Station, err = o.StationManager.Add(o.Name)
+		if err != nil {
+			slog.Error("Unable to create station")
+			return
+		}
+		// Initialzie the local station
+		o.Station.Init()
 	}
 
 	if o.DataManager == nil {
 		o.DataManager = data.NewDataManager()
-	}
-
-	if o.hub {
-		o.StationManager = station.GetStationManager()
 	}
 
 	if o.Server == nil {
