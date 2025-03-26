@@ -8,6 +8,8 @@ import (
 	"log/slog"
 	"net/http"
 	"path/filepath"
+
+	"github.com/sensorstation/otto/messanger"
 )
 
 // Server serves up HTTP on Addr (default 0.0.0.0:8011)
@@ -62,6 +64,7 @@ func (s *Server) Start(done chan any) {
 	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
 	s.Register("/api", s)
+	s.Register("/api/topics", messanger.GetTopics())
 
 	slog.Info("Starting hub Web and REST server on ", "addr", s.Addr)
 	go http.ListenAndServe(s.Addr, s.ServeMux)

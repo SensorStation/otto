@@ -22,22 +22,27 @@ type Station struct {
 	ID         string        `json:"id"`
 	LastHeard  time.Time     `json:"last-heard"`
 	Expiration time.Duration `json:"expiration"` // how long to timeout a station
-	IPAddr     string        `json:"ipaddr"`
-	MACAddr    string        `json:"macaddr"`
 	Hostname   string        `json:"hostname"`
-	Addrs      []net.Addr    `json:"addrs"`
+	Local      bool          `json:"local"`
+	Ifaces     []*Iface      `json:"iface"`
 
-	*messanger.Messanger
+	*messanger.Messanger `json:"messanger"`
 	device.DeviceManager `json:"devices"`
 
 	errq   chan error
 	errors []error `json:"errors"`
 
-	period time.Duration `json:"duration"`
-	ticker *time.Ticker  `json:"-"`
+	time.Duration `json:"duration"`
+	ticker        *time.Ticker `json:"-"`
 
 	done chan bool  `json:"-"`
 	mu   sync.Mutex `json:"-"`
+}
+
+type Iface struct {
+	Name    string
+	IPAddrs []net.IP
+	MACAddr string
 }
 
 // NewStation creates a new Station with an ID as provided
@@ -46,8 +51,9 @@ type Station struct {
 func NewStation(id string) (st *Station) {
 	st = &Station{
 		ID:         id,
-		Expiration: 30 * time.Second,
+		Expiration: 3 * time.Minute,
 		Messanger:  messanger.NewMessanger(id),
+		Duration:   1 * time.Minute,
 	}
 
 	st.errq = make(chan error)
@@ -71,12 +77,14 @@ func (st *Station) Init() {
 	// get IP addresses
 	st.GetNetwork()
 
-	messanger.GetTopics().SetStationName(st.Hostname)
+	topics := messanger.GetTopics()
+	topics.SetStationName(st.Hostname)
+	st.Topic = topics.Data("hello")
 
 	// start either an announcement timer or a timer to timeout
 	// stale stations
-	if st.period != 0 {
-		err := st.StartTicker(st.period)
+	if st.Duration != 0 {
+		err := st.StartTicker(st.Duration)
 		if err != nil {
 			st.SaveError(err)
 			slog.Error("ticker failed", "error", err)
@@ -97,8 +105,27 @@ func (st *Station) StartTicker(duration time.Duration) error {
 		return errors.New("Station ticker is already running")
 	}
 	st.ticker = time.NewTicker(duration)
-	st.period = duration
+	go func() {
+		defer st.ticker.Stop()
+		// TODO pass in done
+		for {
+			select {
+			case <-st.ticker.C:
+				st.SayHello()
+			}
+		}
+	}()
+
 	return nil
+}
+
+func (st *Station) SayHello() {
+	jbuf, err := json.Marshal(st)
+	if err != nil {
+		slog.Error("Failed to encode station info: %v", err)
+		return
+	}
+	st.PubData(string(jbuf))
 }
 
 // GetNetwork will set the IP addresses
@@ -110,12 +137,48 @@ func (st *Station) GetNetwork() error {
 	}
 	st.Hostname = h
 
-	st.Addrs, err = net.InterfaceAddrs()
+	ifas, err := net.Interfaces()
 	if err != nil {
-		st.SaveError(err)
-		slog.Error("getting interface addresses", "error", err)
+		return err
 	}
-	fmt.Printf("ADDRS: %+v\n", st.Addrs)
+
+	for _, ifa := range ifas {
+		addrs, err := ifa.Addrs()
+		if err != nil {
+			return err
+		}
+
+		ifs := &Iface{
+			Name:    ifa.Name,
+			MACAddr: ifa.HardwareAddr.String(),
+		}
+
+		var ip net.IP
+		var mask net.IPMask
+		for _, addr := range addrs {
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+				mask = v.Mask
+			default:
+				continue
+			}
+
+			if ip.IsLoopback() || ip.IsMulticast() ||
+				ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
+				continue
+			}
+
+			ifs.IPAddrs = append(ifs.IPAddrs, ip)
+			fmt.Printf("IPNet: %+v - mask %+v\n", ip, mask)
+		}
+
+		if len(ifs.IPAddrs) == 0 {
+			continue
+		}
+		st.Ifaces = append(st.Ifaces, ifs)
+	}
+	// 10.11.5.3/16 10.11.78.252/16
 	return nil
 }
 

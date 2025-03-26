@@ -3,6 +3,7 @@ package messanger
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -56,9 +57,9 @@ func (t *Topics) Data(topic string) string {
 // this station.
 func (t Topics) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	jstr, err := json.Marshal(t)
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(t)
 	if err != nil {
-		http.Error(w, "Not Yet Supported", 401)
+		slog.Error("Error wrote data", "error", err)
 	}
-	fmt.Fprint(w, jstr)
 }

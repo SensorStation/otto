@@ -1,7 +1,7 @@
 package device
 
 type DeviceManager struct {
-	devices map[string]Name `json:"devices"`
+	Devices map[string]Name `json:"-"`
 }
 
 var (
@@ -15,21 +15,21 @@ func init() {
 func GetDeviceManager() *DeviceManager {
 	if devices == nil {
 		devices = &DeviceManager{
-			devices: make(map[string]Name),
+			Devices: make(map[string]Name),
 		}
 	}
 	return devices
 }
 
 func (dm *DeviceManager) Add(d Name) {
-	if dm.devices == nil {
-		dm.devices = make(map[string]Name)
+	if dm.Devices == nil {
+		dm.Devices = make(map[string]Name)
 	}
-	dm.devices[d.Name()] = d
+	dm.Devices[d.Name()] = d
 }
 
 func (dm *DeviceManager) Get(name string) (Name, bool) {
-	d, ex := dm.devices[name]
+	d, ex := dm.Devices[name]
 	return d, ex
 }
 

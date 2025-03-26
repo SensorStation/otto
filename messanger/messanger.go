@@ -31,11 +31,11 @@ type PubSub interface {
 
 // Messanger represents a type that can publish and subscribe to messages
 type Messanger struct {
-	ID        string
-	Topic     string
-	Published int64
-	Subs      map[string][]MsgHandler `json:"subscribers"`
-	PubSub
+	ID        string                  `json:"id"`
+	Topic     string                  `json:"topic"`
+	Published int64                   `json:"published"`
+	Subs      map[string][]MsgHandler `json:"-"`
+	PubSub    `json"-"`
 
 	sync.Mutex `json:"-"`
 }

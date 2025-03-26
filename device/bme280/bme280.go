@@ -3,6 +3,7 @@ package bme280
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/rand"
 
 	"github.com/maciej/bme280"
@@ -88,7 +89,17 @@ func (b *BME280) ReadPub() error {
 		return errors.New("Failed to read bme280: " + err.Error())
 	}
 
-	jb, err := json.Marshal(vals)
+	valstr := struct {
+		Temp  string
+		Hum   string
+		Press string
+	}{
+		Temp:  fmt.Sprintf("%6.2f", vals.Temperature),
+		Hum:   fmt.Sprintf("%6.2f", vals.Humidity),
+		Press: fmt.Sprintf("%6.2f", vals.Pressure),
+	}
+
+	jb, err := json.Marshal(valstr)
 	if err != nil {
 		return errors.New("BME280 failed marshal read response" + err.Error())
 	}

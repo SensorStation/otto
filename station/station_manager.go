@@ -67,6 +67,11 @@ func (sm *StationManager) Start() {
 			case <-sm.ticker.C:
 				for id, st := range sm.Stations {
 
+					// Don't try to timeout the local station
+					if st.Local {
+						continue
+					}
+
 					// Do not timeout stations with a duration of 0
 					if st.Expiration == 0 {
 						slog.Info("Station %s expiration == 0 do not timeout", "id", id)
