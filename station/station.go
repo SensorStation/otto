@@ -3,7 +3,6 @@ package station
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
@@ -115,7 +114,8 @@ func (st *Station) StartTicker(duration time.Duration) error {
 			}
 		}
 	}()
-
+	// just to get started
+	st.SayHello()
 	return nil
 }
 
@@ -125,6 +125,7 @@ func (st *Station) SayHello() {
 		slog.Error("Failed to encode station info: %v", err)
 		return
 	}
+	st.LastHeard = time.Now()
 	st.PubData(string(jbuf))
 }
 
@@ -154,12 +155,10 @@ func (st *Station) GetNetwork() error {
 		}
 
 		var ip net.IP
-		var mask net.IPMask
 		for _, addr := range addrs {
 			switch v := addr.(type) {
 			case *net.IPNet:
 				ip = v.IP
-				mask = v.Mask
 			default:
 				continue
 			}
@@ -170,7 +169,6 @@ func (st *Station) GetNetwork() error {
 			}
 
 			ifs.IPAddrs = append(ifs.IPAddrs, ip)
-			fmt.Printf("IPNet: %+v - mask %+v\n", ip, mask)
 		}
 
 		if len(ifs.IPAddrs) == 0 {

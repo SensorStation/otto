@@ -90,13 +90,13 @@ func (b *BME280) ReadPub() error {
 	}
 
 	valstr := struct {
-		Temp  string
-		Hum   string
-		Press string
+		Temperature string
+		Humidity    string
+		Pressure    string
 	}{
-		Temp:  fmt.Sprintf("%6.2f", vals.Temperature),
-		Hum:   fmt.Sprintf("%6.2f", vals.Humidity),
-		Press: fmt.Sprintf("%6.2f", vals.Pressure),
+		Temperature: fmt.Sprintf("%.2f", vals.Temperature),
+		Humidity:    fmt.Sprintf("%.2f", vals.Humidity),
+		Pressure:    fmt.Sprintf("%.2f", vals.Pressure),
 	}
 
 	jb, err := json.Marshal(valstr)
