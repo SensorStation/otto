@@ -60,5 +60,5 @@ func (e *EventLog) Add(event *Event) {
 // the ability to specify how many events we want to retrieve.
 func (evl *EventLog) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(evl).Encode(ms)
+	json.NewEncoder(w).Encode(evl)
 }
