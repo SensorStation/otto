@@ -106,17 +106,13 @@ func (s *Server) EmbedTempl(path string, fsys embed.FS) {
 			}
 
 			titles := map[string]string{
-				"soil":        "Soil Moisture",
-				"temperature": "Temperature",
-				"humidity":    "Humidity",
-				"pressure":    "Pressure",
-				"pump":        "Pump",
+				"soil": "Soil Moisture",
 			}
 			data := struct {
 				Title  string
 				Titles map[string]string
 			}{
-				Title:  "Garden Station",
+				Title:  "Soil",
 				Titles: titles,
 			}
 			s.Template.Execute(w, data)

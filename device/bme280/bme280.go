@@ -89,6 +89,8 @@ func (b *BME280) ReadPub() error {
 		return errors.New("Failed to read bme280: " + err.Error())
 	}
 
+	vals.Temperature = (vals.Temperature * (9 / 5)) + 32
+
 	valstr := struct {
 		Temperature string
 		Humidity    string
