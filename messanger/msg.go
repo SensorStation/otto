@@ -82,6 +82,11 @@ func (msg *Msg) IsJSON() bool {
 	return json.Valid(msg.Data)
 }
 
+func (msg *Msg) JSON() ([]byte, error) {
+	jbytes, err := json.Marshal(msg)
+	return jbytes, err
+}
+
 func (msg *Msg) Map() (map[string]interface{}, error) {
 	var m map[string]interface{}
 	err := json.Unmarshal(msg.Data, &m)

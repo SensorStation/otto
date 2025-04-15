@@ -24,7 +24,7 @@ type Server struct {
 }
 
 var (
-	wserv  Websock
+	wserv  WServe
 	server *Server
 )
 

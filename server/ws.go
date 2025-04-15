@@ -10,8 +10,26 @@ import (
 )
 
 type Websock struct {
-	msgQ chan *messanger.Msg
-	webQ map[chan *messanger.Msg]chan *messanger.Msg
+	*websocket.Conn
+	writeQ chan *messanger.Msg
+	Done   chan any
+}
+
+var (
+	Websocks []*Websock
+)
+
+func NewWebsock(conn *websocket.Conn) *Websock {
+	ws := &Websock{
+		Conn:   conn,
+		Done:   make(chan any),
+		writeQ: make(chan *messanger.Msg),
+	}
+	return ws
+}
+
+func (ws *Websock) GetWriteQ() chan *messanger.Msg {
+	return ws.writeQ
 }
 
 var upgrader = websocket.Upgrader{
@@ -24,13 +42,10 @@ func checkOrigin(r *http.Request) bool {
 	return true
 }
 
-func (w *Websock) AddWebQ() chan *messanger.Msg {
-	c := make(chan *messanger.Msg)
-	w.webQ[c] = c
-	return c
+type WServe struct {
 }
 
-func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (ws WServe) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	slog.Info("[I] Connected with Websocket")
 
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -40,33 +55,42 @@ func (ws Websock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	if ws.webQ == nil {
-		ws.webQ = make(map[chan *messanger.Msg]chan *messanger.Msg)
-	}
-
+	wsock := NewWebsock(conn)
 	go func() {
 		for {
-
-			println("reading a messanger")
 			// var messanger StationEvent
 			mt, message, err := conn.ReadMessage()
 			if err != nil {
-				println("read error")
 				slog.Error("websocket read:", "error", err)
 				break
 			}
-			println("read a message")
 			fmt.Printf("%v - %v - %s\n", mt, message, err)
 		}
 	}()
 
-	wq := ws.AddWebQ()
+	Websocks = append(Websocks, wsock)
+	wq := wsock.GetWriteQ()
 	for {
-		msg := <-wq
-		err = conn.WriteJSON(msg)
-		if err != nil {
-			slog.Error("Failed to write web socket", "error", err)
-			return
+		select {
+		case msg, ok := <-wq:
+			fmt.Printf("Recieved message for ws: %+v\n", msg)
+			if !ok {
+				break
+			}
+
+			jbytes, err := msg.JSON()
+			if err != nil {
+				slog.Error("Failed to JSONify message: ", "error", err)
+				continue
+			}
+			err = conn.WriteJSON(jbytes)
+			if err != nil {
+				slog.Error("Failed to write web socket", "error", err)
+				return
+			}
+
+		case <-wsock.Done:
+			break
 		}
 	}
 }
