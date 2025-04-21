@@ -89,7 +89,7 @@ func (m *Messanger) PubData(data any) {
 		buf = []byte(str)
 
 	default:
-		panic("unknown type: " + fmt.Sprintf("%T", data))
+		slog.Error("Unknown Type: ", "topic", m.Topic, "type", fmt.Sprintf("%T", data))
 	}
 
 	msg := New(m.Topic, buf, m.ID)

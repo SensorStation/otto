@@ -21,6 +21,7 @@ import (
 	"golang.org/x/image/math/fixed"
 )
 
+// Bit is used to turn on or off a Bit on the ssd1306 OLED display
 type Bit bool
 
 const (
@@ -85,12 +86,21 @@ func (d *OLED) Clear() {
 func (d *OLED) Draw() error {
 	err := d.Dev.Draw(d.Background.Bounds(), d.Background, image.Point{})
 	if err != nil {
+		fmt.Println("ERROR - OLED Draw: ", err)
 		return err
 	}
 	return nil
 }
 func (d *OLED) Rectangle(x0, y0, x1, y1 int, value Bit) {
 	d.Clip(&x0, &y0, &x1, &y1)
+
+	if x0 > x1 {
+		x0, x1 = x1, x0
+	}
+	if y0 > y1 {
+		y0, y1 = y1, y0
+	}
+
 	for x := x0; x < x1; x++ {
 		for y := y0; y < y1; y++ {
 			d.SetBit(x, y, value)
@@ -107,7 +117,6 @@ func (d *OLED) Line(x0, y0, len, width int, value Bit) {
 func (d *OLED) Diagonal(x0, y0, x1, y1 int, value Bit) {
 	d.Clip(&x0, &y0, &x1, &y1)
 
-	fmt.Printf("%d - %d - %d - %d\n", x0, y0, x1, y1)
 	xf0 := float64(x0)
 	xf1 := float64(x1)
 	yf0 := float64(y0)
@@ -123,18 +132,14 @@ func (d *OLED) Diagonal(x0, y0, x1, y1 int, value Bit) {
 		slope = l / h
 	}
 
-	fmt.Printf("%4.2f, %4.2f, %4.2f, %4.2f, %4.2f\n", xf0, yf0, xf1, yf1, slope)
-
 	if l >= h {
 		for x := xf0; x < xf1; x++ {
 			y := slope*(x-xf0) + yf0
-			fmt.Printf(">>> %4.2f (%v), %4.2f (%v)\n", x, int(math.Round(x)), y, int(math.Round(y)))
 			d.SetBit(int(math.Round(x)), int(math.Round(y)), value)
 		}
 	} else {
 		for y := yf0; y < yf1; y++ {
 			x := slope*(y-yf0) + xf0
-			fmt.Printf("^^^ %4.2f (%v), %4.2f (%v)\n", x, int(x), y, int(y))
 			d.SetBit(int(math.Round(x)), int(math.Round(y)), value)
 		}
 	}

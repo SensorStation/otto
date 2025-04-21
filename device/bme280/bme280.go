@@ -21,6 +21,12 @@ type BME280 struct {
 	driver *bme280.Driver
 }
 
+type Env struct {
+	Temperature string `json:"temperature"`
+	Humidity    string `json:"humidity"`
+	Pressure    string `json:"pressure"`
+}
+
 // Response returns values read from the sensor containing all three
 // values for temperature, humidity and pressure
 type Response bme280.Response
@@ -91,11 +97,7 @@ func (b *BME280) ReadPub() error {
 
 	vals.Temperature = (vals.Temperature * (9 / 5)) + 32
 
-	valstr := struct {
-		Temperature string
-		Humidity    string
-		Pressure    string
-	}{
+	valstr := &Env{
 		Temperature: fmt.Sprintf("%.2f", vals.Temperature),
 		Humidity:    fmt.Sprintf("%.2f", vals.Humidity),
 		Pressure:    fmt.Sprintf("%.2f", vals.Pressure),

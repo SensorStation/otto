@@ -25,7 +25,7 @@ func main() {
 	}
 
 	// println(display.Dev.String())
-	foo()
+	draw()
 
 	// var stime time.Duration = time.Second * 2
 	// for {
@@ -37,14 +37,29 @@ func main() {
 	// 	sensors()
 	// 	time.Sleep(stime)
 	// }
-
 }
 
-func foo() {
-	display.Clear()
-	display.DrawString(10, 10, "whoops")
-	display.Diagonal(0, 30, 128, 30, oled.On)
-	display.Diagonal(60, 0, 60, 64, oled.On)
+func hamburger(x0, y0, width, height, spacing int) {
+	display.Rectangle(0, 0, 10, 2, oled.On)
+	display.Rectangle(0, 4, 10, 6, oled.On)
+	display.Rectangle(0, 8, 10, 10, oled.On)
+	display.Rectangle(0, 12, 10, 14, oled.On)
+}
+
+func draw() {
+	// display.Clear()
+
+	// str := "pump: off"
+	// println("EXAMPLE OLED DRAW STRING: ", str)
+
+	hamburger(0, 0, 10, 15, 2)
+
+	// display.DrawString(0, 10, str)
+
+	// display.DrawString(65, 10, "vwc: 6.5")
+
+	// display.Diagonal(0, 30, 128, 30, oled.On)
+	// display.Diagonal(60, 0, 60, 64, oled.On)
 
 	// display.Diagonal(60, 20, 60, 60, oled.On)
 

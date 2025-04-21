@@ -61,7 +61,6 @@ func (s *Server) Register(p string, h http.Handler) {
 // Start the HTTP server after registering REST API callbacks
 // and initializing the Web application directory
 func (s *Server) Start(done chan any) {
-	s.Register("/ws", wserv)
 	s.Register("/ping", Ping{})
 	s.Register("/api", s)
 	s.Register("/api/topics", messanger.GetTopics())
@@ -78,7 +77,7 @@ func (s *Server) Appdir(path, file string) {
 	s.Register(path, http.FileServer(http.Dir(file)))
 }
 
-func (s *Server) EmbedTempl(path string, fsys embed.FS) {
+func (s *Server) EmbedTempl(path string, fsys embed.FS, data any) {
 
 	s.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		url := r.URL.Path
@@ -103,17 +102,6 @@ func (s *Server) EmbedTempl(path string, fsys embed.FS) {
 					slog.Error("Failed to parse web template: ", "error", err.Error())
 					return
 				}
-			}
-
-			titles := map[string]string{
-				"soil": "Soil Moisture",
-			}
-			data := struct {
-				Title  string
-				Titles map[string]string
-			}{
-				Title:  "Soil",
-				Titles: titles,
 			}
 			s.Template.Execute(w, data)
 		}
