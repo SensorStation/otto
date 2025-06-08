@@ -14,7 +14,10 @@ type Message interface {
 }
 
 // Msg holds a value and some type of meta data to be pass around in
-// the system.
+// the system. The Msg struct contains all the info need to communicate
+// internally or over the PubSub protocol.  Every Msg has a unique ID
+// that can optionally be tracked, saved or replayed for debugging or
+// testing purposes.
 type Msg struct {
 	ID     int64    `json:"id"`
 	Topic  string   `json:"topic"`
@@ -31,11 +34,16 @@ var (
 	msgSaver *MsgSaver
 )
 
+// getMsgID returns a globally unique message ID. It simply increments
+// the ID by 1 every time it is called. This ID will uniquely identify
+// exact elements used by the system.
 func getMsgID() int64 {
 	msgid++
 	return msgid
 }
 
+// New creates a new Msg from the given topic, data and a source
+// string.
 func New(topic string, data []byte, source string) *Msg {
 	msg := &Msg{
 		ID:        getMsgID(),
@@ -52,6 +60,8 @@ func New(topic string, data []byte, source string) *Msg {
 	return msg
 }
 
+// Station extracts the station element from the Msg topic and returns
+// the station ID/name to the caller.
 func (msg *Msg) Station() string {
 	if len(msg.Path) < 3 {
 		return ""
@@ -59,34 +69,43 @@ func (msg *Msg) Station() string {
 	return msg.Path[3]
 }
 
+// Last returns the Last element in the Msg.Topic path
 func (msg *Msg) Last() string {
 	l := len(msg.Path)
 	return msg.Path[l-1]
 }
 
+// Byte returns the array version of the Msg.Data
 func (msg *Msg) Byte() []byte {
 	return msg.Data
 }
 
+// String returns the string formatted version of Msg.Data
 func (msg *Msg) String() string {
 	return string(msg.Data)
 }
 
+// Float64 returns the float64 version of the Msg.Data
 func (msg *Msg) Float64() float64 {
 	var f float64
 	fmt.Sscanf(msg.String(), "%f", &f)
 	return f
 }
 
+// IsJSON returns true or false to indicate if the Msg.Data payload is
+// a JSON formatted string/byte array or not.
 func (msg *Msg) IsJSON() bool {
 	return json.Valid(msg.Data)
 }
 
+// JSON encodes the Msg.Data into a JSON formatted byte array.
 func (msg *Msg) JSON() ([]byte, error) {
 	jbytes, err := json.Marshal(msg)
 	return jbytes, err
 }
 
+// Map decodes the Msg.Data payload from a JSON formatted byte array
+// into a map where the key/value pairs are the data index and values.
 func (msg *Msg) Map() (map[string]interface{}, error) {
 	var m map[string]interface{}
 	err := json.Unmarshal(msg.Data, &m)
@@ -96,6 +115,7 @@ func (msg *Msg) Map() (map[string]interface{}, error) {
 	return m, nil
 }
 
+// Dump spits out the fields and values of the Msg data struct
 func (msg *Msg) Dump() string {
 	str := fmt.Sprintf("  ID: %d\n", msg.ID)
 	str += fmt.Sprintf("Path: %q\n", msg.Path)
@@ -107,11 +127,17 @@ func (msg *Msg) Dump() string {
 	return str
 }
 
+// MsgSaver struct is used to store a historical record of message
+// captured by the application. Save the messages can be turned on and
+// off at any given time.  TODO: need to be able to save these
+// messages to a file, or deliver them via a protocol.
 type MsgSaver struct {
 	Messages []*Msg `json:"saved-messages"`
 	Saving   bool   `json:"saving"`
 }
 
+// GetMsgSaver will return the instance of the MsgSaver element. The
+// first time this funcction is called the object will be created.
 func GetMsgSaver() *MsgSaver {
 	if msgSaver == nil {
 		msgSaver = &MsgSaver{}
@@ -119,14 +145,17 @@ func GetMsgSaver() *MsgSaver {
 	return msgSaver
 }
 
+// StartSaving turn on message saving
 func (ms *MsgSaver) StartSaving() {
 	ms.Saving = true
 }
 
+// StopSaving disable message saving
 func (ms *MsgSaver) StopSaving() {
 	ms.Saving = false
 }
 
+// Dump spits out the history of messages
 func (ms *MsgSaver) Dump() {
 	for _, msg := range ms.Messages {
 		println(msg.Dump())

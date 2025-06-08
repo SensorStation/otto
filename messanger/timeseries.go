@@ -1,4 +1,4 @@
-package data
+package messanger
 
 import (
 	"fmt"
@@ -39,6 +39,8 @@ func (ts *Timeseries) Len() int {
 	return len(ts.Data)
 }
 
+// String returns a human readable string describing the data
+// contained therein.
 func (ts *Timeseries) String() string {
 	str := fmt.Sprintf("%s[%s]", ts.Station, ts.Label)
 	str = fmt.Sprintf("%-20s start: %s\n\t", str, ts.Timestamp)

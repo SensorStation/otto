@@ -32,12 +32,17 @@ func NewMQTT() *MQTT {
 	return mqtt
 }
 
+// SetMQTTClient allows a mock client to be used rather than an
+// actual MQTT client to allow for Mocking MQTT connections if
+// desired
 func SetMQTTClient(c gomqtt.Client) *MQTT {
 	mqtt = GetMQTT()
 	mqtt.Client = c
 	return mqtt
 }
 
+// GetMQTT returns the singleton instance of the MQTT client, the
+// first time it is called it will open and connect the client.
 func GetMQTT() *MQTT {
 	if mqtt == nil {
 		mqtt = NewMQTT()
@@ -140,6 +145,8 @@ func (m *MQTT) Publish(topic string, value any) {
 	}
 }
 
+// Close will disconnect from the MQTT broker and close the client
+// connection.
 func (m *MQTT) Close() {
 	m.Client.Disconnect(1000)
 }

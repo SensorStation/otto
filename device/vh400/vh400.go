@@ -122,7 +122,7 @@ func vwc(volts float64) float64 {
 		rem = 7.89
 
 	default:
-		log.Printf("Invalid voltage out of range 0.0 -> 3.0 %5.2f", volts)
+		log.Printf("VH400 Invalid voltage: out of range 0.0 -> 3.0 %5.2f", volts)
 		return 0.0
 	}
 	vwc := coef*volts - rem

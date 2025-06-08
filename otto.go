@@ -123,7 +123,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/sensorstation/otto/data"
 	"github.com/sensorstation/otto/device"
 	"github.com/sensorstation/otto/messanger"
 	"github.com/sensorstation/otto/server"
@@ -147,7 +146,7 @@ type OttO struct {
 	*station.Station
 	*station.StationManager
 	*server.Server
-	*data.DataManager
+	*messanger.DataManager
 	*messanger.Messanger
 
 	Mock bool
@@ -206,7 +205,7 @@ func (o *OttO) Init() {
 	}
 
 	if o.DataManager == nil {
-		o.DataManager = data.NewDataManager()
+		o.DataManager = messanger.NewDataManager()
 	}
 
 	if o.Server == nil {

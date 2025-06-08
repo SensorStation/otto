@@ -23,6 +23,8 @@ type Publisher interface {
 	Publish(topic string, data any)
 }
 
+// PubSub is the combination of the Publisher and Subscriber
+// interfaces for variout devices to use.
 type PubSub interface {
 	Publisher
 	Subscriber
@@ -40,6 +42,8 @@ type Messanger struct {
 	sync.Mutex `json:"-"`
 }
 
+// NewMessanger with the given ID and a variable number of topics that
+// it will subscribe to.
 func NewMessanger(ID string, topic ...string) *Messanger {
 	m := &Messanger{
 		ID: ID,
@@ -52,20 +56,25 @@ func NewMessanger(ID string, topic ...string) *Messanger {
 	return m
 }
 
+// Subscribe will literally subscribe to the provide MQTT topic with
+// the specified message handler.
 func (m *Messanger) Subscribe(topic string, handler MsgHandler) error {
 	m.Subs[topic] = append(m.Subs[topic], handler)
 	return m.PubSub.Subscribe(topic, handler)
 }
 
+// Publish a message via MQTT with the given topic and value
 func (m *Messanger) Publish(topic string, value any) {
 	m.Published++
 	m.PubSub.Publish(topic, value)
 }
 
+// PubMsg sends an MQTT message based on the content of the Msg structure
 func (m *Messanger) PubMsg(msg *Msg) {
 	m.Publish(msg.Topic, msg.Data)
 }
 
+// Publish given data to this messangers topic
 func (m *Messanger) PubData(data any) {
 	if m.Topic == "" {
 		slog.Error("Device.Publish failed has no Topic", "name", m.ID)
@@ -96,6 +105,7 @@ func (m *Messanger) PubData(data any) {
 	m.PubMsg(msg)
 }
 
+// ServeHTTP is the REST API entry point for the messanger package
 func (m *Messanger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(m)
@@ -104,8 +114,11 @@ func (m *Messanger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// MsgPrinter will simply print a Msg that has been supplied. TODO,
+// create a member function that will print messages by msg ID.
 type MsgPrinter struct{}
 
+// MsgHandler will print out the message that has been supplied.
 func (m *MsgPrinter) MsgHandler(msg *Msg) {
 	fmt.Printf("%+v\n", msg)
 }

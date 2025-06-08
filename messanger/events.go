@@ -11,7 +11,8 @@ var (
 )
 
 // Event is anything significant that we would like to track such as a
-// switch going off or a threshold being surpassed
+// switch going off or a threshold being surpassed. Question: why not
+// just *Msg for this purpose?  Actually *Msg can be Event.Data
 type Event struct {
 	Name string
 	Data any

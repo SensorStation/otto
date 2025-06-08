@@ -1,4 +1,4 @@
-package data
+package messanger
 
 import (
 	"encoding/json"
@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/sensorstation/otto/messanger"
 )
 
 type InvValues struct {
@@ -34,7 +32,7 @@ func TestCallbackInts(t *testing.T) {
 	path := "ss/d/station1/test"
 
 	dm := GetDataManager()
-	msg := messanger.New(path, data, "data-manager-test")
+	msg := New(path, data, "data-manager-test")
 	dm.Callback(msg)
 
 }
