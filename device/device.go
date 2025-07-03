@@ -7,6 +7,7 @@ import (
 	"github.com/sensorstation/otto/messanger"
 )
 
+// Opener interface defines the Open() function for
 type Opener interface {
 	Open() error
 }

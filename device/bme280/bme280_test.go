@@ -76,19 +76,19 @@ func TestBME280(t *testing.T) {
 
 		for key, val := range mmm {
 			switch key {
-			case "Temperature":
+			case "Temperature", "temperature":
 				if val == 0.0 {
 					t.Errorf("%s expected (rand) got (%4.2f)", key, val)
 					return
 				}
 
-			case "Humidity":
+			case "Humidity", "humidity":
 				if val == 0.0 {
 					t.Errorf("%s expected (rand) got (%4.2f)", key, val)
 					return
 				}
 
-			case "Pressure":
+			case "Pressure", "pressure":
 				if val == 0.0 {
 					t.Errorf("%s expected (rand) got (%4.2f)", key, val)
 					return

@@ -233,5 +233,7 @@ func (o *OttO) Stop() {
 		slog.Error("Failed to close server", "error", err)
 	}
 
-	o.Messanger.Close()
+	if o.Messanger != nil {
+		o.Messanger.Close()
+	}
 }

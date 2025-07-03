@@ -27,8 +27,8 @@ func TestOttO_Start(t *testing.T) {
 	o := &OttO{
 		Name:           "test",
 		done:           make(chan any),
-		StationManager: &station.StationManager{},
-		Server:         &server.Server{},
+		StationManager: station.GetStationManager(),
+		Server:         server.GetServer(),
 	}
 
 	go func() {
@@ -45,7 +45,7 @@ func TestOttO_Stop(t *testing.T) {
 		Name:      "test",
 		done:      make(chan any),
 		Messanger: messanger.NewMessanger("test", ""),
-		Server:    &server.Server{},
+		Server:    server.GetServer(),
 	}
 
 	go func() {

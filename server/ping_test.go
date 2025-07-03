@@ -10,6 +10,9 @@ import (
 
 func TestPing(t *testing.T) {
 
+	println("=========================== Ping test")
+	defer println("=========================== Ping test done")
+
 	ts := httptest.NewServer(Ping{})
 	defer ts.Close()
 

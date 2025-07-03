@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sensorstation/otto/data"
 	"github.com/sensorstation/otto/messanger"
 )
 
@@ -54,7 +53,7 @@ func TestBlasting(t *testing.T) {
 	m.Connect()
 
 	for _, bl := range blasters.Blasters {
-		m.Subscribe(bl.Topic, data.GetDataManager().Callback)
+		m.Subscribe(bl.Topic, messanger.GetDataManager().Callback)
 	}
 
 	go blasters.Blast()

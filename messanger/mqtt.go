@@ -75,7 +75,7 @@ func (m *MQTT) Connect() error {
 	if broker != "" {
 		mqtt.Broker = broker
 	} else {
-		mqtt.Broker = "10.11.1.11"
+		mqtt.Broker = "localhost"
 	}
 	url := "tcp://" + mqtt.Broker + ":1883"
 	opts := gomqtt.NewClientOptions()

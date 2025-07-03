@@ -3,7 +3,6 @@ package main
 import (
 	"time"
 
-	"github.com/sensorstation/otto/data"
 	"github.com/sensorstation/otto/device/bme280"
 	"github.com/sensorstation/otto/messanger"
 )
@@ -24,7 +23,7 @@ func main() {
 
 	// Before we start reading temp, etc. let's subscribe to
 	// the messages we are going to publish.
-	dm := data.GetDataManager()
+	dm := messanger.GetDataManager()
 	dm.Subscribe(topic, dm.Callback)
 
 	// start reading in a loop and publish the results via MQTT

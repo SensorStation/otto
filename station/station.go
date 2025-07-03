@@ -122,7 +122,7 @@ func (st *Station) StartTicker(duration time.Duration) error {
 func (st *Station) SayHello() {
 	jbuf, err := json.Marshal(st)
 	if err != nil {
-		slog.Error("Failed to encode station info: %v", err)
+		slog.Error("Failed to encode station info: ", "error", err)
 		return
 	}
 	st.LastHeard = time.Now()
